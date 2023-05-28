@@ -34,7 +34,7 @@ public class TwoWheelLocalizer {
         encoders[1] = new Encoder(new MyPose2d(0,-6.10600173333),1); // right (y = -5.664117306820334)
     }
 
-    public void getIMU(IMU imu){
+    public void setIMU(IMU imu){
         this.imu = imu;
     }
 
