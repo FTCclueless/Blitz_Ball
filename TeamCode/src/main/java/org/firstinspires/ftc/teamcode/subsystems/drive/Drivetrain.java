@@ -42,9 +42,11 @@ public class Drivetrain extends SubsystemBase {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         for (int i = 0; i < motors.size(); i ++) {
+            // What the hell is this
             MotorConfigurationType motorConfigurationType = motors.get(i).getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
             motors.get(i).setMotorType(motorConfigurationType);
+
             motorPriorities.add(new MotorPriority(motors.get(i),3,5));
         }
 
@@ -57,18 +59,6 @@ public class Drivetrain extends SubsystemBase {
 
         localizer = new TwoWheelLocalizer(hardwareMap);
         localizer.setIMU(sensors.imu);
-    }
-
-    public void drive (Gamepad gamepad) {
-        double forward = -0.4*Math.tan(((gamepad.left_stick_y * -1 ) / 0.85));
-        double left = -0.4*(Math.tan(gamepad.left_stick_x / 0.85)) * 0.8;
-        double turn = gamepad.right_stick_x*0.9;
-
-        double p1 = forward+left+turn;
-        double p2 = forward-left+turn;
-        double p3 = forward+left-turn;
-        double p4 = forward-left-turn;
-        setMotorPowers(p1, p2, p3, p4);
     }
 
     public void setMode(DcMotor.RunMode runMode) {

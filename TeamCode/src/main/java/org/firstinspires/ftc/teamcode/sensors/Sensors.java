@@ -14,13 +14,13 @@ public class Sensors {
 
     public Sensors (HardwareMap hardwareMap) {
         IMU.Parameters params = new IMU.Parameters(
-                new RevHubOrientationOnRobot(new Orientation(
-                        AxesReference.INTRINSIC,
-                        AxesOrder.XYZ,
-                        AngleUnit.RADIANS,
-                        0, 0, 0,
-                        0 // Apparently unused
-                ))
+            new RevHubOrientationOnRobot(new Orientation(
+                AxesReference.INTRINSIC,
+                AxesOrder.XYZ,
+                AngleUnit.RADIANS,
+                0, 0, 0,
+                0 // Apparently unused
+            ))
         );
         imu.initialize(params);
     }
