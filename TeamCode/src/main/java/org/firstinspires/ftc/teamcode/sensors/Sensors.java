@@ -13,6 +13,9 @@ public class Sensors {
     public IMU imu;
 
     public Sensors (HardwareMap hardwareMap) {
+
+        imu = hardwareMap.get(IMU.class, "imu");
+
         IMU.Parameters params = new IMU.Parameters(
             new RevHubOrientationOnRobot(new Orientation(
                 AxesReference.INTRINSIC,
@@ -24,4 +27,6 @@ public class Sensors {
         );
         imu.initialize(params);
     }
+
+    public void update() {}
 }
