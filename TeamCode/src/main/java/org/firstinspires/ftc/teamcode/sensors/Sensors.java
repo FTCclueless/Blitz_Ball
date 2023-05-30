@@ -13,7 +13,6 @@ public class Sensors {
     public IMU imu;
 
     public Sensors (HardwareMap hardwareMap) {
-
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters params = new IMU.Parameters(

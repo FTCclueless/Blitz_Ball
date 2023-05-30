@@ -77,7 +77,7 @@ public class Drivetrain {
 
     public void drive (Gamepad gamepad) {
         double forward = -0.4*Math.tan(((gamepad.left_stick_y * -1 ) / 0.85));
-        double turn = -gamepad.right_stick_x*0.9;
+        double turn = -gamepad.right_stick_x*0.5;
 
         double p1 = forward+turn;
         double p2 = forward+turn;
