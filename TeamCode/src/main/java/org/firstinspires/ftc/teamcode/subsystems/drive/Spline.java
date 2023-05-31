@@ -49,7 +49,7 @@ public class Spline {
                 double accelY = 2.0 + 6.0*xCoefficents[3]*time;
 
                 double radius = calculateInstantRadius(velX, velY, accelX, accelY);
-                point.radius = radius;
+                point.setRadius(radius);
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
                 point.heading = Math.atan2(velY,velX);
@@ -72,7 +72,7 @@ public class Spline {
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
     public double calculateInstantRadius (double velX, double velY, double accelX, double accelY) {
-        minimumRobotDistanceFromPoint = Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX);
+        minimumRobotDistanceFromPoint = Math.abs(Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX));
         return minimumRobotDistanceFromPoint;
     }
 

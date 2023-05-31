@@ -78,8 +78,8 @@ public class Drivetrain {
                 headingError -= Math.signum(headingError) * Math.toRadians(360);
             }
             Log.e("headingError", headingError + " " + inDist);
-            double fwd = signal.x; // relative x error
-            double turn = 2.5*headingError*TRACK_WIDTH/2.0; // s/r = theta
+            double fwd = signal.x / 3.0; // relative x error
+            double turn = headingError*TRACK_WIDTH/2.0; // s/r = theta
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,
@@ -91,18 +91,6 @@ public class Drivetrain {
                 max = Math.max(max, Math.abs(motorPowers[i]));
             }
             double maxSpeed = Math.min(1.0, errorDistance / currentSplineToFollow.minimumRobotDistanceFromPoint); // we want the speed to slow down as we approach the point
-            // slow down on turns
-            if (currentSplineToFollow.points.size() >= 2) {
-                double changeAngle = 0;
-                int maxDist = 12; // start slowing down 12 inches from turn
-                double k = 0.35;
-                int maxIndex = Math.min(maxDist/2-1,currentSplineToFollow.points.size()-1); // since we have points every two inches if we divide maxDist by 2 we get number of points
-                for (int i = 0; i < maxIndex; i ++) { // iterating through the next 6 points and taking a kalman filter of change angles
-                    // first get change in angle between last point and point in front of it then multiply by a constant k and add in 65 percent of change angle from previous point
-                    changeAngle = Math.abs(currentSplineToFollow.points.get(maxIndex - i).heading - currentSplineToFollow.points.get(maxIndex-i-1).heading) * k + changeAngle * (1.0-k);
-                }
-                maxSpeed *= 1.0 - Math.min(changeAngle/Math.toRadians(5),0.15); // max we slow down to on a turn is 0.85
-            }
             maxSpeed = Math.max(maxSpeed,0.5); // minimum max speed
             for (int i = 0; i < motorPowers.length; i ++) {
                 motorPowers[i] /= max; // keeps proportions in tack by getting a percentage
