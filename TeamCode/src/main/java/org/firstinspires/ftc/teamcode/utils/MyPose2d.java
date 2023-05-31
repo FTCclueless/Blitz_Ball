@@ -3,28 +3,23 @@ package org.firstinspires.ftc.teamcode.utils;
 public class MyPose2d {
     public double x;
     public double y;
+    public double radius;
     public double heading;
     public double headingOffset;
     public boolean mustGoToPoint;
 
     public MyPose2d(double x, double y){
-        this(x,y,0,0);
+        this(x,y,0,0,0);
     }
 
     public MyPose2d(double x, double y, double heading){
-        this(x,y,heading,0);
+        this(x,y,heading,0,0);
     }
 
-    public MyPose2d(MyPose2d pose2d){
-        this.x = pose2d.x;
-        this.y = pose2d.y;
-        this.heading = pose2d.heading;
-        this.headingOffset = pose2d.headingOffset;
-    }
-
-    public MyPose2d(double x, double y, double heading, double headingOffset) {
+    public MyPose2d(double x, double y, double heading, double headingOffset, double radius) {
         this.x = x;
         this.y = y;
+        this.radius = radius;
         this.heading = heading;
         this.headingOffset = headingOffset;
         this.mustGoToPoint = false;
@@ -37,11 +32,15 @@ public class MyPose2d {
     public double getHeading(){
         return heading;
     }
-    public double getHeadingOffset(){
-        return headingOffset;
+
+    double minDistanceFromPoint = 2.0;
+    double maxDistanceFromPoint = 8.0;
+
+    public double getRadius() {
+        return Math.min(maxDistanceFromPoint, Math.max(minDistanceFromPoint, radius));
     }
 
-    public double getDistanceFromPoint(MyPose2d newPoint) {
+    public double getDistanceFromPoint(MyPose2d newPoint) { // distance equation
         return Math.sqrt(Math.pow((x - newPoint.x),2) + Math.pow((y - newPoint.y),2));
     }
 

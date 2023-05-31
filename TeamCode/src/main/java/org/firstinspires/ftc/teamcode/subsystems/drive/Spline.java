@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Spline {
     public ArrayList<MyPose2d> points = new ArrayList<>();
     public double headingOffset = 0;
+    double inchesPerNewPointGenerated = 2.0;
 
     public Spline(MyPose2d startPose) {
         points.add(startPose);
@@ -32,16 +33,23 @@ public class Spline {
         yCoefficents[2] = 3*newPoint.y - arbitraryVelocity*Math.sin(newPoint.heading) - 2*yCoefficents[1] - 3*yCoefficents[0];
         yCoefficents[3] = newPoint.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
-        for (double t2 = 0.0; t2 < 1.0; t2+=0.001) {
+        for (double time = 0.0; time < 1.0; time+=0.001) {
             MyPose2d point = new MyPose2d(0,0,0);
 
-            point.x = xCoefficents[0] + xCoefficents[1]*t2 + xCoefficents[2]*t2*t2 + xCoefficents[3]*t2*t2*t2;
-            point.y = yCoefficents[0] + yCoefficents[1]*t2 + yCoefficents[2]*t2*t2 + yCoefficents[3]*t2*t2*t2;
+            point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
+            point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
 
-            if(lastPoint.getDistanceFromPoint(point) > 2.0) {
+            if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
                 // gets the velocity because the derivative of position = velocity
-                double velX = xCoefficents[1] + 2.0*xCoefficents[2]*t2 + 3.0*xCoefficents[3]*t2*t2;
-                double velY = yCoefficents[1] + 2.0*yCoefficents[2]*t2 + 3.0*yCoefficents[3]*t2*t2;
+                double velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
+                double velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
+
+                // gets the acceleration which is second derivative of position
+                double accelX = 2.0 + 6.0*xCoefficents[3]*time;
+                double accelY = 2.0 + 6.0*xCoefficents[3]*time;
+
+                double radius = calculateInstantRadius(velX, velY, accelX, accelY);
+                point.radius = radius;
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
                 point.heading = Math.atan2(velY,velX);
@@ -63,8 +71,8 @@ public class Spline {
     double minimumRobotTurningThresholdFromEndPoint = Math.toRadians(5);
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
-    public void calculateRadius (double deltaX, double deltaY, double velocityY, double velocityX) {
-        minimumRobotDistanceFromPoint = Math.pow(Math.pow(deltaX,2) + Math.pow(deltaY,2),1.5)/(velocityY*deltaX-velocityX*deltaY);
+    public double calculateInstantRadius (double velX, double velY, double accelX, double accelY) {
+        return Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX);
     }
 
     public MyPose2d getErrorFromNextPoint(MyPose2d currentRobotPose) {
@@ -73,7 +81,7 @@ public class Spline {
         }
 
         // loops through all of the points and removes any points that are within the robotsMinimumDistanceFromPoint. When we remove a point the nextPoint becomes the 0th index so we don't increment anything
-        while(points.size() > 1 && !points.get(0).mustGoToPoint && points.get(0).getDistanceFromPoint(currentRobotPose) < minimumRobotDistanceFromPoint) {
+        while(points.size() > 1 && !points.get(0).mustGoToPoint && points.get(0).getDistanceFromPoint(currentRobotPose) < points.get(0).getRadius()) {
             points.remove(0);
         }
 
@@ -87,7 +95,7 @@ public class Spline {
         }
 
         // global error to relative error (https://drive.google.com/file/d/1bqHU0ZHKN2yaxgf4M6FBV36Sv0TX0C1g/view?usp=sharing)
-        MyPose2d globalError = new MyPose2d(points.get(0).x- currentRobotPose.x, points.get(0).y - currentRobotPose.y);
+        MyPose2d globalError = new MyPose2d(points.get(0).x - currentRobotPose.x, points.get(0).y - currentRobotPose.y);
         double headingOffset = points.get(0).headingOffset;
         MyPose2d relativeError = new MyPose2d(
                 globalError.x*Math.cos(currentRobotPose.heading) + globalError.y*Math.sin(currentRobotPose.heading),
