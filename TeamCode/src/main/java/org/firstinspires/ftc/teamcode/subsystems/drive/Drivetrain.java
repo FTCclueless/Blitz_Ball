@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.DRIVETRAIN_ENABLED;
-import static org.firstinspires.ftc.teamcode.utils.Globals.K_STATIC;
+import static org.firstinspires.ftc.teamcode.utils.Globals.MIN_MOTOR_POWER_TO_OVERCOME_FRICTION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -27,7 +28,7 @@ public class Drivetrain {
 
     private ArrayList<MotorPriority> motorPriorities;
 
-    public TwoWheelLocalizer localizer;
+    private TwoWheelLocalizer localizer;
 
     public Spline currentSplineToFollow = new Spline(new MyPose2d(0,0,0));
 
@@ -60,31 +61,33 @@ public class Drivetrain {
         localizer.setIMU(sensors.imu);
     }
 
+    double distanceBeforeMovingToPointsHeading = 6.0;
+
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
 
         localizer.update();
         MyPose2d estimate = localizer.getPoseEstimate();
         MyPose2d signal = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
+
         if (signal != null) {
             double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2));
-            boolean inDist = errorDistance < 6.0;
+            boolean inDist = errorDistance < distanceBeforeMovingToPointsHeading;
             double headingError = inDist ? signal.heading : Math.atan2(signal.y*4.0,signal.x)+currentSplineToFollow.points.get(0).headingOffset; // pointing at the point
-            while (Math.abs(headingError) > Math.toRadians(180)) {
+            while (Math.abs(headingError) > Math.toRadians(180)) { // moves angle to be within 180 degrees
                 headingError -= Math.signum(headingError) * Math.toRadians(360);
             }
             Log.e("headingError", headingError + " " + inDist);
-            double fwd = signal.x;
-            double strafePower = inDist ? signal.y/-4.0 : 0.0;
+            double fwd = signal.x; // relative x error
             double turn = 2.5*headingError*TRACK_WIDTH/2.0; // s/r = theta
             double[] motorPowers = {
-                    fwd + strafePower - turn,
-                    fwd - strafePower - turn,
-                    fwd + strafePower + turn,
-                    fwd - strafePower + turn
+                    fwd - turn,
+                    fwd - turn,
+                    fwd + turn,
+                    fwd + turn
             };
             double max = Math.abs(motorPowers[0]);
-            for (int i = 1; i < motorPowers.length; i ++) {
+            for (int i = 1; i < motorPowers.length; i ++) { // finds max power
                 max = Math.max(max, Math.abs(motorPowers[i]));
             }
             double maxSpeed = Math.min(1.0, errorDistance / currentSplineToFollow.minimumRobotDistanceFromPoint); // we want the speed to slow down as we approach the point
@@ -100,12 +103,12 @@ public class Drivetrain {
                 }
                 maxSpeed *= 1.0 - Math.min(changeAngle/Math.toRadians(5),0.15); // max we slow down to on a turn is 0.85
             }
-            maxSpeed = Math.max(maxSpeed,0.5); // min max speed
-            for (int i = 0; i < motorPowers.length; i ++){
+            maxSpeed = Math.max(maxSpeed,0.5); // minimum max speed
+            for (int i = 0; i < motorPowers.length; i ++) {
                 motorPowers[i] /= max; // keeps proportions in tack by getting a percentage
                 motorPowers[i] *= maxSpeed; // slow down motors
-                motorPowers[i] *= 1.0-K_STATIC; // we do this so that we keep proportions when we add kstatic in the next line below. If we had just added kstatic without doing this 0.9 and 1.0 become the same motor power
-                motorPowers[i] += K_STATIC * Math.signum(motorPowers[i]);
+                motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
+                motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
                 motorPriorities.get(i).setTargetPower(motorPowers[i]);
             }
         }
@@ -165,5 +168,35 @@ public class Drivetrain {
 
     public void breakFollowing() {
         currentSplineToFollow.points.clear();
+    }
+
+    public MyPose2d getPoseEstimate() {
+        return localizer.getPoseEstimate();
+    }
+
+    public void setSpline(Spline spline) {
+        currentSplineToFollow = spline;
+    }
+
+    public void setPoseEstimate(MyPose2d pose2d) {
+        localizer.setPoseEstimate(pose2d);
+    }
+
+    public boolean isBusy() {
+        return currentSplineToFollow.points.size() != 0;
+    }
+
+    public void followSplineWithTimer(Spline trajectory, LinearOpMode opMode, long startTime) {
+        setSpline(trajectory);
+        while(isBusy() && (opMode.opModeIsActive() || (System.currentTimeMillis() - startTime >= 29500 && System.currentTimeMillis() - startTime <= 30800))) {
+            update();
+        }
+    }
+
+    public void followSpline(Spline spline, LinearOpMode opMode) {
+        setSpline(spline);
+        while(isBusy() && opMode.opModeIsActive()) {
+            update();
+        }
     }
 }

@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 public class Globals {
+    // general
     public static long LOOP_START = System.nanoTime();
     public static double LOOP_TIME = 0.0;
-    public static double TRACK_WIDTH = 13.3750297033534346;
-    public static double K_STATIC = 0;
 
-    // subsystems enabled?
+    // drivetrain
     public static boolean DRIVETRAIN_ENABLED = true;
+    public static double TRACK_WIDTH = 13.3750297033534346;
+    public static double MIN_MOTOR_POWER_TO_OVERCOME_FRICTION = 0;
 
+    // loop time methods
     public static void START_LOOP() {
         LOOP_START = System.nanoTime();
     }

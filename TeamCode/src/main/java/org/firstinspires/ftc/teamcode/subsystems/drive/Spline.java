@@ -72,7 +72,8 @@ public class Spline {
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
     public double calculateInstantRadius (double velX, double velY, double accelX, double accelY) {
-        return Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX);
+        minimumRobotDistanceFromPoint = Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX);
+        return minimumRobotDistanceFromPoint;
     }
 
     public MyPose2d getErrorFromNextPoint(MyPose2d currentRobotPose) {
