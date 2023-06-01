@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.GET_LOOP_TIME;
-import static org.firstinspires.ftc.teamcode.utils.Globals.LOOP_TIME;
 import static org.firstinspires.ftc.teamcode.utils.Globals.START_LOOP;
-
-import android.util.Log;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -33,38 +30,34 @@ public class Robot {
 
         TelemetryUtil.setup();
 
-        sensors = new Sensors(hardwareMap);
+        sensors = new Sensors(hardwareMap, motorPriorities);
         drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
     }
 
     public void update() {
         START_LOOP();
         updateSubsystems();
+        updateTelemetry();
     }
 
     private void updateSubsystems() {
         sensors.update();
         drivetrain.update();
 
-        updateTelemetry();
-
         MotorPriority.updateMotors(motorPriorities);
-        TelemetryUtil.sendTelemetry();
     }
 
     public void updateTelemetry() {
         TelemetryUtil.packet.put("Loop Time", GET_LOOP_TIME());
 
         updateDashboard();
+
+        TelemetryUtil.sendTelemetry();
     }
 
     public void updateDashboard() {
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
         MyPose2d poseEstimate = drivetrain.getPoseEstimate();
-
-        TelemetryUtil.packet.put("x", poseEstimate.getX());
-        TelemetryUtil.packet.put("y", poseEstimate.getY());
-        TelemetryUtil.packet.put("heading (deg)", Math.toDegrees(poseEstimate.getHeading()));
 
         DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
         DashboardUtil.drawSampledPath(fieldOverlay, drivetrain.currentSplineToFollow);

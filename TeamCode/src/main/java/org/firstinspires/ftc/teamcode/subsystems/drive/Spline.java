@@ -66,14 +66,12 @@ public class Spline {
         return this;
     }
 
-    public double minimumRobotDistanceFromPoint = 14.0;
     double minimumRobotThresholdFromEndPoint = 0.5;
     double minimumRobotTurningThresholdFromEndPoint = Math.toRadians(5);
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
     public double calculateInstantRadius (double velX, double velY, double accelX, double accelY) {
-        minimumRobotDistanceFromPoint = Math.abs(Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX));
-        return minimumRobotDistanceFromPoint;
+        return Math.abs(Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX));
     }
 
     public MyPose2d getErrorFromNextPoint(MyPose2d currentRobotPose) {

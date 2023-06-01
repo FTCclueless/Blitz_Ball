@@ -26,6 +26,6 @@ public class PurePursuitTest extends LinearOpMode {
                 .addPoint(new MyPose2d(midPoint.x * 2.0,0,0));
 
         waitForStart();
-        drivetrain.followSpline(spline, this);
+        robot.followSpline(spline, this);
     }
 }

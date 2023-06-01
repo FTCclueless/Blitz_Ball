@@ -27,6 +27,7 @@ public class Drivetrain {
     private List<DcMotorEx> motors;
 
     private ArrayList<MotorPriority> motorPriorities;
+    private Sensors sensors;
 
     private TwoWheelLocalizer localizer;
 
@@ -34,6 +35,7 @@ public class Drivetrain {
 
     public Drivetrain(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.motorPriorities = motorPriorities;
+        this.sensors = sensors;
 
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
@@ -58,7 +60,7 @@ public class Drivetrain {
         rightRear.setDirection(DcMotor.Direction.REVERSE);
 
         localizer = new TwoWheelLocalizer(hardwareMap);
-        localizer.setIMU(sensors.imu);
+        localizer.setIMU(sensors.getImu());
     }
 
     double distanceBeforeMovingToPointsHeading = 6.0;
@@ -66,7 +68,8 @@ public class Drivetrain {
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
 
-        localizer.update();
+        updateLocalizer();
+
         MyPose2d estimate = localizer.getPoseEstimate();
         MyPose2d signal = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
 
@@ -77,20 +80,19 @@ public class Drivetrain {
             while (Math.abs(headingError) > Math.toRadians(180)) { // moves angle to be within 180 degrees
                 headingError -= Math.signum(headingError) * Math.toRadians(360);
             }
-            Log.e("headingError", headingError + " " + inDist);
-            double fwd = signal.x / 3.0; // relative x error
+            double fwd = -signal.x; // relative x error
             double turn = headingError*TRACK_WIDTH/2.0; // s/r = theta
             double[] motorPowers = {
-                    fwd - turn,
-                    fwd - turn,
                     fwd + turn,
-                    fwd + turn
+                    fwd + turn,
+                    fwd - turn,
+                    fwd - turn
             };
             double max = Math.abs(motorPowers[0]);
             for (int i = 1; i < motorPowers.length; i ++) { // finds max power
                 max = Math.max(max, Math.abs(motorPowers[i]));
             }
-            double maxSpeed = Math.min(1.0, errorDistance / currentSplineToFollow.minimumRobotDistanceFromPoint); // we want the speed to slow down as we approach the point
+            double maxSpeed = Math.min(1.0, errorDistance / 8.0); // we want the speed to slow down as we approach the point
             maxSpeed = Math.max(maxSpeed,0.5); // minimum max speed
             for (int i = 0; i < motorPowers.length; i ++) {
                 motorPowers[i] /= max; // keeps proportions in tack by getting a percentage
@@ -108,6 +110,11 @@ public class Drivetrain {
             breakFollowing();
             setMotorPowers(0,0,0,0);
         }
+    }
+
+    public void updateLocalizer() {
+        localizer.updateEncoders(sensors.getOdometry());
+        localizer.update();
     }
 
     public void setMode(DcMotor.RunMode runMode) {
@@ -172,19 +179,5 @@ public class Drivetrain {
 
     public boolean isBusy() {
         return currentSplineToFollow.points.size() != 0;
-    }
-
-    public void followSplineWithTimer(Spline trajectory, LinearOpMode opMode, long startTime) {
-        setSpline(trajectory);
-        while(isBusy() && (opMode.opModeIsActive() || (System.currentTimeMillis() - startTime >= 29500 && System.currentTimeMillis() - startTime <= 30800))) {
-            update();
-        }
-    }
-
-    public void followSpline(Spline spline, LinearOpMode opMode) {
-        setSpline(spline);
-        while(isBusy() && opMode.opModeIsActive()) {
-            update();
-        }
     }
 }

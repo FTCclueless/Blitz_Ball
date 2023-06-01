@@ -5,11 +5,11 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.utils.Encoder;
 import org.firstinspires.ftc.teamcode.utils.MyPose2d;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
 
 public class TwoWheelLocalizer {
-
     public Encoder[] encoders;
     long lastTime = System.nanoTime();
     public double x = 0;
@@ -30,8 +30,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new MyPose2d(0,7.233659277778),  -1); // left (y = 7.6861797267140135)
-        encoders[1] = new Encoder(new MyPose2d(0,-6.10600173333),1); // right (y = -5.664117306820334)
+        encoders[0] = new Encoder(new MyPose2d(0,5.5926264886),  1); // left
+        encoders[1] = new Encoder(new MyPose2d(0,-5.6839121499),1); // right
     }
 
     public void setIMU(IMU imu){
@@ -39,7 +39,7 @@ public class TwoWheelLocalizer {
     }
 
     public void updateEncoders(int[] encoders) {
-        for (int i = 0; i < this.encoders.length; i ++){
+        for (int i = 0; i < this.encoders.length; i ++) {
             this.encoders[i].update(encoders[i]);
         }
     }
@@ -75,15 +75,16 @@ public class TwoWheelLocalizer {
         // This is the heading because the heading is proportional to the difference between the left and right wheel.
         double deltaHeading = (deltaRight - deltaLeft)/(leftY-rightY);
         // This is a weighted average for the amount moved forward with the weights being how far away the other one is from the center
-        double relDeltaX = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
+        double relDelta = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
 
-        relHistory.add(0,new MyPose2d(relDeltaX,0.0,deltaHeading));
+        relHistory.add(0,new MyPose2d(relDelta,0.0,deltaHeading));
 
         if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined. This effectively does L'Hopital's
-            double r1 = relDeltaX / deltaHeading;
-            relDeltaX = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading));
+            double r1 = relDelta / deltaHeading;
+            relDelta = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading));
         }
-        x += relDeltaX * Math.cos(heading);
+        x += relDelta * Math.cos(heading);
+        y += relDelta * Math.sin(heading);
 
         heading += deltaHeading;
 
@@ -92,6 +93,13 @@ public class TwoWheelLocalizer {
         loopTimeHistory.add(0,loopTime);
         poseHistory.add(0,currentPose);
         updateVelocity();
+        updateTelemetry();
+    }
+
+    public void updateTelemetry() {
+        TelemetryUtil.packet.put("x", currentPose.getX());
+        TelemetryUtil.packet.put("y", currentPose.getY());
+        TelemetryUtil.packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
     }
 
     // powers = [leftFront, leftBack, rightFront, rightBack]
