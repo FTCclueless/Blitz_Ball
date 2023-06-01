@@ -9,6 +9,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
@@ -45,6 +46,7 @@ public class Drivetrain {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         for (int i = 0; i < motors.size(); i ++) {
+            motors.get(i).setDirection(DcMotorSimple.Direction.REVERSE);
             MotorConfigurationType motorConfigurationType = motors.get(i).getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
             motors.get(i).setMotorType(motorConfigurationType);
@@ -63,8 +65,6 @@ public class Drivetrain {
         localizer.setIMU(sensors.getImu());
     }
 
-    double distanceBeforeMovingToPointsHeading = 6.0;
-
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
 
@@ -75,25 +75,25 @@ public class Drivetrain {
 
         if (signal != null) {
             double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2));
-            boolean inDist = errorDistance < distanceBeforeMovingToPointsHeading;
-            double headingError = inDist ? signal.heading : Math.atan2(signal.y*4.0,signal.x)+currentSplineToFollow.points.get(0).headingOffset; // pointing at the point
+            boolean inDist = currentSplineToFollow.points.get(0).mustGoToPoint && errorDistance < 6.0;
+            double headingError = inDist ? signal.heading : Math.atan2(signal.y*4.0,signal.x);// pointing at the point
+            headingError += currentSplineToFollow.points.get(0).headingOffset;
             while (Math.abs(headingError) > Math.toRadians(180)) { // moves angle to be within 180 degrees
                 headingError -= Math.signum(headingError) * Math.toRadians(360);
             }
-            double fwd = -signal.x; // relative x error
+            double fwd = signal.x; // relative x error
             double turn = headingError*TRACK_WIDTH/2.0; // s/r = theta
             double[] motorPowers = {
-                    fwd + turn,
-                    fwd + turn,
                     fwd - turn,
-                    fwd - turn
+                    fwd - turn,
+                    fwd + turn,
+                    fwd + turn
             };
             double max = Math.abs(motorPowers[0]);
             for (int i = 1; i < motorPowers.length; i ++) { // finds max power
                 max = Math.max(max, Math.abs(motorPowers[i]));
             }
-            double maxSpeed = Math.min(1.0, errorDistance / 8.0); // we want the speed to slow down as we approach the point
-            maxSpeed = Math.max(maxSpeed,0.5); // minimum max speed
+            double maxSpeed = Math.max(Math.min(currentSplineToFollow.points.get(0).radius/10.0,1.0),0.25); // we want the speed to slow down as we approach the point & minimum max speed
             for (int i = 0; i < motorPowers.length; i ++) {
                 motorPowers[i] /= max; // keeps proportions in tack by getting a percentage
                 motorPowers[i] *= maxSpeed; // slow down motors
@@ -137,8 +137,8 @@ public class Drivetrain {
     }
 
     public void drive (Gamepad gamepad) {
-        double forward = -0.4*Math.tan(((gamepad.left_stick_y * -1 ) / 0.85));
-        double turn = -gamepad.right_stick_x;
+        double forward = 0.45*Math.tan(((gamepad.left_stick_y * -1 ) / 0.85));
+        double turn = gamepad.right_stick_x;
 
         double p1 = forward+turn;
         double p2 = forward+turn;

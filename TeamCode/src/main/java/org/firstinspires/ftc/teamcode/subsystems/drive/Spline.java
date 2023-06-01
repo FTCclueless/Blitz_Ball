@@ -95,11 +95,10 @@ public class Spline {
 
         // global error to relative error (https://drive.google.com/file/d/1bqHU0ZHKN2yaxgf4M6FBV36Sv0TX0C1g/view?usp=sharing)
         MyPose2d globalError = new MyPose2d(points.get(0).x - currentRobotPose.x, points.get(0).y - currentRobotPose.y);
-        double headingOffset = points.get(0).headingOffset;
         MyPose2d relativeError = new MyPose2d(
                 globalError.x*Math.cos(currentRobotPose.heading) + globalError.y*Math.sin(currentRobotPose.heading),
                 globalError.y*Math.cos(currentRobotPose.heading) - globalError.x*Math.sin(currentRobotPose.heading),
-                points.get(0).heading+headingOffset-currentRobotPose.heading);
+                points.get(0).heading-currentRobotPose.heading);
         relativeError.clipAngle();
 
         return relativeError;

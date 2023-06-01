@@ -34,7 +34,7 @@ public class MyPose2d {
     }
 
     double minDistanceFromPoint = 2.0;
-    double maxDistanceFromPoint = 8.0;
+    double maxDistanceFromPoint = 14.0;
 
     public void setRadius(double radius) {
         this.radius = Math.min(maxDistanceFromPoint, Math.max(minDistanceFromPoint, radius));;
