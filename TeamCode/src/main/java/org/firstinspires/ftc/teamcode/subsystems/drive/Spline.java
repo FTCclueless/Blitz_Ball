@@ -48,7 +48,7 @@ public class Spline {
                 double accelX = 2.0 + 6.0*xCoefficents[3]*time;
                 double accelY = 2.0 + 6.0*xCoefficents[3]*time;
 
-                double radius = calculateInstantRadius(velX, velY, accelX, accelY);
+                double radius = calculateInstantRadius(velX, velY, accelX, accelY)/1.5;
                 point.setRadius(radius);
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
@@ -66,7 +66,8 @@ public class Spline {
         return this;
     }
 
-    double minimumRobotThresholdFromEndPoint = 0.5;
+    double minimumRobotThresholdFromEndPointInX = 0.5;
+    double minimumRobotThresholdFromEndPointInY = 4;
     double minimumRobotTurningThresholdFromEndPoint = Math.toRadians(5);
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
@@ -84,15 +85,6 @@ public class Spline {
             points.remove(0);
         }
 
-        // checking if we have finished the spline
-        if ((points.get(0).getDistanceFromPoint(currentRobotPose) < minimumRobotThresholdFromEndPoint)
-                && (points.get(0).getAngleDifference(currentRobotPose) < minimumRobotTurningThresholdFromEndPoint)) {
-            points.remove(0);
-            if (points.size() == 0) {
-                return null;
-            }
-        }
-
         // global error to relative error (https://drive.google.com/file/d/1bqHU0ZHKN2yaxgf4M6FBV36Sv0TX0C1g/view?usp=sharing)
         MyPose2d globalError = new MyPose2d(points.get(0).x - currentRobotPose.x, points.get(0).y - currentRobotPose.y);
         MyPose2d relativeError = new MyPose2d(
@@ -100,6 +92,16 @@ public class Spline {
                 globalError.y*Math.cos(currentRobotPose.heading) - globalError.x*Math.sin(currentRobotPose.heading),
                 points.get(0).heading-currentRobotPose.heading);
         relativeError.clipAngle();
+
+        // checking if we have finished the spline
+        if ((Math.abs(relativeError.x) < minimumRobotThresholdFromEndPointInX)
+                && (Math.abs(relativeError.y) < minimumRobotThresholdFromEndPointInY)
+                && (Math.abs(relativeError.heading) < minimumRobotTurningThresholdFromEndPoint)) {
+            points.remove(0);
+            if (points.size() == 0) {
+                return null;
+            }
+        }
 
         return relativeError;
     }

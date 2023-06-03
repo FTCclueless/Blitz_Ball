@@ -18,7 +18,7 @@ public class TwoWheelLocalizer {
 
     MyPose2d currentPose = new MyPose2d(0,0,0);
     MyPose2d currentVel = new MyPose2d(0,0,0);
-    MyPose2d relCurrentVel = new MyPose2d(0,0,0);
+    public MyPose2d relCurrentVel = new MyPose2d(0,0,0);
     MyPose2d currentPowerVector = new MyPose2d(0,0,0);
 
     ArrayList<MyPose2d> poseHistory = new ArrayList<MyPose2d>();

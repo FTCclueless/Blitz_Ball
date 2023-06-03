@@ -33,8 +33,8 @@ public class MyPose2d {
         return heading;
     }
 
-    double minDistanceFromPoint = 2.0;
-    double maxDistanceFromPoint = 14.0;
+    public static final double minDistanceFromPoint = 4.0;
+    public static final double maxDistanceFromPoint = 14.0;
 
     public void setRadius(double radius) {
         this.radius = Math.min(maxDistanceFromPoint, Math.max(minDistanceFromPoint, radius));;
@@ -46,6 +46,14 @@ public class MyPose2d {
 
     public double getDistanceFromPoint(MyPose2d newPoint) { // distance equation
         return Math.sqrt(Math.pow((x - newPoint.x),2) + Math.pow((y - newPoint.y),2));
+    }
+
+    public double getErrorInX(MyPose2d newPoint) { // distance equation
+        return Math.abs(x - newPoint.x);
+    }
+
+    public double getErrorInY(MyPose2d newPoint) { // distance equation
+        return Math.abs(y - newPoint.y);
     }
 
     public double getAngleDifference(MyPose2d newPoint) {
