@@ -76,6 +76,7 @@ public class Drivetrain {
         MyPose2d estimate = localizer.getPoseEstimate();
         MyPose2d signal = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
 
+        // pure pursuit follower
         if (signal != null) {
             double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2)); // distance equation
             boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 6.0;
@@ -91,11 +92,11 @@ public class Drivetrain {
                 smallestRadiusForNext5Points = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusForNext5Points);
             }
 
-            double speedFromRadius = (smallestRadiusForNext5Points-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
-            double speedFromHeadingError = Math.min((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
+            double speedFromRadiusPercentage = (smallestRadiusForNext5Points-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
+            double speedFromHeadingErrorPercentage = Math.min((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
             double speedFromEnd = mustGoToPoint ? Math.abs(signal.x) / 6.0 : 1; // slows down the robot when it reaches an end
 
-            double maxSpeedPercentage = speedFromEnd * Math.min(speedFromRadius,speedFromHeadingError);
+            double maxSpeedPercentage = speedFromEnd * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
             maxSpeedPercentage = Math.max(Math.min(maxSpeedPercentage,maxSpeed),0.25); // we want the speed to slow down as we approach the point & minimum max speed
             double currentFwdPercentage = Math.min(Math.abs(localizer.relCurrentVel.x/MAX_DRIVETRAIN_SPEED),1.0);
 
