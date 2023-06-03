@@ -65,6 +65,9 @@ public class Drivetrain {
         localizer.setIMU(sensors.getImu());
     }
 
+    double maxSpeed = 0.5;
+    double maxHeadingError = Math.toRadians(45);
+
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
 
@@ -74,34 +77,39 @@ public class Drivetrain {
         MyPose2d signal = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
 
         if (signal != null) {
-            double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2));
-            boolean inDist = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 6.0;
-            double headingError = inDist ? signal.heading : Math.atan2(signal.y,signal.x);// pointing at the point
+            double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2)); // distance equation
+            boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 6.0;
+            double headingError = mustGoToPoint ? signal.heading : Math.atan2(signal.y,signal.x);// if we want to go to point then we go to the heading otherwise we point to point
             headingError += currentSplineToFollow.points.get(0).headingOffset;
             while (Math.abs(headingError) > Math.toRadians(180)) { // moves angle to be within 180 degrees
                 headingError -= Math.signum(headingError) * Math.toRadians(360);
             }
             double maxRadius = MyPose2d.maxDistanceFromPoint;
             double minRadius = MyPose2d.minDistanceFromPoint;
-            double radius = currentSplineToFollow.points.get(0).radius;
-            for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,5); i ++){
-                radius = Math.min(currentSplineToFollow.points.get(i).radius,radius);
+            double smallestRadiusForNext5Points = currentSplineToFollow.points.get(0).radius;
+            for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,5); i++)  { // finding smallest radius for next 5 points
+                smallestRadiusForNext5Points = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusForNext5Points);
             }
-            double maxSpeedPercentage = Math.max(Math.min((radius-minRadius)/(maxRadius-minRadius),0.5),0.25); // we want the speed to slow down as we approach the point & minimum max speed
 
+            double speedFromRadius = (smallestRadiusForNext5Points-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
+            double speedFromHeadingError = Math.min((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
+            double speedFromEnd = mustGoToPoint ? Math.abs(signal.x) / 6.0 : 1; // slows down the robot when it reaches an end
+
+            double maxSpeedPercentage = speedFromEnd * Math.min(speedFromRadius,speedFromHeadingError);
+            maxSpeedPercentage = Math.max(Math.min(maxSpeedPercentage,maxSpeed),0.25); // we want the speed to slow down as we approach the point & minimum max speed
             double currentFwdPercentage = Math.min(Math.abs(localizer.relCurrentVel.x/MAX_DRIVETRAIN_SPEED),1.0);
 
-            double fwd = signal.x * (maxSpeedPercentage*3.5 - currentFwdPercentage); // relative x error
-            double turn = headingError*TRACK_WIDTH/4; // s/r = theta
+            double fwd = Math.signum(signal.x) * (maxSpeedPercentage * 2 - currentFwdPercentage); // applies breaking power to slow it down
+            double turn = TRACK_WIDTH/4*headingError; // s=r*theta
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,
                     fwd + turn,
                     fwd + turn
             };
-            double max = 1.0;
-            for (int i = 0; i < motorPowers.length; i ++) { // finds max power
-                max = Math.max(max, Math.abs(motorPowers[i]));
+            double max = 0.0;
+            for (double motorPower : motorPowers) { // finds max power
+                max = Math.max(max, Math.abs(motorPower));
             }
             for (int i = 0; i < motorPowers.length; i ++) {
                 motorPowers[i] /= max; // keeps proportions in tack by getting a percentage

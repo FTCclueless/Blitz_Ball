@@ -116,7 +116,7 @@ public class TwoWheelLocalizer {
     }
 
     public void updateVelocity() {
-        double targetVelTimeEstimate = 0.2; // in seconds
+        double targetVelTimeEstimate = 0.02; // in seconds
         double actualVelTime = 0;
         double relDeltaXTotal = 0;
         double relDeltaYTotal = 0;
