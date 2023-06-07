@@ -63,8 +63,6 @@ public class MyPose2d {
     }
 
     public void clipAngle() {
-        while (Math.abs(this.heading) > Math.PI) {
-            this.heading -= Math.PI * 2.0 * Math.signum(this.heading);
-        }
+        heading = AngleUtil.clipAngle(heading);
     }
 }

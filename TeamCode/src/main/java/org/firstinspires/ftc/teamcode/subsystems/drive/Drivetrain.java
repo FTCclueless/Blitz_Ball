@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.MyPose2d;
 
@@ -66,6 +67,7 @@ public class Drivetrain {
     }
 
     double maxSpeed = 0.5;
+    double minSpeed = 0.25;
     double maxHeadingError = Math.toRadians(45);
 
     public void update () {
@@ -74,33 +76,32 @@ public class Drivetrain {
         updateLocalizer();
 
         MyPose2d estimate = localizer.getPoseEstimate();
-        MyPose2d signal = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
+        MyPose2d error = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
 
         // pure pursuit follower
-        if (signal != null) {
-            double errorDistance = Math.sqrt(Math.pow(signal.x,2) + Math.pow(signal.y,2)); // distance equation
+        if (error != null) {
+            double errorDistance = Math.sqrt(Math.pow(error.x,2) + Math.pow(error.y,2)); // distance equation
             boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 6.0;
-            double headingError = mustGoToPoint ? signal.heading : Math.atan2(signal.y,signal.x);// if we want to go to point then we go to the heading otherwise we point to point
+            double headingError = mustGoToPoint ? error.heading : Math.atan2(error.y,error.x); // if we want to go to point then we go to the heading otherwise we point to point
             headingError += currentSplineToFollow.points.get(0).headingOffset;
-            while (Math.abs(headingError) > Math.toRadians(180)) { // moves angle to be within 180 degrees
-                headingError -= Math.signum(headingError) * Math.toRadians(360);
-            }
+            headingError = AngleUtil.clipAngle(headingError);
+
             double maxRadius = MyPose2d.maxDistanceFromPoint;
             double minRadius = MyPose2d.minDistanceFromPoint;
-            double smallestRadiusForNext5Points = currentSplineToFollow.points.get(0).radius;
+            double smallestRadiusOfNextPoints = currentSplineToFollow.points.get(0).radius;
             for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,5); i++)  { // finding smallest radius for next 5 points
-                smallestRadiusForNext5Points = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusForNext5Points);
+                smallestRadiusOfNextPoints = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusOfNextPoints);
             }
 
-            double speedFromRadiusPercentage = (smallestRadiusForNext5Points-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
-            double speedFromHeadingErrorPercentage = Math.min((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
-            double speedFromEnd = mustGoToPoint ? Math.abs(signal.x) / 6.0 : 1; // slows down the robot when it reaches an end
+            double speedFromRadiusPercentage = (smallestRadiusOfNextPoints-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
+            double speedFromHeadingErrorPercentage = Math.max((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
+            double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / 6.0 : 1; // slows down the robot when it reaches an end
 
-            double maxSpeedPercentage = speedFromEnd * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
-            maxSpeedPercentage = Math.max(Math.min(maxSpeedPercentage,maxSpeed),0.25); // we want the speed to slow down as we approach the point & minimum max speed
+            double maxSpeedPercentage = speedFromEndPercentage * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
+            maxSpeedPercentage = Math.max(Math.min(maxSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
             double currentFwdPercentage = Math.min(Math.abs(localizer.relCurrentVel.x/MAX_DRIVETRAIN_SPEED),1.0);
 
-            double fwd = Math.signum(signal.x) * (maxSpeedPercentage * 2 - currentFwdPercentage); // applies breaking power to slow it down
+            double fwd = Math.signum(error.x) * (maxSpeedPercentage * 2 - currentFwdPercentage); // applies breaking power to slow it down
             double turn = TRACK_WIDTH/4*headingError; // s=r*theta
             double[] motorPowers = {
                     fwd - turn,
