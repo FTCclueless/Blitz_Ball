@@ -66,9 +66,9 @@ public class Drivetrain {
         localizer.setIMU(sensors.getImu());
     }
 
-    double maxSpeed = 0.5;
+    double maxSpeed = 1.0;
     double minSpeed = 0.25;
-    double maxHeadingError = Math.toRadians(45);
+    double maxHeadingError = Math.toRadians(90);
 
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
@@ -81,7 +81,7 @@ public class Drivetrain {
         // pure pursuit follower
         if (error != null) {
             double errorDistance = Math.sqrt(Math.pow(error.x,2) + Math.pow(error.y,2)); // distance equation
-            boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 6.0;
+            boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 10.0;
             double headingError = mustGoToPoint ? error.heading : Math.atan2(error.y,error.x); // if we want to go to point then we go to the heading otherwise we point to point
             headingError += currentSplineToFollow.points.get(0).headingOffset;
             headingError = AngleUtil.clipAngle(headingError);
@@ -89,7 +89,7 @@ public class Drivetrain {
             double maxRadius = MyPose2d.maxDistanceFromPoint;
             double minRadius = MyPose2d.minDistanceFromPoint;
             double smallestRadiusOfNextPoints = currentSplineToFollow.points.get(0).radius;
-            for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,5); i++)  { // finding smallest radius for next 5 points
+            for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,2); i++)  { // finding smallest radius for next 5 points
                 smallestRadiusOfNextPoints = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusOfNextPoints);
             }
 
@@ -97,20 +97,24 @@ public class Drivetrain {
             double speedFromHeadingErrorPercentage = Math.max((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
             double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / 6.0 : 1; // slows down the robot when it reaches an end
 
-            double maxSpeedPercentage = speedFromEndPercentage * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
-            maxSpeedPercentage = Math.max(Math.min(maxSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
+            double fwdSpeedPercentage = speedFromEndPercentage * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
+            fwdSpeedPercentage = Math.max(Math.min(fwdSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
             double currentFwdPercentage = Math.min(Math.abs(localizer.relCurrentVel.x/MAX_DRIVETRAIN_SPEED),1.0);
 
-            double fwd = Math.signum(error.x) * (maxSpeedPercentage * 2 - currentFwdPercentage); // applies breaking power to slow it down
-            double turn = TRACK_WIDTH/4*headingError; // s=r*theta
+            double breakingFactor = 0.45; // scale factor for how much you wanna weigh current forward percentage into braking
+            double differenceBetweenSetAndActual = fwdSpeedPercentage - currentFwdPercentage;
+
+            double fwd = Math.signum(error.x) * (fwdSpeedPercentage + Math.max(differenceBetweenSetAndActual * breakingFactor, -0.05)); // applies breaking power to slow it down, most breaking power applied is -0.3
+            double turn = TRACK_WIDTH/2*headingError; // s=r*theta
+            turn *= 0.1;
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,
                     fwd + turn,
                     fwd + turn
             };
-            double max = 0.0;
-            for (double motorPower : motorPowers) { // finds max power
+            double max = 1.0;
+            for (double motorPower : motorPowers) { // finds max power if greater than 1.0
                 max = Math.max(max, Math.abs(motorPower));
             }
             for (int i = 0; i < motorPowers.length; i ++) {

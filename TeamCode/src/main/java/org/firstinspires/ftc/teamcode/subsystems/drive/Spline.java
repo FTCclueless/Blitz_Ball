@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.utils.MyPose2d;
 
 import java.util.ArrayList;
@@ -66,7 +68,7 @@ public class Spline {
         return this;
     }
 
-    double minimumRobotThresholdFromEndPointInX = 0.5;
+    double minimumRobotThresholdFromEndPointInX = 1;
     double minimumRobotThresholdFromEndPointInY = 4;
     double minimumRobotTurningThresholdFromEndPoint = Math.toRadians(5);
 
@@ -94,6 +96,7 @@ public class Spline {
         relativeError.clipAngle();
 
         // checking if we have finished the spline
+
         if ((Math.abs(relativeError.x) < minimumRobotThresholdFromEndPointInX)
                 && (Math.abs(relativeError.y) < minimumRobotThresholdFromEndPointInY)
                 && (Math.abs(relativeError.heading) < minimumRobotTurningThresholdFromEndPoint)) {

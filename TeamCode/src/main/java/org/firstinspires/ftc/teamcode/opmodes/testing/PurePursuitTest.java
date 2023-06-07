@@ -19,11 +19,11 @@ public class PurePursuitTest extends LinearOpMode {
         MyPose2d midPoint = new MyPose2d(52,20,Math.toRadians(90));
         Spline spline = new Spline(new MyPose2d(0, 0, 0))
                 .addPoint(new MyPose2d(midPoint.x - 8, 0, 0))
-                .addPoint(midPoint);
-                //.mustGoToPoint()
-                //.setReversed(true)
-                //.addPoint(new MyPose2d(midPoint.x + 8,0,0))
-                //.addPoint(new MyPose2d(midPoint.x * 2.0,0,0));
+                .addPoint(midPoint)
+                .mustGoToPoint()
+                .setReversed(true)
+                .addPoint(new MyPose2d(midPoint.x + 8,0,0))
+                .addPoint(new MyPose2d(midPoint.x * 2.0,0,0));
 
         waitForStart();
         robot.followSpline(spline, this);
