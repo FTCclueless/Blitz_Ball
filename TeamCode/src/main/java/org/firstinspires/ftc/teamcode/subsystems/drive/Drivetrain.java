@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocali
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.MyPose2d;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,8 +68,8 @@ public class Drivetrain {
     }
 
     double maxSpeed = 1.0;
-    double minSpeed = 0.25;
-    double maxHeadingError = Math.toRadians(67.5);
+    double minSpeed = 0.6;//0.35
+    double maxHeadingError = Math.toRadians(95);
 
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
@@ -88,24 +89,30 @@ public class Drivetrain {
             double maxRadius = MyPose2d.maxDistanceFromPoint;
             double minRadius = MyPose2d.minDistanceFromPoint;
             double smallestRadiusOfNextPoints = currentSplineToFollow.points.get(0).radius;
-            for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,2); i++)  { // finding smallest radius for next 5 points
-                smallestRadiusOfNextPoints = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusOfNextPoints);
-            }
+            TelemetryUtil.packet.put("radius", smallestRadiusOfNextPoints);
+            //for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,1); i++)  { // finding smallest radius for next 5 points
+            //    smallestRadiusOfNextPoints = Math.min(currentSplineToFollow.points.get(i).radius,smallestRadiusOfNextPoints);
+            //}
 
             double speedFromRadiusPercentage = (smallestRadiusOfNextPoints-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
             double speedFromHeadingErrorPercentage = Math.max((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
-            double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / 6.0 : 1; // slows down the robot when it reaches an end
+            double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / 12.0 : 1; // slows down the robot when it reaches an end
 
-            double fwdSpeedPercentage = speedFromEndPercentage * Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
-            fwdSpeedPercentage = Math.max(Math.min(fwdSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
+            double fwdSpeedPercentage = Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
+            fwdSpeedPercentage = speedFromEndPercentage * Math.max(Math.min(fwdSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
             double currentFwdPercentage = Math.min(Math.abs(localizer.relCurrentVel.x/MAX_DRIVETRAIN_SPEED),1.0);
+            double currentTurnPercentage = Math.min(Math.abs(localizer.relCurrentVel.heading/TRACK_WIDTH), 1.0);
 
             double breakingFactor = 0.45; // scale factor for how much you wanna weigh current forward percentage into braking
             double differenceBetweenSetAndActual = fwdSpeedPercentage - currentFwdPercentage;
 
             double fwd = Math.signum(error.x) * (fwdSpeedPercentage + Math.max(differenceBetweenSetAndActual * breakingFactor, -0.05)); // applies breaking power to slow it down, most breaking power applied is -0.3
             double turn = TRACK_WIDTH/2*headingError; // s=r*theta
-            turn *= 0.1;
+            turn *= 0.2;
+            if (Math.abs(headingError) > Math.toRadians(10) && Math.abs(headingError) < Math.toRadians(25) && currentTurnPercentage > 0.04) {
+                turn = -0.2 * Math.signum(turn);
+            }
+
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,

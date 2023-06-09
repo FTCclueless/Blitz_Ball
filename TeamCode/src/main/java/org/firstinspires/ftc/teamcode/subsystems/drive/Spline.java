@@ -50,7 +50,7 @@ public class Spline {
                 double accelX = 2.0 + 6.0*xCoefficents[3]*time;
                 double accelY = 2.0 + 6.0*xCoefficents[3]*time;
 
-                double radius = calculateInstantRadius(velX, velY, accelX, accelY)/1.5;
+                double radius = calculateInstantRadius(velX, velY, accelX, accelY)/2.0;// /1.5
                 point.setRadius(radius);
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
@@ -74,6 +74,7 @@ public class Spline {
 
     // r = (dx^2 + dy^2)^1.5/(ddy*dx-ddx*dy)
     public double calculateInstantRadius (double velX, double velY, double accelX, double accelY) {
+        System.out.println(Math.abs(Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX)));
         return Math.abs(Math.pow(Math.pow(velX,2) + Math.pow(velY,2),1.5)/(accelY*velX-velY*accelX));
     }
 
@@ -99,7 +100,7 @@ public class Spline {
 
         if ((Math.abs(relativeError.x) < minimumRobotThresholdFromEndPointInX)
                 && (Math.abs(relativeError.y) < minimumRobotThresholdFromEndPointInY)
-                && (Math.abs(relativeError.heading) < minimumRobotTurningThresholdFromEndPoint)) {
+                && (Math.abs(relativeError.heading) < minimumRobotTurningThresholdFromEndPoint * (points.get(0).mustGoToPoint ? 2 : 1))) {
             points.remove(0);
             if (points.size() == 0) {
                 return null;
@@ -127,7 +128,8 @@ public class Spline {
 
     public MyPose2d getLastPoint () {
         if (points.size() > 0) {
-            return points.get(points.size()-1);
+            MyPose2d toCopy = points.get(points.size() - 1);
+            return new MyPose2d(toCopy.x, toCopy.y, toCopy.heading);
         }
         return new MyPose2d(0,0,0);
     }
