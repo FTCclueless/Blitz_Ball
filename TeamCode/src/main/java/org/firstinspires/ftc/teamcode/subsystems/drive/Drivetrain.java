@@ -68,7 +68,7 @@ public class Drivetrain {
 
     double maxSpeed = 1.0;
     double minSpeed = 0.25;
-    double maxHeadingError = Math.toRadians(90);
+    double maxHeadingError = Math.toRadians(67.5);
 
     public void update () {
         if(!DRIVETRAIN_ENABLED) {return;}
@@ -82,8 +82,7 @@ public class Drivetrain {
         if (error != null) {
             double errorDistance = Math.sqrt(Math.pow(error.x,2) + Math.pow(error.y,2)); // distance equation
             boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 10.0;
-            double headingError = mustGoToPoint ? error.heading : Math.atan2(error.y,error.x); // if we want to go to point then we go to the heading otherwise we point to point
-            headingError += currentSplineToFollow.points.get(0).headingOffset;
+            double headingError = mustGoToPoint ? error.heading : Math.atan2(error.y,error.x) + currentSplineToFollow.points.get(0).headingOffset; // if we want to go to point then we go to the heading otherwise we point to point
             headingError = AngleUtil.clipAngle(headingError);
 
             double maxRadius = MyPose2d.maxDistanceFromPoint;

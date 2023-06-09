@@ -92,7 +92,7 @@ public class Spline {
         MyPose2d relativeError = new MyPose2d(
                 globalError.x*Math.cos(currentRobotPose.heading) + globalError.y*Math.sin(currentRobotPose.heading),
                 globalError.y*Math.cos(currentRobotPose.heading) - globalError.x*Math.sin(currentRobotPose.heading),
-                points.get(0).heading-currentRobotPose.heading);
+                points.get(0).heading+points.get(0).headingOffset-currentRobotPose.heading);
         relativeError.clipAngle();
 
         // checking if we have finished the spline
