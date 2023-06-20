@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.GET_LOOP_TIME;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.ArrayList;
@@ -11,7 +13,6 @@ public class MotorPriority {
     public double power = 0;
     long lastUpdateTime;
     public DcMotorEx[] motor; // if the subsystem has multiple motors (i.e. slides)
-    ArrayList<MotorPriority> motorPriorities;
 
     public MotorPriority(DcMotorEx a, double basePriority, double priorityScale){
         this.basePriority = basePriority;
@@ -54,7 +55,27 @@ public class MotorPriority {
         lastPower = power;
     }
 
-    public void getMotorPriorities (ArrayList<MotorPriority> motorPriorities) {
-        this.motorPriorities = motorPriorities;
+    public static void updateMotors(ArrayList<MotorPriority> motorPriorities) {
+        double bestMotorUpdate = 1;
+        double targetLoopLength = 0.010; // sets the target loop time in milli seconds
+        double loopTime = GET_LOOP_TIME(); // finds loopTime in seconds
+
+        while (bestMotorUpdate > 0 && loopTime <= targetLoopLength) { // updates the motors while still time remaining in the loop
+            int bestIndex = 0;
+            bestMotorUpdate = motorPriorities.get(0).getPriority(targetLoopLength - loopTime);
+
+            // finds motor that needs updating the most
+            for (int i = 1; i < motorPriorities.size(); i++) { //finding the motor that is most in need of being updated;
+                double currentMotor = motorPriorities.get(i).getPriority(targetLoopLength - loopTime);
+                if (currentMotor > bestMotorUpdate) {
+                    bestIndex = i;
+                    bestMotorUpdate = currentMotor;
+                }
+            }
+            if (bestMotorUpdate != 0) { // priority # of motor needing update the most
+                motorPriorities.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
+            }
+            loopTime = GET_LOOP_TIME();
+        }
     }
 }
