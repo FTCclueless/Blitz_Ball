@@ -30,8 +30,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new MyPose2d(0,5.5926264886),  -1); // left
-        encoders[1] = new Encoder(new MyPose2d(0,-5.6839121499),-1); // right
+        encoders[0] = new Encoder(new MyPose2d(0,5.724968),  -1); // left (5.48)
+        encoders[1] = new Encoder(new MyPose2d(0,-5.572898885),-1); // right (-5.9)
     }
 
     public void setIMU(IMU imu){

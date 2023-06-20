@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -26,9 +27,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Config
 public class Drivetrain {
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
+    public static double turnMultiplier = 0.1;
+    public static double speedFromEndDiv = 12;
+    public static double facDICKS = -0.005;
+    public static double maxSpeed = 0.65;
+    public static double minSpeed = 0.35;
+    public static double slowBelowDeg = 10;
+    public static double slowAboveDeg = 25;
+    public static double slowPercentageThresh = 0.04;
+    public static double turnSlownessAfterTurn = 0.2;
 
     private ArrayList<MotorPriority> motorPriorities;
     private Sensors sensors;
@@ -67,8 +78,7 @@ public class Drivetrain {
         localizer.setIMU(sensors.getImu());
     }
 
-    double maxSpeed = 1.0;
-    double minSpeed = 0.6;//0.35
+
     double maxHeadingError = Math.toRadians(95);
 
     public void update () {
@@ -96,7 +106,7 @@ public class Drivetrain {
 
             double speedFromRadiusPercentage = (smallestRadiusOfNextPoints-minRadius)/(maxRadius-minRadius); // Maximum forward speed based on the upcoming radius
             double speedFromHeadingErrorPercentage = Math.max((maxHeadingError - Math.abs(headingError))/maxHeadingError,0); // Maximum forward speed based on the current heading error
-            double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / 12.0 : 1; // slows down the robot when it reaches an end
+            double speedFromEndPercentage = mustGoToPoint ? Math.abs(error.x) / speedFromEndDiv : 1; // slows down the robot when it reaches an end
 
             double fwdSpeedPercentage = Math.min(speedFromRadiusPercentage,speedFromHeadingErrorPercentage);
             fwdSpeedPercentage = speedFromEndPercentage * Math.max(Math.min(fwdSpeedPercentage,maxSpeed),minSpeed); // we want the speed to slow down as we approach the point & minimum max speed
@@ -106,11 +116,11 @@ public class Drivetrain {
             double breakingFactor = 0.45; // scale factor for how much you wanna weigh current forward percentage into braking
             double differenceBetweenSetAndActual = fwdSpeedPercentage - currentFwdPercentage;
 
-            double fwd = Math.signum(error.x) * (fwdSpeedPercentage + Math.max(differenceBetweenSetAndActual * breakingFactor, -0.05)); // applies breaking power to slow it down, most breaking power applied is -0.3
+            double fwd = Math.signum(error.x) * (fwdSpeedPercentage + Math.max(differenceBetweenSetAndActual * breakingFactor, facDICKS)); // applies breaking power to slow it down, most breaking power applied is -0.3
             double turn = TRACK_WIDTH/2*headingError; // s=r*theta
-            turn *= 0.2;
-            if (Math.abs(headingError) > Math.toRadians(10) && Math.abs(headingError) < Math.toRadians(25) && currentTurnPercentage > 0.04) {
-                turn = -0.2 * Math.signum(turn);
+            turn *= turnMultiplier;
+            if (Math.abs(headingError) > Math.toRadians(slowBelowDeg) && Math.abs(headingError) < Math.toRadians(slowAboveDeg) && currentTurnPercentage > slowPercentageThresh) {
+                turn = -turnSlownessAfterTurn * Math.signum(turn);
             }
 
             double[] motorPowers = {

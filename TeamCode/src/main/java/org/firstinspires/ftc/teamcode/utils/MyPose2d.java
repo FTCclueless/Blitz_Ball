@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import com.acmerobotics.dashboard.config.Config;
+
+@Config
 public class MyPose2d {
     public double x;
     public double y;
@@ -33,8 +36,8 @@ public class MyPose2d {
         return heading;
     }
 
-    public static final double minDistanceFromPoint = 4.0;
-    public static final double maxDistanceFromPoint = 14.0;
+    public static double minDistanceFromPoint = 4.0;
+    public static double maxDistanceFromPoint = 20.0;
 
     public void setRadius(double radius) {
         this.radius = Math.min(maxDistanceFromPoint, Math.max(minDistanceFromPoint, radius));;
