@@ -36,7 +36,12 @@ public class HardwareQueue {
         functors[i].put(functor, args);
     }
 
+    /*public void addRequestVoid(VoidFunctor functor, HardwareBus bus, Object... args) {
+        // TODO For the jank
+    }*/
+
     public void update() {
-        // TODO tmrw
+        // Test
+        addRequest((a) -> a, HardwareBus.SERVO, (Object) 19);
     }
 }
