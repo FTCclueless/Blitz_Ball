@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.utils.Encoder;
-import org.firstinspires.ftc.teamcode.utils.MyPose2d;
+import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -16,13 +16,13 @@ public class TwoWheelLocalizer {
     public double y = 0;
     public double heading = 0;
 
-    MyPose2d currentPose = new MyPose2d(0,0,0);
-    MyPose2d currentVel = new MyPose2d(0,0,0);
-    public MyPose2d relCurrentVel = new MyPose2d(0,0,0);
-    MyPose2d currentPowerVector = new MyPose2d(0,0,0);
+    Pose2d currentPose = new Pose2d(0,0,0);
+    Pose2d currentVel = new Pose2d(0,0,0);
+    public Pose2d relCurrentVel = new Pose2d(0,0,0);
+    Pose2d currentPowerVector = new Pose2d(0,0,0);
 
-    ArrayList<MyPose2d> poseHistory = new ArrayList<MyPose2d>();
-    ArrayList<MyPose2d> relHistory = new ArrayList<MyPose2d>();
+    ArrayList<Pose2d> poseHistory = new ArrayList<Pose2d>();
+    ArrayList<Pose2d> relHistory = new ArrayList<Pose2d>();
     ArrayList<Double> loopTimeHistory = new ArrayList<Double>();
 
     IMU imu;
@@ -30,8 +30,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new MyPose2d(0,5.724968),  -1); // left
-        encoders[1] = new Encoder(new MyPose2d(0,-5.572898885),-1); // right
+        encoders[0] = new Encoder(new Pose2d(0,5.724968),  -1); // left
+        encoders[1] = new Encoder(new Pose2d(0,-5.572898885),-1); // right
     }
 
     public void setIMU(IMU imu){
@@ -50,16 +50,16 @@ public class TwoWheelLocalizer {
         this.heading += h - this.heading;
     }
 
-    public MyPose2d getPoseEstimate() {
-        return new MyPose2d(currentPose.x, currentPose.y, currentPose.heading);
+    public Pose2d getPoseEstimate() {
+        return new Pose2d(currentPose.x, currentPose.y, currentPose.heading);
     }
 
-    public void setPoseEstimate(MyPose2d pose2d) {
+    public void setPoseEstimate(Pose2d pose2d) {
         setPose(pose2d.getX(), pose2d.getY(), pose2d.getHeading());
     }
 
-    public MyPose2d getPoseVelocity() {
-        return new MyPose2d(currentVel.x, currentVel.y, currentVel.heading);
+    public Pose2d getPoseVelocity() {
+        return new Pose2d(currentVel.x, currentVel.y, currentVel.heading);
     }
 
     public void update() {
@@ -79,7 +79,7 @@ public class TwoWheelLocalizer {
         // This is a weighted average for the amount moved forward with the weights being how far away the other one is from the center
         double relDeltaX = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
 
-        relHistory.add(0,new MyPose2d(relDeltaX,relDeltaY,deltaHeading));
+        relHistory.add(0,new Pose2d(relDeltaX,relDeltaY,deltaHeading));
 
         if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined.
             double r1 = relDeltaX / deltaHeading;
@@ -92,7 +92,7 @@ public class TwoWheelLocalizer {
 
         heading += deltaHeading;
 
-        currentPose = new MyPose2d(x, y, heading);
+        currentPose = new Pose2d(x, y, heading);
 
         loopTimeHistory.add(0,loopTime);
         poseHistory.add(0,currentPose);
@@ -143,13 +143,13 @@ public class TwoWheelLocalizer {
         double averageHeadingVel = (poseHistory.get(0).getHeading() - poseHistory.get(lastIndex).getHeading()) / actualVelTime;
 
         // global velocity
-        currentVel = new MyPose2d(
+        currentVel = new Pose2d(
                 (poseHistory.get(0).getX() - poseHistory.get(lastIndex).getX()) / actualVelTime,
                 (poseHistory.get(0).getY() - poseHistory.get(lastIndex).getY()) / actualVelTime,
                 averageHeadingVel
         );
         // relative velocity (can't do final minus initial because relative has a heading component)
-        relCurrentVel = new MyPose2d(
+        relCurrentVel = new Pose2d(
                 (relDeltaXTotal) / actualVelTime,
                 (relDeltaYTotal) / actualVelTime,
                 averageHeadingVel

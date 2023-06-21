@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public class Drivetrain {
 
         updateLocalizer();
 
-        Pose estimate = localizer.getPoseEstimate();
+        Pose2d estimate = localizer.getPoseEstimate();
 
         TelemetryUtil.packet.put("done", doNotMove);
         TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
@@ -226,12 +226,12 @@ public class Drivetrain {
     }
 
     boolean breakFollowing = false;
-    Pose targetPose = new Pose(0,0,0);
+    Pose2d targetPose = new Pose2d(0,0,0);
     double xThreshold = 0.5;
     double yThreshold = 0.5;
     double headingThreshold = Math.toRadians(5.0);
 
-    public void setBreakFollowingThresholds (Pose thresholds, Pose targetPose) {
+    public void setBreakFollowingThresholds (Pose2d thresholds, Pose2d targetPose) {
         this.targetPose = targetPose;
         breakFollowing = true;
         xThreshold = thresholds.getX();
@@ -243,7 +243,7 @@ public class Drivetrain {
     //    currentSplineToFollow.points.clear();
     //}
 
-    public Pose getPoseEstimate() {
+    public Pose2d getPoseEstimate() {
         return localizer.getPoseEstimate();
     }
 
@@ -251,7 +251,7 @@ public class Drivetrain {
     //    currentSplineToFollow = spline;
     //}
 
-    public void setPoseEstimate(Pose pose2d) {
+    public void setPoseEstimate(Pose2d pose2d) {
         localizer.setPoseEstimate(pose2d);
     }
 

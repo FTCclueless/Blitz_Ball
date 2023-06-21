@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class Robot {
 
     public void updateDashboard() {
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-        Pose poseEstimate = drivetrain.getPoseEstimate();
+        Pose2d poseEstimate = drivetrain.getPoseEstimate();
 
         DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
         DashboardUtil.drawSampledPath(fieldOverlay, drivetrain.getCurrentPath());

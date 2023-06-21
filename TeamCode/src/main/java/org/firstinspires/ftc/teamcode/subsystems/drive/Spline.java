@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 import java.util.ArrayList;
 
-class RadialPose extends Pose {
+class RadialPose extends Pose2d {
     public final double radius;
 
     public RadialPose(double x, double y, double heading, double radius) {
@@ -12,7 +12,7 @@ class RadialPose extends Pose {
         this.radius = radius;
     }
 
-    public RadialPose(Pose p, double radius) {
+    public RadialPose(Pose2d p, double radius) {
         this(p.x, p.y, p.heading, radius);
     }
 }
@@ -21,18 +21,18 @@ public class Spline {
     public ArrayList<RadialPose> poses = new ArrayList<>();
     public final double inchesPerNewPointGenerated;
 
-    public Spline(Pose p, double inchesPerNewPointGenerated) {
+    public Spline(Pose2d p, double inchesPerNewPointGenerated) {
         poses.add(new RadialPose());
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
-    public Spline addSpline(Pose p) {
+    public Spline addSpline(Pose2d p) {
         // https://www.desmos.com/calculator/yi3jovk0hp
 
         double[] xCoefficents = new double[4];
         double[] yCoefficents = new double[4];
 
-        Pose lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
+        Pose2d lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
 
         double arbitraryVelocity = 1.25*Math.sqrt(Math.pow((lastPoint.x - p.x),2) + Math.pow((lastPoint.y - p.y),2));
 
@@ -47,7 +47,7 @@ public class Spline {
         yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
         for (double time = 0.0; time < 1.0; time+=0.001) {
-            Pose point = new Pose(0,0,0);
+            Pose2d point = new Pose2d(0,0,0);
 
             point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
             point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
@@ -75,7 +75,7 @@ public class Spline {
         return this;
     }
 
-    public Pose getLastPoint() {
+    public Pose2d getLastPoint() {
         if (poses.size() > 0) {
             return poses.get(poses.size() - 1);
         }

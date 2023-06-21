@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 @Autonomous(group = "Auto")
 public class PurePursuitTest extends LinearOpMode {
@@ -15,9 +15,9 @@ public class PurePursuitTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Drivetrain drivetrain = robot.drivetrain;
 
-        drivetrain.setPoseEstimate(new Pose(0, 0, 0));
+        drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
         Spline spline = new Spline(drivetrain.getPoseEstimate(), 4)
-            .addSpline(new Pose(25, 25, Math.PI / 2));
+            .addSpline(new Pose2d(25, 25, Math.PI / 2));
 
         waitForStart();
         robot.followSpline(spline, this);
