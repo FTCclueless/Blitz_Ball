@@ -107,7 +107,7 @@ public class Drivetrain {
                 }
             }
 
-            double fwd = 0.5;
+            double fwd = currentPath.poses.get(pathIndex).radius*errorHeading;
             double turn = TRACK_WIDTH / 2 * errorHeading;
             double[] motorPowers = {
                 fwd - turn,

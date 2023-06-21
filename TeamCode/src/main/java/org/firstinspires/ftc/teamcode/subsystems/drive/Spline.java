@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import java.util.ArrayList;
 
 class RadialPose extends Pose2d {
-    public final double radius;
+    public double radius;
 
     public RadialPose(double x, double y, double heading, double radius) {
         super(x, y, heading);
@@ -22,7 +22,8 @@ public class Spline {
     public final double inchesPerNewPointGenerated;
 
     public Spline(Pose2d p, double inchesPerNewPointGenerated) {
-        poses.add(new RadialPose());
+        poses.add(new RadialPose(p,0));
+
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
@@ -32,7 +33,7 @@ public class Spline {
         double[] xCoefficents = new double[4];
         double[] yCoefficents = new double[4];
 
-        Pose2d lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
+        RadialPose lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
 
         double arbitraryVelocity = 1.25*Math.sqrt(Math.pow((lastPoint.x - p.x),2) + Math.pow((lastPoint.y - p.y),2));
 
@@ -46,31 +47,39 @@ public class Spline {
         yCoefficents[2] = 3*p.y - arbitraryVelocity*Math.sin(p.heading) - 2*yCoefficents[1] - 3*yCoefficents[0];
         yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
+        double velX = 0, velY = 0, accelX = 0, accelY = 0;
+
         for (double time = 0.0; time < 1.0; time+=0.001) {
-            Pose2d point = new Pose2d(0,0,0);
+            RadialPose point = new RadialPose(0,0,0, 0);
 
             point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
             point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
 
-            if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
-                // gets the velocity because the derivative of position = velocity
-                double velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
-                double velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
+            // gets the velocity because the derivative of position = velocity
+            velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
+            velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
 
-                // gets the acceleration which is second derivative of position
-                double accelX = 2.0 + 6.0*xCoefficents[3]*time;
-                double accelY = 2.0 + 6.0*xCoefficents[3]*time;
+            // gets the acceleration which is second derivative of position
+            accelX = 2.0 + 6.0*xCoefficents[3]*time;
+            accelY = 2.0 + 6.0*xCoefficents[3]*time;
+
+            if (lastPoint.radius == 0) {
+                point.radius = Math.pow((velX*velX+velY),3.0/2)/(accelY*velX+accelX*velY);
+            }
+
+            if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
-                double radius = Math.pow((velX*velX+velY),3.0/2)/(accelY*velX+accelX*velY);
+                point.radius = Math.pow((velX*velX+velY),3.0/2)/(accelY*velX+accelX*velY);
 
-                poses.add(new RadialPose(point.x,point.y,point.heading,radius));
+                poses.add(point);
+
                 lastPoint = point;
             }
         }
-        poses.add(p);
+        poses.add(new RadialPose(p, Math.pow((velX*velX+velY),3.0/2)/(accelY*velX+accelX*velY)));
 
         return this;
     }
