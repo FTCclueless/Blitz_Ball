@@ -8,7 +8,7 @@ public class Encoder {
     public double x;
     public double y;
 
-    public Encoder (MyPose2d point, double scaleFactor) {
+    public Encoder (Pose point, double scaleFactor) {
         double ticksPerRotation = 8192.0;
         double wheelRadius = 0.6889764;
         ticksToInches = (wheelRadius * Math.PI * 2.0) / ticksPerRotation;

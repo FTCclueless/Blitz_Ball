@@ -1,26 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.DRIVETRAIN_ENABLED;
-import static org.firstinspires.ftc.teamcode.utils.Globals.MAX_DRIVETRAIN_SPEED;
-import static org.firstinspires.ftc.teamcode.utils.Globals.MIN_MOTOR_POWER_TO_OVERCOME_FRICTION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
-import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.MyPose2d;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -29,24 +22,19 @@ import java.util.List;
 
 @Config
 public class Drivetrain {
+    // Pure pursuit tuning values
+
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
-    public static double turnMultiplier = 0.1;
-    public static double speedFromEndDiv = 12;
-    public static double facDICKS = -0.005;
-    public static double maxSpeed = 0.65;
-    public static double minSpeed = 0.35;
-    public static double slowBelowDeg = 10;
-    public static double slowAboveDeg = 25;
-    public static double slowPercentageThresh = 0.04;
-    public static double turnSlownessAfterTurn = 0.2;
 
     private ArrayList<MotorPriority> motorPriorities;
     private Sensors sensors;
 
     public TwoWheelLocalizer localizer;
+    private boolean doNotMove = false;
 
-    public Spline currentSplineToFollow = new Spline(new MyPose2d(0,0,0));
+    private Spline currentPath = null;
+    private int pathIndex = 0;
 
     public Drivetrain(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.motorPriorities = motorPriorities;
@@ -78,6 +66,14 @@ public class Drivetrain {
         localizer.setIMU(sensors.getImu());
     }
 
+    public void setCurrentPath(Spline path) {
+        currentPath = path;
+        pathIndex = 0;
+    }
+
+    public Spline getCurrentPath() {
+        return currentPath;
+    }
 
     double maxHeadingError = Math.toRadians(95);
 
@@ -86,18 +82,62 @@ public class Drivetrain {
 
         updateLocalizer();
 
-        MyPose2d estimate = localizer.getPoseEstimate();
-        MyPose2d error = currentSplineToFollow.getErrorFromNextPoint(estimate); // signal is null when in teleop only in auto do we have signal
+        Pose estimate = localizer.getPoseEstimate();
 
-        // pure pursuit follower
+        TelemetryUtil.packet.put("done", doNotMove);
+        TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
+        if (doNotMove) {
+            // TODO its kinda bad
+            for (DcMotorEx motor : motors) {
+                motor.setPower(0);
+            }
+        }
+
+        if (currentPath != null) {
+            double errorHeading = currentPath.poses.get(pathIndex).heading - estimate.heading;
+
+            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= currentPath.inchesPerNewPointGenerated) {
+                pathIndex++;
+
+                // It's at the end
+                if (pathIndex >= currentPath.poses.size()) {
+                    // Break lol
+                    doNotMove = true;
+                    return;
+                }
+            }
+
+            double fwd = 0.5;
+            double turn = TRACK_WIDTH / 2 * errorHeading;
+            double[] motorPowers = {
+                fwd - turn,
+                fwd - turn,
+                fwd + turn,
+                fwd + turn
+            };
+
+            // Post 1 normalization
+            double max = 1.0;
+            for (double power : motorPowers) {
+                max = Math.max(max, power);
+            }
+
+            for (int i = 0; i < motorPowers.length; i++) {
+                motorPowers[i] /= max;
+
+                motorPriorities.get(i).setTargetPower(motorPowers[i]);
+            }
+        }
+
+        /*// pure pursuit follower
         if (error != null) {
             double errorDistance = Math.sqrt(Math.pow(error.x,2) + Math.pow(error.y,2)); // distance equation
             boolean mustGoToPoint = (currentSplineToFollow.points.get(0).mustGoToPoint || currentSplineToFollow.points.size() == 1) && errorDistance < 10.0;
             double headingError = mustGoToPoint ? error.heading : Math.atan2(error.y,error.x) + currentSplineToFollow.points.get(0).headingOffset; // if we want to go to point then we go to the heading otherwise we point to point
             headingError = AngleUtil.clipAngle(headingError);
 
-            double maxRadius = MyPose2d.maxDistanceFromPoint;
-            double minRadius = MyPose2d.minDistanceFromPoint;
+            double maxRadius = Pose.maxDistanceFromPoint;
+            double minRadius = Pose.minDistanceFromPoint;
             double smallestRadiusOfNextPoints = currentSplineToFollow.points.get(0).radius;
             TelemetryUtil.packet.put("radius", smallestRadiusOfNextPoints);
             //for (int i = 1; i < Math.min(currentSplineToFollow.points.size()-1,1); i++)  { // finding smallest radius for next 5 points
@@ -139,15 +179,15 @@ public class Drivetrain {
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
                 motorPriorities.get(i).setTargetPower(motorPowers[i]);
             }
-        }
+        }*/
 
-        if((breakFollowing)
+        /*if((breakFollowing)
                 && (Math.abs(estimate.getX() - targetPose.getX()) < xThreshold)
                 && (Math.abs(estimate.getY() - targetPose.getY()) < yThreshold)
                 && (Math.abs(estimate.getHeading() - targetPose.getHeading()) < headingThreshold)) {
             breakFollowing();
             setMotorPowers(0,0,0,0);
-        }
+        }*/
     }
 
     public void updateLocalizer() {
@@ -186,12 +226,12 @@ public class Drivetrain {
     }
 
     boolean breakFollowing = false;
-    MyPose2d targetPose = new MyPose2d(0,0,0);
+    Pose targetPose = new Pose(0,0,0);
     double xThreshold = 0.5;
     double yThreshold = 0.5;
     double headingThreshold = Math.toRadians(5.0);
 
-    public void setBreakFollowingThresholds (MyPose2d thresholds, MyPose2d targetPose) {
+    public void setBreakFollowingThresholds (Pose thresholds, Pose targetPose) {
         this.targetPose = targetPose;
         breakFollowing = true;
         xThreshold = thresholds.getX();
@@ -199,23 +239,23 @@ public class Drivetrain {
         headingThreshold = thresholds.getHeading();
     }
 
-    public void breakFollowing() {
-        currentSplineToFollow.points.clear();
-    }
+    //public void breakFollowing() {
+    //    currentSplineToFollow.points.clear();
+    //}
 
-    public MyPose2d getPoseEstimate() {
+    public Pose getPoseEstimate() {
         return localizer.getPoseEstimate();
     }
 
-    public void setSpline(Spline spline) {
-        currentSplineToFollow = spline;
-    }
+    //public void setSpline(Spline spline) {
+    //    currentSplineToFollow = spline;
+    //}
 
-    public void setPoseEstimate(MyPose2d pose2d) {
+    public void setPoseEstimate(Pose pose2d) {
         localizer.setPoseEstimate(pose2d);
     }
 
     public boolean isBusy() {
-        return currentSplineToFollow.points.size() != 0;
+        return !doNotMove;
     }
 }

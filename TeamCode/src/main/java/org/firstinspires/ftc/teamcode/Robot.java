@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.MyPose2d;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -57,21 +57,21 @@ public class Robot {
 
     public void updateDashboard() {
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-        MyPose2d poseEstimate = drivetrain.getPoseEstimate();
+        Pose poseEstimate = drivetrain.getPoseEstimate();
 
         DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
-        DashboardUtil.drawSampledPath(fieldOverlay, drivetrain.currentSplineToFollow);
+        DashboardUtil.drawSampledPath(fieldOverlay, drivetrain.getCurrentPath());
     }
 
     public void followSplineWithTimer(Spline trajectory, LinearOpMode opMode, long startTime) {
-        drivetrain.setSpline(trajectory);
+        drivetrain.setCurrentPath(trajectory);
         while(drivetrain.isBusy() && (opMode.opModeIsActive() || (System.currentTimeMillis() - startTime >= 29500 && System.currentTimeMillis() - startTime <= 30800))) {
             update();
         }
     }
 
     public void followSpline(Spline spline, LinearOpMode opMode) {
-        drivetrain.setSpline(spline);
+        drivetrain.setCurrentPath(spline);
         while(drivetrain.isBusy() && opMode.opModeIsActive()) {
             update();
         }
