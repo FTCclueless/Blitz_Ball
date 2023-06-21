@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.utils.Encoder;
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.MyPose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
@@ -16,13 +16,13 @@ public class TwoWheelLocalizer {
     public double y = 0;
     public double heading = 0;
 
-    Pose currentPose = new Pose(0,0,0);
-    Pose currentVel = new Pose(0,0,0);
-    public Pose relCurrentVel = new Pose(0,0,0);
-    Pose currentPowerVector = new Pose(0,0,0);
+    MyPose2d currentPose = new MyPose2d(0,0,0);
+    MyPose2d currentVel = new MyPose2d(0,0,0);
+    public MyPose2d relCurrentVel = new MyPose2d(0,0,0);
+    MyPose2d currentPowerVector = new MyPose2d(0,0,0);
 
-    ArrayList<Pose> poseHistory = new ArrayList<Pose>();
-    ArrayList<Pose> relHistory = new ArrayList<Pose>();
+    ArrayList<MyPose2d> poseHistory = new ArrayList<MyPose2d>();
+    ArrayList<MyPose2d> relHistory = new ArrayList<MyPose2d>();
     ArrayList<Double> loopTimeHistory = new ArrayList<Double>();
 
     IMU imu;
@@ -30,8 +30,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new Pose(0,5.724968),  -1); // left (5.48)
-        encoders[1] = new Encoder(new Pose(0,-5.572898885),-1); // right (-5.9)
+        encoders[0] = new Encoder(new MyPose2d(0,5.724968),  -1); // left
+        encoders[1] = new Encoder(new MyPose2d(0,-5.572898885),-1); // right
     }
 
     public void setIMU(IMU imu){
@@ -50,16 +50,16 @@ public class TwoWheelLocalizer {
         this.heading += h - this.heading;
     }
 
-    public Pose getPoseEstimate() {
-        return new Pose(currentPose.x, currentPose.y, currentPose.heading);
+    public MyPose2d getPoseEstimate() {
+        return new MyPose2d(currentPose.x, currentPose.y, currentPose.heading);
     }
 
-    public void setPoseEstimate(Pose pose2d) {
+    public void setPoseEstimate(MyPose2d pose2d) {
         setPose(pose2d.getX(), pose2d.getY(), pose2d.getHeading());
     }
 
-    public Pose getPoseVelocity() {
-        return new Pose(currentVel.x, currentVel.y, currentVel.heading);
+    public MyPose2d getPoseVelocity() {
+        return new MyPose2d(currentVel.x, currentVel.y, currentVel.heading);
     }
 
     public void update() {
@@ -74,21 +74,25 @@ public class TwoWheelLocalizer {
 
         // This is the heading because the heading is proportional to the difference between the left and right wheel.
         double deltaHeading = (deltaRight - deltaLeft)/(leftY-rightY);
+        // Tank drive has no relative delta Y
+        double relDeltaY = 0.0;
         // This is a weighted average for the amount moved forward with the weights being how far away the other one is from the center
-        double relDelta = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
+        double relDeltaX = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
 
-        relHistory.add(0,new Pose(relDelta,0.0,deltaHeading));
+        relHistory.add(0,new MyPose2d(relDeltaX,relDeltaY,deltaHeading));
 
-        if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined. This effectively does L'Hopital's
-            double r1 = relDelta / deltaHeading;
-            relDelta = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading));
+        if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined.
+            double r1 = relDeltaX / deltaHeading;
+            double r2 = relDeltaY / deltaHeading;
+            relDeltaX = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading)) * r2;
+            relDeltaY = (1.0 - Math.cos(deltaHeading)) * r1 + Math.sin(deltaHeading) * r2;
         }
-        x += relDelta * Math.cos(heading);
-        y += relDelta * Math.sin(heading);
+        x += relDeltaX * Math.cos(heading) - relDeltaY * Math.sin(heading);
+        y += relDeltaY * Math.cos(heading) + relDeltaX * Math.sin(heading);
 
         heading += deltaHeading;
 
-        currentPose = new Pose(x, y, heading);
+        currentPose = new MyPose2d(x, y, heading);
 
         loopTimeHistory.add(0,loopTime);
         poseHistory.add(0,currentPose);
@@ -139,13 +143,13 @@ public class TwoWheelLocalizer {
         double averageHeadingVel = (poseHistory.get(0).getHeading() - poseHistory.get(lastIndex).getHeading()) / actualVelTime;
 
         // global velocity
-        currentVel = new Pose(
+        currentVel = new MyPose2d(
                 (poseHistory.get(0).getX() - poseHistory.get(lastIndex).getX()) / actualVelTime,
                 (poseHistory.get(0).getY() - poseHistory.get(lastIndex).getY()) / actualVelTime,
                 averageHeadingVel
         );
         // relative velocity (can't do final minus initial because relative has a heading component)
-        relCurrentVel = new Pose(
+        relCurrentVel = new MyPose2d(
                 (relDeltaXTotal) / actualVelTime,
                 (relDeltaYTotal) / actualVelTime,
                 averageHeadingVel
