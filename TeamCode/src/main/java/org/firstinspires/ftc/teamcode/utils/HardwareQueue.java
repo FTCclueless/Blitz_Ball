@@ -36,12 +36,16 @@ public class HardwareQueue {
         functors[i].put(functor, args);
     }
 
+    public int returnInt(int x) {
+        return x;
+    }
+
     /*public void addRequestVoid(VoidFunctor functor, HardwareBus bus, Object... args) {
         // TODO For the jank
     }*/
 
     public void update() {
         // Test
-        addRequest((a) -> a, HardwareBus.SERVO, (Object) 19);
+        addRequest((Object... args) -> returnInt((Integer) args[0]), HardwareBus.ANALOG, 19);
     }
 }
