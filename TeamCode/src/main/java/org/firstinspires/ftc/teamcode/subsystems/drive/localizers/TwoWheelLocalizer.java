@@ -81,7 +81,7 @@ public class TwoWheelLocalizer {
 
         relHistory.add(0,new MyPose2d(relDeltaX,relDeltaY,deltaHeading));
 
-        if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined. This effectively does L'Hopital's
+        if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined.
             double r1 = relDeltaX / deltaHeading;
             double r2 = relDeltaY / deltaHeading;
             relDeltaX = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading)) * r2;
