@@ -30,8 +30,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new MyPose2d(0,5.724968),  -1); // left (5.48)
-        encoders[1] = new Encoder(new MyPose2d(0,-5.572898885),-1); // right (-5.9)
+        encoders[0] = new Encoder(new MyPose2d(0,5.724968),  -1); // left
+        encoders[1] = new Encoder(new MyPose2d(0,-5.572898885),-1); // right
     }
 
     public void setIMU(IMU imu){
@@ -74,17 +74,21 @@ public class TwoWheelLocalizer {
 
         // This is the heading because the heading is proportional to the difference between the left and right wheel.
         double deltaHeading = (deltaRight - deltaLeft)/(leftY-rightY);
+        // Tank drive has no relative delta Y
+        double relDeltaY = 0.0;
         // This is a weighted average for the amount moved forward with the weights being how far away the other one is from the center
-        double relDelta = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
+        double relDeltaX = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
 
-        relHistory.add(0,new MyPose2d(relDelta,0.0,deltaHeading));
+        relHistory.add(0,new MyPose2d(relDeltaX,relDeltaY,deltaHeading));
 
         if (deltaHeading != 0) { // this avoids the issue where deltaHeading = 0 and then it goes to undefined. This effectively does L'Hopital's
-            double r1 = relDelta / deltaHeading;
-            relDelta = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading));
+            double r1 = relDeltaX / deltaHeading;
+            double r2 = relDeltaY / deltaHeading;
+            relDeltaX = Math.sin(deltaHeading) * r1 - (1.0 - Math.cos(deltaHeading)) * r2;
+            relDeltaY = (1.0 - Math.cos(deltaHeading)) * r1 + Math.sin(deltaHeading) * r2;
         }
-        x += relDelta * Math.cos(heading);
-        y += relDelta * Math.sin(heading);
+        x += relDeltaX * Math.cos(heading) - relDeltaY * Math.sin(heading);
+        y += relDeltaY * Math.cos(heading) + relDeltaX * Math.sin(heading);
 
         heading += deltaHeading;
 
