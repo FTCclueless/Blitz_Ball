@@ -97,8 +97,13 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            double errorHeading = AngleUtil.clipAngle(currentPath.poses.get(pathIndex).heading - estimate.heading);
-            TelemetryUtil.packet.put("errorHeading", errorHeading);
+            Pose2d currentPose = currentPath.poses.get(pathIndex);
+            Pose2d error = new Pose2d(
+                currentPose.x - estimate.x,
+                currentPose.y - estimate.y,
+                AngleUtil.clipAngle(currentPose.heading - estimate.heading)
+            );
+            TelemetryUtil.packet.put("errorHeading", error.heading);
 
             while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= currentPath.inchesPerNewPointGenerated) {
                 pathIndex++;
@@ -111,8 +116,10 @@ public class Drivetrain {
                 }
             }
 
-            double turn = TRACK_WIDTH / 2 * errorHeading;
-            double fwd = -currentPath.poses.get(pathIndex).radius * errorHeading;
+            double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
+            double theta = Math.atan2(error.y, radius - error.x);
+            double turn = TRACK_WIDTH / 2 * theta;
+            double fwd = -radius * theta;
             double[] motorPowers = {
                 fwd - turn,
                 fwd - turn,
