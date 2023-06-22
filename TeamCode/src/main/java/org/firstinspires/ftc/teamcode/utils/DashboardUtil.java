@@ -32,7 +32,17 @@ public class DashboardUtil {
             Pose2d pose = spline.poses.get(i);
             xPoints[i] = pose.getX();
             yPoints[i] = pose.getY();
+            canvas.setFill("#ff0000");
+            canvas.fillCircle(pose.x, pose.y, 3);
+            canvas.setStroke("#00ff00");
+            canvas.strokeLine(
+                pose.x + Math.cos(pose.heading) * 10,
+                pose.y + Math.sin(pose.heading) * 10,
+                pose.x - Math.cos(pose.heading) * 10,
+                pose.y - Math.sin(pose.heading) * 10
+            );
         }
+        canvas.setStroke("#000000");
         canvas.strokePolyline(xPoints, yPoints);
         canvas.strokeCircle(spline.getLastPoint().x, spline.getLastPoint().y, 6);
     }

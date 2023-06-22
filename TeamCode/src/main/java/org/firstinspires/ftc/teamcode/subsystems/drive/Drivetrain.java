@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.DRIVETRAIN_ENABLED;
+import static org.firstinspires.ftc.teamcode.utils.Globals.MIN_MOTOR_POWER_TO_OVERCOME_FRICTION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -12,6 +13,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -91,10 +93,12 @@ public class Drivetrain {
             for (DcMotorEx motor : motors) {
                 motor.setPower(0);
             }
+            return;
         }
 
         if (currentPath != null) {
-            double errorHeading = currentPath.poses.get(pathIndex).heading - estimate.heading;
+            double errorHeading = AngleUtil.clipAngle(currentPath.poses.get(pathIndex).heading - estimate.heading);
+            TelemetryUtil.packet.put("errorHeading", errorHeading);
 
             while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= currentPath.inchesPerNewPointGenerated) {
                 pathIndex++;
@@ -107,23 +111,30 @@ public class Drivetrain {
                 }
             }
 
-            double fwd = currentPath.poses.get(pathIndex).radius*errorHeading;
             double turn = TRACK_WIDTH / 2 * errorHeading;
+            double fwd = -currentPath.poses.get(pathIndex).radius * errorHeading;
             double[] motorPowers = {
                 fwd - turn,
                 fwd - turn,
                 fwd + turn,
                 fwd + turn
             };
+            TelemetryUtil.packet.put("fwd", fwd);
+            TelemetryUtil.packet.put("turn", turn);
 
             // Post 1 normalization
-            double max = 1.0;
+            double max = 1;
             for (double power : motorPowers) {
                 max = Math.max(max, power);
             }
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
+                motorPowers[i] /= 5;
+                motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
+                motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
+                TelemetryUtil.packet.put("Max", max);
+                TelemetryUtil.packet.put("Motor power", motorPowers[0] + " " + motorPowers[1] + " " + motorPowers[2] + " " + motorPowers[3]);
 
                 motorPriorities.get(i).setTargetPower(motorPowers[i]);
             }
