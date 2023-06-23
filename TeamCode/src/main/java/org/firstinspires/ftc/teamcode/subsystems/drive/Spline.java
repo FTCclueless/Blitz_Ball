@@ -24,7 +24,15 @@ public class Spline {
         Pose2d lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
 
         double arbitraryVelocity = 1.25*Math.sqrt(Math.pow((lastPoint.x - p.x),2) + Math.pow((lastPoint.y - p.y),2));
+        xCoefficents[0] = lastPoint.x;
+        xCoefficents[1] = arbitraryVelocity * Math.cos(lastPoint.heading);
+        xCoefficents[2] = 3*p.x - arbitraryVelocity*Math.cos(p.heading) - 2*xCoefficents[1] - 3*xCoefficents[0];
+        xCoefficents[3] = p.x - xCoefficents[0] - xCoefficents[1] - xCoefficents[2];
 
+        yCoefficents[0] = lastPoint.y;
+        yCoefficents[1] = arbitraryVelocity * Math.sin(lastPoint.heading);
+        yCoefficents[2] = 3*p.y - arbitraryVelocity*Math.sin(p.heading) - 2*yCoefficents[1] - 3*yCoefficents[0];
+        yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
 
         double velX = 0, velY = 0, accelX = 0, accelY = 0   ;
@@ -36,15 +44,7 @@ public class Spline {
             point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
 
 
-            xCoefficents[0] = lastPoint.x;
-            xCoefficents[1] = arbitraryVelocity * Math.cos(lastPoint.heading);
-            xCoefficents[2] = 3*p.x - arbitraryVelocity*Math.cos(p.heading) - 2*xCoefficents[1] - 3*xCoefficents[0];
-            xCoefficents[3] = p.x - xCoefficents[0] - xCoefficents[1] - xCoefficents[2];
 
-            yCoefficents[0] = lastPoint.y;
-            yCoefficents[1] = arbitraryVelocity * Math.sin(lastPoint.heading);
-            yCoefficents[2] = 3*p.y - arbitraryVelocity*Math.sin(p.heading) - 2*yCoefficents[1] - 3*yCoefficents[0];
-            yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
 
             if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
