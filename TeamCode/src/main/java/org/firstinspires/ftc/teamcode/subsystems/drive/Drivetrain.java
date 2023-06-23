@@ -114,7 +114,7 @@ public class Drivetrain {
             Pose2d error = new Pose2d(
                 currentPose.x - estimate.x,
                 currentPose.y - estimate.y,
-                    0
+                0
 
             );
             double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
