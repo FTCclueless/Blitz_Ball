@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.Vector2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
+    public static double lookAhead = 5;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -97,13 +99,25 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            Pose2d currentPose = currentPath.poses.get(pathIndex);
+            Vector2 currentPose = new Vector2(currentPath.poses.get(pathIndex).x,currentPath.poses.get(pathIndex).y);
+            for (int i = pathIndex; i < currentPath.poses.size(); i++) {
+                if (pathIndex != currentPath.poses.size()) {
+
+                    Vector2 balls = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, lookAhead);
+                    if (balls != null) {
+                        currentPose = balls;
+                    }
+                }
+
+            }
+
             Pose2d error = new Pose2d(
                 currentPose.x - estimate.x,
                 currentPose.y - estimate.y,
-                AngleUtil.clipAngle(currentPose.heading - estimate.heading)
+                    0
+
             );
-            TelemetryUtil.packet.put("errorHeading", error.heading);
+
 
             while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= currentPath.inchesPerNewPointGenerated) {
                 pathIndex++;
@@ -116,10 +130,14 @@ public class Drivetrain {
                 }
             }
 
+
             double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
             double theta = Math.atan2(error.y, radius - error.x);
+
+            TelemetryUtil.packet.put("errorHeading", theta);
+
             double turn = TRACK_WIDTH / 2 * theta;
-            double fwd = -radius * theta;
+            double fwd = radius * theta;
             double[] motorPowers = {
                 fwd - turn,
                 fwd - turn,
@@ -275,5 +293,43 @@ public class Drivetrain {
 
     public boolean isBusy() {
         return !doNotMove;
+    }
+
+    public Vector2 lineCircleIntersection(Pose2d start, Pose2d end, Pose2d robot, double radius) {
+        //https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm/1084899#1084899
+
+        Vector2 direction = new Vector2(end.x - start.x,end.y - start.y);
+        Vector2 robot2start = new Vector2(robot.x-start.x, robot.y-start.y);
+
+        double a = Vector2.dot(direction,direction);
+        double b = 2*Vector2.dot(robot2start,direction);
+
+        double c = Vector2.dot(robot2start,robot2start) - radius*radius;
+
+        double discriminant = b*b-4*a*c;
+
+        if (discriminant<0) {
+            return null;
+        }
+        else {
+            discriminant = Math.sqrt(discriminant);
+            double t1 = (-b+discriminant)/2;
+            double t2 = (-b - discriminant)/2;
+
+            if ((t1 >=0) && (t1 <= 1)) {
+                direction.mul(t1);
+                return Vector2.add(direction, new Vector2(start.x, start.y));
+            }
+            if ((t2 >=0) && (t2 <= 1) ){
+                direction.mul(t1);
+                return Vector2.add(direction,new Vector2(start.x,start.y));
+            }
+            else {
+                return null;
+            }
+
+        }
+
+
     }
 }
