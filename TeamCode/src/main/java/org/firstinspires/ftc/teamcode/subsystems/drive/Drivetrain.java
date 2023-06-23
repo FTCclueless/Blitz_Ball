@@ -117,9 +117,11 @@ public class Drivetrain {
                     0
 
             );
+            double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
+            double theta = Math.atan2(error.y, radius - error.x);
 
 
-            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= currentPath.inchesPerNewPointGenerated) {
+            while (estimate.getDistanceFromPoint(new Pose2d(currentPose.x,currentPose.y,theta)) <= currentPath.inchesPerNewPointGenerated) {
                 pathIndex++;
 
                 // It's at the end
@@ -131,8 +133,7 @@ public class Drivetrain {
             }
 
 
-            double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
-            double theta = Math.atan2(error.y, radius - error.x);
+
 
             TelemetryUtil.packet.put("errorHeading", theta);
 
