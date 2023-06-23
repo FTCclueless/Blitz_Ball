@@ -32,6 +32,9 @@ public class Spline {
         for (double time = 0.0; time < 1.0; time+=0.001) {
             Pose2d point = new Pose2d(0,0,0);
 
+            point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
+            point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
+
 
             xCoefficents[0] = lastPoint.x;
             xCoefficents[1] = arbitraryVelocity * Math.cos(lastPoint.heading);
@@ -45,8 +48,6 @@ public class Spline {
 
 
             if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
-                point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
-                point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
 
                 // gets the velocity because the derivative of position = velocity
                 velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
