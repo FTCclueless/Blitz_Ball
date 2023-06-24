@@ -47,6 +47,11 @@ public class Vector2 {
         y /= mag;
     }
 
+    public void add(Vector2 a) {
+        x += a.x;
+        y += a.y;
+    }
+
     public String toString() {
         return String.format("(%f, %f)", x, y);
     }

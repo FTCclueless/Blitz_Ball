@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.DRIVETRAIN_ENABLED;
 import static org.firstinspires.ftc.teamcode.utils.Globals.MIN_MOTOR_POWER_TO_OVERCOME_FRICTION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -97,7 +99,20 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
+            Canvas canvas = TelemetryUtil.packet.fieldOverlay();
+            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
+                pathIndex++;
+
+                // It's at the end
+                if (pathIndex >= currentPath.poses.size()) {
+                    // Break lol
+                    doNotMove = true;
+                    return;
+                }
+            }*/
+
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
+
             /*Vector2 temp;
             double tempLookAheadR = Drivetrain.lookAheadRadius;
             Vector2 lookAhead = null;
@@ -116,9 +131,12 @@ public class Drivetrain {
             }*/
             double tempLookAheadR = lookAheadRadius;
 
-            Pose2d lookAhead = currentPath.poses.get(pathIndex);
-            lookAhead = new Pose2d(24, 24, 0);
-            TelemetryUtil.packet.put("lookAhead", lookAhead);
+            Vector2 lookAhead = new Vector2(48, 48);
+
+            // Plot the lookahead point
+            canvas.setFill("#ff0000");
+            canvas.fillCircle(lookAhead.x, lookAhead.y, 1.5);
+
             Pose2d error = new Pose2d(
                 lookAhead.x - estimate.x,
                 lookAhead.y - estimate.y,
@@ -128,26 +146,45 @@ public class Drivetrain {
             double a = -Math.tan(estimate.heading);
             double b = 1;
             double c = Math.tan(estimate.heading)*estimate.x-estimate.y;
+            TelemetryUtil.packet.put("abc", a + " " + b + " " + c);
 
 
-            double relativeErrorY = Math.abs(a*error.x+b*error.y+c)/Math.sqrt(a*a+b*b);
-            double relativeErrorX = Math.sqrt(Math.pow(error.x*error.x + error.y*error.y,2)-Math.pow(relativeErrorY,2));
+            double relativeErrorY = Math.abs(a*lookAhead.x+b*lookAhead.y+c)/Math.sqrt(a*a+b*b);
+            double relativeErrorX = Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2)));
+            TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
-            double radius = (Math.pow(tempLookAheadR,2)) / (2 * Math.abs(relativeErrorY));
+            double radius = (relativeErrorX*relativeErrorX+relativeErrorY*relativeErrorY) / (2 * Math.abs(relativeErrorY));
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
-            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
-                pathIndex++;
+            // Plot the circle thing
+            canvas.setStroke("#0000ff");
+            Vector2 perp = new Vector2(-Math.sin(estimate.heading),Math.cos(estimate.heading));
+            perp.norm();
+            perp.mul(radius);
+            perp.add(new Vector2(estimate.x, estimate.y));
+            canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
+            canvas.strokeCircle(perp.x, perp.y, radius);
 
-                // It's at the end
-                if (pathIndex >= currentPath.poses.size()) {
-                    // Break lol
-                    doNotMove = true;
-                    return;
-                }
-            }*/
+            canvas.setStroke("#00ffff");
+            canvas.setStroke("#0000ff");
+            perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
+            perp.norm();
+            perp.mul(relativeErrorY);
+            perp.add(new Vector2(estimate.x, estimate.y));
+            canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
 
-            TelemetryUtil.packet.put("errorHeading", theta);
+            // KYLE MONKEY
+            Vector2 monkey = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
+            monkey.norm();
+            Vector2 baboon = new Vector2(Math.cos(estimate.heading), Math.sin(estimate.heading));
+            baboon.norm();
+            monkey.mul(relativeErrorY);
+            baboon.mul(relativeErrorX);
+            monkey.add(new Vector2(estimate.x, estimate.y));
+            System.out.println((monkey.x + baboon.x) + " " + (monkey.y + baboon.y));
+
+            TelemetryUtil.packet.put("radius", radius);
+            TelemetryUtil.packet.put("theta", theta);
 
             double turn = TRACK_WIDTH / 2 * Math.signum(theta);
             if (error.y < 0.5) {
