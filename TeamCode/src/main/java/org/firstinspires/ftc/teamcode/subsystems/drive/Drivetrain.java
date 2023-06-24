@@ -110,6 +110,7 @@ public class Drivetrain {
                 }
 
             }
+            currentPose = new Vector2(24, 24);
 
             Pose2d error = new Pose2d(
                 currentPose.x - estimate.x,
@@ -147,6 +148,8 @@ public class Drivetrain {
             };
             TelemetryUtil.packet.put("fwd", fwd);
             TelemetryUtil.packet.put("turn", turn);
+            TelemetryUtil.packet.put("radius", radius);
+
 
             // Post 1 normalization
             double max = 1;
