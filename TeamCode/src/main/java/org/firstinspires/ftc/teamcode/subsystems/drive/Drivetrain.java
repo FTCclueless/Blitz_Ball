@@ -89,7 +89,6 @@ public class Drivetrain {
         Pose2d estimate = localizer.getPoseEstimate();
 
         TelemetryUtil.packet.put("done", doNotMove);
-        TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
         if (doNotMove) {
             // TODO its kinda bad
             for (DcMotorEx motor : motors) {
@@ -99,30 +98,30 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            Vector2 currentPose = new Vector2(currentPath.poses.get(pathIndex).x,currentPath.poses.get(pathIndex).y);
+            TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
+            Vector2 lookAhead = new Vector2(currentPath.poses.get(pathIndex).x,currentPath.poses.get(pathIndex).y);
             for (int i = pathIndex; i < currentPath.poses.size(); i++) {
                 if (pathIndex != currentPath.poses.size()) {
 
-                    Vector2 temp = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, lookAhead);
+                    Vector2 temp = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, Drivetrain.lookAhead);
                     if (temp != null) {
-                        currentPose = temp;
+                        lookAhead = temp;
                     }
                 }
 
             }
-            currentPose = new Vector2(24, 24);
 
+            TelemetryUtil.packet.put("lookAhead", lookAhead);
             Pose2d error = new Pose2d(
-                currentPose.x - estimate.x,
-                currentPose.y - estimate.y,
+                lookAhead.x - estimate.x,
+                lookAhead.y - estimate.y,
                 0
 
             );
             double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
-            double theta = Math.atan2(error.y, radius - error.x);
+            double theta = Math.atan2(radius - error.x, error.y);
 
-
-            while (estimate.getDistanceFromPoint(new Pose2d(currentPose.x,currentPose.y,theta)) <= currentPath.inchesPerNewPointGenerated) {
+            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
                 pathIndex++;
 
                 // It's at the end
@@ -133,13 +132,10 @@ public class Drivetrain {
                 }
             }
 
-
-
-
             TelemetryUtil.packet.put("errorHeading", theta);
 
-            double turn = TRACK_WIDTH / 2 * theta;
-            double fwd = radius * theta;
+            double turn = TRACK_WIDTH / 2 * Math.signum(theta);
+            double fwd = radius;
             double[] motorPowers = {
                 fwd - turn,
                 fwd - turn,
