@@ -102,8 +102,8 @@ public class Drivetrain {
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
             Vector2 lookAhead = null;
             while (lookAhead == null) {
-                for (int i = pathIndex; i < currentPath.poses.size(); i++) {
-                    if (pathIndex != currentPath.poses.size()) {
+                for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
+                    if (pathIndex != currentPath.poses.size() - 1) {
 
                         temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
                         if (temp != null) {
