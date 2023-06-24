@@ -319,8 +319,8 @@ public class Drivetrain {
         }
         else {
             discriminant = Math.sqrt(discriminant);
-            double t1 = (-b - discriminant)/2;
-            double t2 = (-b + discriminant)/2;
+            double t1 = (-b + discriminant)/2;
+            double t2 = (-b - discriminant)/2;
 
             if ((t1 >=0) && (t1 <= 1)) {
                 direction.mul(t1);
