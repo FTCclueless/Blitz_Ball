@@ -26,7 +26,7 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAhead = 5;
+    public static double lookAhead = 1;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -103,9 +103,9 @@ public class Drivetrain {
             for (int i = pathIndex; i < currentPath.poses.size(); i++) {
                 if (pathIndex != currentPath.poses.size()) {
 
-                    Vector2 balls = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, lookAhead);
-                    if (balls != null) {
-                        currentPose = balls;
+                    Vector2 temp = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, lookAhead);
+                    if (temp != null) {
+                        currentPose = temp;
                     }
                 }
 
