@@ -106,7 +106,7 @@ public class Drivetrain {
                     if (pathIndex != currentPath.poses.size() - 1) {
 
                         temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
-                        if (temp != null) {
+                        if ((temp != null) || (temp.x < 0)) {
                             lookAhead = temp;
                         }
 
@@ -114,6 +114,7 @@ public class Drivetrain {
                 }
                 tempLookAheadR += 0.1;
             }*/
+            double tempLookAheadR = lookAheadRadius;
 
             Pose2d lookAhead = currentPath.poses.get(pathIndex);
             lookAhead = new Pose2d(24, 24, 0);
@@ -123,8 +124,17 @@ public class Drivetrain {
                 lookAhead.y - estimate.y,
                 0
             );
-            double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
-            double theta = Math.atan2(error.y, radius - error.x);
+
+            double a = -Math.tan(estimate.heading);
+            double b = 1;
+            double c = Math.tan(estimate.heading)*estimate.x-estimate.y;
+
+
+            double relativeErrorY = Math.abs(a*error.x+b*error.y+c)/Math.sqrt(a*a+b*b);
+            double relativeErrorX = Math.sqrt(Math.pow(error.x*error.x + error.y*error.y,2)-Math.pow(relativeErrorY,2));
+
+            double radius = (Math.pow(tempLookAheadR,2)) / (2 * Math.abs(relativeErrorY));
+            double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
             /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
                 pathIndex++;
@@ -140,6 +150,9 @@ public class Drivetrain {
             TelemetryUtil.packet.put("errorHeading", theta);
 
             double turn = TRACK_WIDTH / 2 * Math.signum(theta);
+            if (error.y < 0.5) {
+                turn = 0;
+            }
             double fwd = radius;
             double[] motorPowers = {
                 fwd - turn,
