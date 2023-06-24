@@ -305,7 +305,7 @@ public class Drivetrain {
         //https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm/1084899#1084899
 
         Vector2 direction = new Vector2(end.x - start.x,end.y - start.y);
-        Vector2 robot2start = new Vector2(robot.x-start.x, robot.y-start.y);
+        Vector2 robot2start = new Vector2(start.x-robot.x, start.y-robot.y);
 
         double a = Vector2.dot(direction,direction);
         double b = 2*Vector2.dot(robot2start,direction);
@@ -319,8 +319,8 @@ public class Drivetrain {
         }
         else {
             discriminant = Math.sqrt(discriminant);
-            double t1 = (-b+discriminant)/2;
-            double t2 = (-b - discriminant)/2;
+            double t1 = (-b - discriminant)/2;
+            double t2 = (-b + discriminant)/2;
 
             if ((t1 >=0) && (t1 <= 1)) {
                 direction.mul(t1);
@@ -328,7 +328,7 @@ public class Drivetrain {
             }
             if ((t2 >=0) && (t2 <= 1) ){
                 direction.mul(t2);
-                return Vector2.add(direction,new Vector2(start.x,start.y));
+                return Vector2.add(direction, new Vector2(start.x,start.y));
             }
             else {
                 return null;
