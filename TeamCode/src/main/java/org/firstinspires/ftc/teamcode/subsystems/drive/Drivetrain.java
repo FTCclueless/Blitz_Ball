@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
-import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -26,7 +25,7 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAhead = 1;
+    public static double lookAheadRadius = 1;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -99,18 +98,24 @@ public class Drivetrain {
 
         if (currentPath != null) {
             Vector2 temp;
+            double tempLookAheadR = Drivetrain.lookAheadRadius;
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
-            Vector2 lookAhead = new Vector2(currentPath.poses.get(pathIndex).x,currentPath.poses.get(pathIndex).y);
-            for (int i = pathIndex; i < currentPath.poses.size(); i++) {
-                if (pathIndex != currentPath.poses.size()) {
+            Vector2 lookAhead = null;
+            while (lookAhead == null) {
+                for (int i = pathIndex; i < currentPath.poses.size(); i++) {
+                    if (pathIndex != currentPath.poses.size()) {
 
-                    temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i+1), estimate, Drivetrain.lookAhead);
-                    if (temp != null) {
-                        lookAhead = temp;
+                        temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
+                        if (temp != null) {
+                            lookAhead = temp;
+                        }
+
                     }
-                }
 
+                }
+                tempLookAheadR += 1;
             }
+
 
             TelemetryUtil.packet.put("lookAhead", lookAhead);
             Pose2d error = new Pose2d(
@@ -333,4 +338,5 @@ public class Drivetrain {
 
 
     }
+
 }
