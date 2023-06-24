@@ -98,12 +98,13 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
+            Vector2 temp;
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
             Vector2 lookAhead = new Vector2(currentPath.poses.get(pathIndex).x,currentPath.poses.get(pathIndex).y);
             for (int i = pathIndex; i < currentPath.poses.size(); i++) {
                 if (pathIndex != currentPath.poses.size()) {
 
-                    Vector2 temp = lineCircleIntersection(currentPath.poses.get(pathIndex), currentPath.poses.get(pathIndex+1), estimate, Drivetrain.lookAhead);
+                    temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i+1), estimate, Drivetrain.lookAhead);
                     if (temp != null) {
                         lookAhead = temp;
                     }
@@ -321,7 +322,7 @@ public class Drivetrain {
                 return Vector2.add(direction, new Vector2(start.x, start.y));
             }
             if ((t2 >=0) && (t2 <= 1) ){
-                direction.mul(t1);
+                direction.mul(t2);
                 return Vector2.add(direction,new Vector2(start.x,start.y));
             }
             else {
