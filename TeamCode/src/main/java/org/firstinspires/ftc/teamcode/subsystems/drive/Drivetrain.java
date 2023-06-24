@@ -25,7 +25,7 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 1;
+    public static double lookAheadRadius = 5;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -97,9 +97,9 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            Vector2 temp;
-            double tempLookAheadR = Drivetrain.lookAheadRadius;
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
+            /*Vector2 temp;
+            double tempLookAheadR = Drivetrain.lookAheadRadius;
             Vector2 lookAhead = null;
             while (lookAhead == null) {
                 for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
@@ -111,23 +111,22 @@ public class Drivetrain {
                         }
 
                     }
-
                 }
-                tempLookAheadR += 1;
-            }
+                tempLookAheadR += 0.1;
+            }*/
 
-
+            Pose2d lookAhead = currentPath.poses.get(pathIndex);
+            lookAhead = new Pose2d(24, 24, 0);
             TelemetryUtil.packet.put("lookAhead", lookAhead);
             Pose2d error = new Pose2d(
                 lookAhead.x - estimate.x,
                 lookAhead.y - estimate.y,
                 0
-
             );
             double radius = (error.x * error.x + error.y * error.y) / (2 * error.x);
-            double theta = Math.atan2(radius - error.x, error.y);
+            double theta = Math.atan2(error.y, radius - error.x);
 
-            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
+            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
                 pathIndex++;
 
                 // It's at the end
@@ -136,7 +135,7 @@ public class Drivetrain {
                     doNotMove = true;
                     return;
                 }
-            }
+            }*/
 
             TelemetryUtil.packet.put("errorHeading", theta);
 
@@ -167,6 +166,7 @@ public class Drivetrain {
                 TelemetryUtil.packet.put("Max", max);
                 TelemetryUtil.packet.put("Motor power", motorPowers[0] + " " + motorPowers[1] + " " + motorPowers[2] + " " + motorPowers[3]);
 
+                //motors.get(i).setPower(motorPowers[i]);
                 motorPriorities.get(i).setTargetPower(motorPowers[i]);
             }
         }
