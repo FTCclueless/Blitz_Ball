@@ -147,11 +147,12 @@ public class Drivetrain {
             double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
             TelemetryUtil.packet.put("abc", a + " " + b + " " + c);
 
-            double relativeErrorY = Math.abs(a*lookAhead.x+b*lookAhead.y+c)/Math.sqrt(a*a+b*b);
+            double relativeErrorY = estimate.y*Math.cos(estimate.heading) - estimate.x*Math.sin(estimate.heading);
+
             double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2))));
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
-            double radius = (relativeErrorX*relativeErrorX+relativeErrorY*relativeErrorY) / (2 * Math.abs(relativeErrorY));
+            double radius = (error.x*error.x+error.y*error.y) / (2 * Math.abs(relativeErrorY));
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
             // Plot the circle thing
