@@ -130,8 +130,6 @@ public class Drivetrain {
                 }
                 tempLookAheadR += 0.1;
             }*/
-            double tempLookAheadR = lookAheadRadius;
-
             Vector2 lookAhead = new Vector2(48, 48);
 
             // Plot the lookahead point
@@ -148,7 +146,6 @@ public class Drivetrain {
             double b = 1;
             double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
             TelemetryUtil.packet.put("abc", a + " " + b + " " + c);
-
 
             double relativeErrorY = Math.abs(a*lookAhead.x+b*lookAhead.y+c)/Math.sqrt(a*a+b*b);
             double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2))));
