@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
@@ -143,14 +144,14 @@ public class Drivetrain {
                 0
             );
 
-            double a = -Math.tan(estimate.heading);
+            double a = -Math.tan(AngleUtil.clipAngle(estimate.heading));
             double b = 1;
-            double c = Math.tan(estimate.heading)*estimate.x-estimate.y;
+            double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
             TelemetryUtil.packet.put("abc", a + " " + b + " " + c);
 
 
             double relativeErrorY = Math.abs(a*lookAhead.x+b*lookAhead.y+c)/Math.sqrt(a*a+b*b);
-            double relativeErrorX = Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2)));
+            double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2))));
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
             double radius = (relativeErrorX*relativeErrorX+relativeErrorY*relativeErrorY) / (2 * Math.abs(relativeErrorY));
