@@ -142,17 +142,17 @@ public class Drivetrain {
                 0
             );
 
-            double a = -Math.tan(AngleUtil.clipAngle(estimate.heading));
+            /*double a = -Math.tan(AngleUtil.clipAngle(estimate.heading));
             double b = 1;
             double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
-            TelemetryUtil.packet.put("abc", a + " " + b + " " + c);
+            TelemetryUtil.packet.put("abc", a + " " + b + " " + c);*/
 
             double relativeErrorY = estimate.y*Math.cos(estimate.heading) - estimate.x*Math.sin(estimate.heading);
 
             double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2))));
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
-            double radius = (error.x*error.x+error.y*error.y) / (2 * Math.abs(relativeErrorY));
+            double radius = (error.x*error.x+error.y*error.y) / (2 * relativeErrorY);
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
             // Plot the circle thing
@@ -185,11 +185,8 @@ public class Drivetrain {
             TelemetryUtil.packet.put("radius", radius);
             TelemetryUtil.packet.put("theta", theta);
 
-            double turn = TRACK_WIDTH / 2 * Math.signum(theta);
-            if (error.y < 0.5) {
-                turn = 0;
-            }
-            double fwd = radius;
+            double turn = TRACK_WIDTH / 2 / radius;
+            double fwd = 1;
             double[] motorPowers = {
                 fwd - turn,
                 fwd - turn,
