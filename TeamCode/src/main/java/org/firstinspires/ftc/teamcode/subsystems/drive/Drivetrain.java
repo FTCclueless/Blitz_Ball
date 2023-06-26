@@ -28,7 +28,8 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 5;
+    public static double lookAheadRadius = 4;
+    public static double maxDeviationFromPath = 12;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -101,36 +102,49 @@ public class Drivetrain {
 
         if (currentPath != null) {
             Canvas canvas = TelemetryUtil.packet.fieldOverlay();
-            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
-                pathIndex++;
-
-                // It's at the end
-                if (pathIndex >= currentPath.poses.size()) {
-                    // Break lol
+            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
+                if (pathIndex == currentPath.poses.size()-1) {
                     doNotMove = true;
                     return;
                 }
-            }*/
+
+                pathIndex++;
+
+                // It's at the end
+
+                }
+            }
 
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
 
-            /*Vector2 temp;
+            Vector2 temp;
             double tempLookAheadR = Drivetrain.lookAheadRadius;
             Vector2 lookAhead = null;
+
             while (lookAhead == null) {
                 for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
                     if (pathIndex != currentPath.poses.size() - 1) {
 
                         temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
-                        if ((temp != null) || (temp.x < 0)) {
+                        if (temp != null) {
                             lookAhead = temp;
                         }
 
                     }
                 }
-                tempLookAheadR += 0.1;
-            }*/
-            Vector2 lookAhead = new Vector2(48, 48);
+                tempLookAheadR += 1;
+                if (tempLookAheadR >= maxDeviationFromPath) {
+                    if (pathIndex < currentPath.poses.size()) {
+                        Pose2d temptemp = currentPath.poses.get(pathIndex + 1);
+                        lookAhead = new Vector2(temptemp.x, temptemp.y);
+                        break;
+                    }
+                    else {
+                        Pose2d temptemp = currentPath.poses.get(pathIndex);
+                        lookAhead = new Vector2(temptemp.x, temptemp.y);
+                        break;
+                }
+            }
 
             // Plot the lookahead point
             canvas.setFill("#ff0000");
@@ -147,7 +161,7 @@ public class Drivetrain {
             double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
             TelemetryUtil.packet.put("abc", a + " " + b + " " + c);*/
 
-            double relativeErrorY = estimate.y*Math.cos(estimate.heading) - estimate.x*Math.sin(estimate.heading);
+            double relativeErrorY = error.y*Math.cos(estimate.heading) - error.x*Math.sin(estimate.heading);
 
             double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x*error.x + error.y*error.y)-Math.pow(relativeErrorY,2))));
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
@@ -156,13 +170,15 @@ public class Drivetrain {
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
             // Plot the circle thing
-            canvas.setStroke("#0000ff");
-            Vector2 perp = new Vector2(-Math.sin(estimate.heading),Math.cos(estimate.heading));
-            perp.norm();
-            perp.mul(radius);
-            perp.add(new Vector2(estimate.x, estimate.y));
-            canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
-            canvas.strokeCircle(perp.x, perp.y, radius);
+            Vector2 perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
+            if (radius > 25) { // Don't put radius if it will explode ftc dashboard
+                canvas.setStroke("#0000ff");
+                perp.norm();
+                perp.mul(radius);
+                perp.add(new Vector2(estimate.x, estimate.y));
+                canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
+                canvas.strokeCircle(perp.x, perp.y, radius);
+            }
 
             canvas.setStroke("#00ffff");
             canvas.setStroke("#0000ff");
@@ -171,16 +187,6 @@ public class Drivetrain {
             perp.mul(relativeErrorY);
             perp.add(new Vector2(estimate.x, estimate.y));
             canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
-
-            // KYLE MONKEY
-            Vector2 monkey = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
-            monkey.norm();
-            Vector2 baboon = new Vector2(Math.cos(estimate.heading), Math.sin(estimate.heading));
-            baboon.norm();
-            monkey.mul(relativeErrorY);
-            baboon.mul(relativeErrorX);
-            monkey.add(new Vector2(estimate.x, estimate.y));
-            System.out.println((monkey.x + baboon.x) + " " + (monkey.y + baboon.y));
 
             TelemetryUtil.packet.put("radius", radius);
             TelemetryUtil.packet.put("theta", theta);
@@ -196,7 +202,6 @@ public class Drivetrain {
             TelemetryUtil.packet.put("fwd", fwd);
             TelemetryUtil.packet.put("turn", turn);
             TelemetryUtil.packet.put("radius", radius);
-
 
             // Post 1 normalization
             double max = 1;
