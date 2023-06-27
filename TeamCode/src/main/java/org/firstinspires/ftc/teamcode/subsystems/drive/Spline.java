@@ -1,21 +1,36 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 import java.util.ArrayList;
 
+class SplinePose2d extends Pose2d {
+    public final boolean reversed;
+
+    public SplinePose2d(Pose2d p, boolean reversed) {
+        this(p.x, p.y, p.heading, reversed);
+    }
+
+    public SplinePose2d(double x, double y, double heading, boolean reversed) {
+        super(x, y, heading);
+        this.reversed = true;
+    }
+}
+
 public class Spline {
-    public ArrayList<Pose2d> poses = new ArrayList<>();
+    public ArrayList<SplinePose2d> poses = new ArrayList<>();
 
     public final double inchesPerNewPointGenerated;
+    private boolean reversed = false;
 
-    public Spline(org.firstinspires.ftc.teamcode.utils.Pose2d p, double inchesPerNewPointGenerated) {
-        poses.add(p);
+    public Spline(Pose2d p, double inchesPerNewPointGenerated) {
+        poses.add(new SplinePose2d(p, false));
 
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
-    public Spline addSpline(org.firstinspires.ftc.teamcode.utils.Pose2d p) {
+    public Spline addPoint(Pose2d p) {
         // https://www.desmos.com/calculator/yi3jovk0hp
 
         double[] xCoefficents = new double[4];
@@ -61,20 +76,34 @@ public class Spline {
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
 
-                poses.add(point);
+                poses.add(new SplinePose2d(point, reversed));
 
                 lastPoint = point;
             }
         }
-        poses.add(p);
+        poses.add(new SplinePose2d(p, reversed));
 
+        for (SplinePose2d p1 : poses) {
+            System.out.println(p1.reversed);
+        }
         return this;
     }
 
-    public org.firstinspires.ftc.teamcode.utils.Pose2d getLastPoint() {
+    public Pose2d getLastPoint() {
         if (poses.size() > 0) {
             return poses.get(poses.size() - 1);
         }
         return null;
+    }
+
+    /**
+     * Ideally the path should be behind it otherwise it would break
+     * So if you do it wrong its your fault!
+     * @param reversed
+     * @return
+     */
+    public Spline setReversed(boolean reversed) {
+        this.reversed = reversed;
+        return this;
     }
 }

@@ -17,8 +17,8 @@ public class PointGenerationTest extends LinearOpMode {
 
         drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
         Spline spline = new Spline(new Pose2d(0, 0, 0), 8)
-                .addSpline(new Pose2d(48, 0, 0))
-                .addSpline(new Pose2d(48, 20, Math.toRadians(90)));;
+                .addPoint(new Pose2d(48, 0, 0))
+                .addPoint(new Pose2d(48, 20, Math.toRadians(90)));;
 
         waitForStart();
         while (!isStopRequested()) {

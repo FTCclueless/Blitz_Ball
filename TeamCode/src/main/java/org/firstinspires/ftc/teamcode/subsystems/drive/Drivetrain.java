@@ -14,8 +14,6 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
-import org.firstinspires.ftc.teamcode.utils.AngleUtil;
-import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -104,120 +102,136 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
+            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
                 if (pathIndex == currentPath.poses.size() - 1) {
                     doNotMove = true;
                     return;
                 }
 
                 pathIndex++;
+            }*/
+
+            double distance = currentPath.poses.get(pathIndex).getDistanceFromPoint(estimate);
+            for (int i = pathIndex + 1; i < currentPath.poses.size(); i++) {
+                double tdistance = currentPath.poses.get(i).getDistanceFromPoint(estimate);
+                if (tdistance < distance) {
+                    distance = tdistance;
+                    pathIndex = i;
+                }
             }
-        }
 
-        TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
+            if (pathIndex >= currentPath.poses.size() - 1) {
+                // Do this well later
+                doNotMove = true;
+                return;
+            }
 
-        Vector2 temp;
-        double tempLookAheadR = Drivetrain.lookAheadRadius;
-        Vector2 lookAhead = null;
+            TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
 
-        while (lookAhead == null) {
-            for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
-                if (pathIndex != currentPath.poses.size()) {
+            Vector2 temp;
+            double tempLookAheadR = Drivetrain.lookAheadRadius;
+            Vector2 lookAhead = null;
 
-                    temp = lineCircleIntersection(currentPath.poses.get(i-1), currentPath.poses.get(i), estimate, tempLookAheadR);
-                    if (temp != null) {
-                        lookAhead = temp;
+            while (lookAhead == null) {
+                for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
+                    if (pathIndex != currentPath.poses.size()) {
+
+                        temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
+                        if (temp != null) {
+                            lookAhead = temp;
+                        }
                     }
                 }
-            }
-            tempLookAheadR += 0.05;
-            if (tempLookAheadR >= maxDeviationFromPath) {
-                Pose2d temptemp = null;
-                if (pathIndex < currentPath.poses.size() - 1) {
-                    temptemp = currentPath.poses.get(pathIndex + 1);
-                } else {
-                    temptemp = currentPath.poses.get(pathIndex);
+                tempLookAheadR += 0.05;
+                if (tempLookAheadR >= maxDeviationFromPath) {
+                    Pose2d temptemp = null;
+                    if (pathIndex < currentPath.poses.size() - 1) {
+                        temptemp = currentPath.poses.get(pathIndex + 1);
+                    } else {
+                        temptemp = currentPath.poses.get(pathIndex);
+                    }
+                    lookAhead = new Vector2(temptemp.x, temptemp.y);
+                    break;
                 }
-                lookAhead = new Vector2(temptemp.x, temptemp.y);
-                break;
             }
-        }
 
-        // Plot the lookahead point
-        System.out.println(lookAhead);
-        canvas.setFill("#ff0000");
-        canvas.fillCircle(lookAhead.x, lookAhead.y, 1.5);
+            // Plot the lookahead point
+            canvas.setFill("#ff0000");
+            canvas.fillCircle(lookAhead.x, lookAhead.y, 1.5);
 
-        Pose2d error = new Pose2d(
-            lookAhead.x - estimate.x,
-            lookAhead.y - estimate.y,
-            0
-        );
+            Pose2d error = new Pose2d(
+                lookAhead.x - estimate.x,
+                lookAhead.y - estimate.y,
+                0
+            );
 
             /*double a = -Math.tan(AngleUtil.clipAngle(estimate.heading));
             double b = 1;
             double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
             TelemetryUtil.packet.put("abc", a + " " + b + " " + c);*/
 
-        double relativeErrorY = error.y * Math.cos(estimate.heading) - error.x * Math.sin(estimate.heading);
+            double relativeErrorY = error.y * Math.cos(estimate.heading) - error.x * Math.sin(estimate.heading);
 
-        double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2))));
-        TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
+            double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2))));
+            TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
-        double radius = (error.x * error.x + error.y * error.y) / (2 * relativeErrorY);
-        double theta = Math.atan2(relativeErrorY, relativeErrorX);
+            double radius = (error.x * error.x + error.y * error.y) / (2 * relativeErrorY);
+            double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
-        // Plot the circle thing
-        Vector2 perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
-        if (radius > 25) { // Don't put radius if it will explode ftc dashboard
+            // Plot the circle thing
+            Vector2 perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
+            if (Math.abs(radius) < 25) { // Don't put radius if it will explode ftc dashboard
+                canvas.setStroke("#0000ff");
+                perp.norm();
+                perp.mul(radius);
+                perp.mul(Math.signum(radius));
+                perp.add(new Vector2(estimate.x, estimate.y));
+                canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
+                canvas.strokeCircle(perp.x, perp.y, Math.abs(radius));
+            }
+
+            /*canvas.setStroke("#00ffff");
             canvas.setStroke("#0000ff");
+            perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
             perp.norm();
-            perp.mul(radius);
+            perp.mul(relativeErrorY);
             perp.add(new Vector2(estimate.x, estimate.y));
             canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
-            canvas.strokeCircle(perp.x, perp.y, radius);
-        }
 
-        canvas.setStroke("#00ffff");
-        canvas.setStroke("#0000ff");
-        perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
-        perp.norm();
-        perp.mul(relativeErrorY);
-        perp.add(new Vector2(estimate.x, estimate.y));
-        canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
+            TelemetryUtil.packet.put("radius", radius);
+            TelemetryUtil.packet.put("theta", theta);*/
 
-        TelemetryUtil.packet.put("radius", radius);
-        TelemetryUtil.packet.put("theta", theta);
+            TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
+            double turn = TRACK_WIDTH / 2 / radius;
+            double fwd = currentPath.poses.get(pathIndex).reversed ? 1 : -1;
+            double[] motorPowers = {
+                fwd - turn,
+                fwd - turn,
+                fwd + turn,
+                fwd + turn
+            };
+            TelemetryUtil.packet.put("fwd", fwd);
+            TelemetryUtil.packet.put("turn", turn);
+            TelemetryUtil.packet.put("radius", radius);
+            TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
 
-        double turn = TRACK_WIDTH / 2 / radius;
-        double fwd = 1;
-        double[] motorPowers = {
-            fwd - turn,
-            fwd - turn,
-            fwd + turn,
-            fwd + turn
-        };
-        TelemetryUtil.packet.put("fwd", fwd);
-        TelemetryUtil.packet.put("turn", turn);
-        TelemetryUtil.packet.put("radius", radius);
-        TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
+            // Post 1 normalization
+            double max = 1;
+            for (double power : motorPowers) {
+                max = Math.max(max, power);
+            }
 
-        // Post 1 normalization
-        double max = 1;
-        for (double power : motorPowers) {
-            max = Math.max(max, power);
-        }
+            for (int i = 0; i < motorPowers.length; i++) {
+                motorPowers[i] /= max;
+                motorPowers[i] /= 5;
+                motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
+                motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
+                TelemetryUtil.packet.put("Max", max);
+                TelemetryUtil.packet.put("Motor power", motorPowers[0] + " " + motorPowers[1] + " " + motorPowers[2] + " " + motorPowers[3]);
 
-        for (int i = 0; i < motorPowers.length; i++) {
-            motorPowers[i] /= max;
-            motorPowers[i] /= 5;
-            motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
-            motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
-            TelemetryUtil.packet.put("Max", max);
-            TelemetryUtil.packet.put("Motor power", motorPowers[0] + " " + motorPowers[1] + " " + motorPowers[2] + " " + motorPowers[3]);
-
-            //motors.get(i).setPower(motorPowers[i]);
-            motorPriorities.get(i).setTargetPower(motorPowers[i]);
+                //motors.get(i).setPower(motorPowers[i]);
+                motorPriorities.get(i).setTargetPower(motorPowers[i]);
+            }
         }
 
         /*// pure pursuit follower
