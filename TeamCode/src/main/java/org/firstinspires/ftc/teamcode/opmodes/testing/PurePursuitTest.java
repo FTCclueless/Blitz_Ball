@@ -17,7 +17,8 @@ public class PurePursuitTest extends LinearOpMode {
 
         drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
         Spline spline = new Spline(drivetrain.getPoseEstimate(), 2)
-            .addSpline(new Pose2d(48, 48, Math.PI / 2));
+            .addSpline(new Pose2d(24, 24, Math.PI / 2));
+        spline.addSpline(new Pose2d(10, 12, Math.PI/2));
 
         waitForStart();
         robot.followSpline(spline, this);
