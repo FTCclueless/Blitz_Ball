@@ -14,7 +14,7 @@ class SplinePose2d extends Pose2d {
 
     public SplinePose2d(double x, double y, double heading, boolean reversed) {
         super(x, y, heading);
-        this.reversed = true;
+        this.reversed = reversed;
     }
 }
 
@@ -83,9 +83,6 @@ public class Spline {
         }
         poses.add(new SplinePose2d(p, reversed));
 
-        for (SplinePose2d p1 : poses) {
-            System.out.println(p1.reversed);
-        }
         return this;
     }
 
