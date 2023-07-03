@@ -26,8 +26,10 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 5;
+    public static double lookAheadRadius = 10;
     public static double maxDeviationFromPath = 12;
+    public static double speed = 0.6;
+    public static double curvyCompVariable = 10;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -74,6 +76,7 @@ public class Drivetrain {
     public void setCurrentPath(Spline path) {
         currentPath = path;
         pathIndex = 0;
+        doNotMove = false;
     }
 
     public Spline getCurrentPath() {
@@ -142,6 +145,7 @@ public class Drivetrain {
 
                         temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
                         if (temp != null) {
+                            pathIndex = i;
                             lookAhead = temp;
                         }
                     }
@@ -227,7 +231,8 @@ public class Drivetrain {
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= 0.3;
+                motorPowers[i] *= Math.pow(Math.min(Math.abs(radius) / curvyCompVariable, 1), 2);
+                motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
                 TelemetryUtil.packet.put("Max", max);

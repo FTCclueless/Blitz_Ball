@@ -25,6 +25,11 @@ public class DashboardUtil {
     }
 
     public static void drawSampledPath(Canvas canvas, Spline spline) {
+        // JANK
+        if (spline == null) {
+            return;
+        }
+
         int samples = spline.poses.size();
         double[] xPoints = new double[samples];
         double[] yPoints = new double[samples];

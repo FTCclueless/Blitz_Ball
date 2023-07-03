@@ -16,15 +16,17 @@ public class PurePursuitTest extends LinearOpMode {
         Drivetrain drivetrain = robot.drivetrain;
 
         drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
-        Pose2d midPoint = new Pose2d(52,20,Math.toRadians(90));
-        Spline spline = new Spline(new Pose2d(0, 0, 0), 4)
-                .addPoint(new Pose2d(midPoint.x - 8, 0, 0))
-                .addPoint(midPoint)
-                .setReversed(true)
-                .addPoint(new Pose2d(midPoint.x + 8,0,0))
-                .addPoint(new Pose2d(midPoint.x * 2.0,0,0));
+        Pose2d midPoint = new Pose2d(52,30,Math.toRadians(90));
+        Spline spline1 = new Spline(new Pose2d(0, 0, 0), 2)
+            .addPoint(new Pose2d(midPoint.x - 16, 0, 0))
+            .addPoint(midPoint);
+        Spline spline2 = new Spline(midPoint, 2)
+            .setReversed(true)
+            .addPoint(new Pose2d(midPoint.x + 16,0,0))
+            .addPoint(new Pose2d(midPoint.x * 2.0,0,0));
 
         waitForStart();
-        robot.followSpline(spline, this);
+        robot.followSpline(spline1, this);
+        robot.followSpline(spline2, this);
     }
 }
