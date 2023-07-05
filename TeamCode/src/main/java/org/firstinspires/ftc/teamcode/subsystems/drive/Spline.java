@@ -64,10 +64,10 @@ public class Spline {
         accelY = 2;
 
         double tempR;
-        tempR = Math.pow(velX*velX + velY*velY , 3/2);
+        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
 
 
-        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, 0));
+        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, tempR));
 
 
 
@@ -95,12 +95,22 @@ public class Spline {
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
 
-                poses.add(new SplinePose2d(point, reversed,0));
+                tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
+
+                poses.add(new SplinePose2d(point, reversed,tempR));
 
                 lastPoint = point;
             }
         }
-        poses.add(new SplinePose2d(p, reversed,0));
+        velX = xCoefficents[1] + 2.0*xCoefficents[2] + 3.0*xCoefficents[3];
+        velY = yCoefficents[1] + 2.0*yCoefficents[2] + 3.0*yCoefficents[3];
+
+        // gets the acceleration which is second derivative of position
+        accelX = 2.0 + 6.0*xCoefficents[3];
+        accelY = 2.0 + 6.0*xCoefficents[3];
+        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
+
+        poses.add(new SplinePose2d(p, reversed,tempR));
 
         return this;
     }
