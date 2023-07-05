@@ -29,7 +29,9 @@ public class Drivetrain {
     public static double lookAheadRadius = 10;
     public static double maxDeviationFromPath = 12;
     public static double speed = 0.6;
-    public static double curvyCompVariable = 10;
+    public static double curvyCompVariable = 20;
+    public static int pastIndexes = 3;
+    public static int futureIndexes = 6;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -223,6 +225,28 @@ public class Drivetrain {
             TelemetryUtil.packet.put("radius", radius);
             TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
 
+            // Clippy clippy
+            int start = pathIndex - pastIndexes;
+            int end = pathIndex + futureIndexes;
+            if (start < 0) {
+                start = 0;
+            }
+            if (end > currentPath.poses.size()) {
+                end = currentPath.poses.size();
+            }
+
+            double avgRadius = 0;
+            for (int i = start; i < end; i++) {
+                avgRadius += currentPath.poses.get(i).radius;
+            }
+            if (avgRadius == 0) {
+                // No breaking allowed
+                avgRadius = radius;
+            } else {
+                avgRadius /= end - start;
+            }
+            TelemetryUtil.packet.put("I HATE THIS", avgRadius);
+
             // Post 1 normalization
             double max = 1;
             for (double power : motorPowers) {
@@ -231,7 +255,7 @@ public class Drivetrain {
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] -= Math.min(Math.abs(1/radius), 1) * 0.7;
+                motorPowers[i] *= Math.min(curvyCompVariable / Math.abs(avgRadius), 1);
                 motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
