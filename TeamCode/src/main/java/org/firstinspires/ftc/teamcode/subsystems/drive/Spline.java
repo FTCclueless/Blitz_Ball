@@ -7,14 +7,16 @@ import java.util.ArrayList;
 
 class SplinePose2d extends Pose2d {
     public final boolean reversed;
+    public final double radius;
 
-    public SplinePose2d(Pose2d p, boolean reversed) {
-        this(p.x, p.y, p.heading, reversed);
+    public SplinePose2d(Pose2d p, boolean reversed, double radius) {
+        this(p.x, p.y, p.heading, reversed, radius);
     }
 
-    public SplinePose2d(double x, double y, double heading, boolean reversed) {
+    public SplinePose2d(double x, double y, double heading, boolean reversed, double radius) {
         super(x, y, heading);
         this.reversed = reversed;
+        this.radius = radius;
     }
 }
 
@@ -24,14 +26,16 @@ public class Spline {
     public final double inchesPerNewPointGenerated;
     private boolean reversed = false;
 
+
     public Spline(Pose2d p, double inchesPerNewPointGenerated) {
-        poses.add(new SplinePose2d(p, false));
+        poses.add(new SplinePose2d(p, false, 100));
 
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
     public Spline addPoint(Pose2d p) {
         // https://www.desmos.com/calculator/yi3jovk0hp
+        Pose2d point = new Pose2d(0,0,0);
 
         double[] xCoefficents = new double[4];
         double[] yCoefficents = new double[4];
@@ -50,10 +54,22 @@ public class Spline {
         yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
 
-        double velX = 0, velY = 0, accelX = 0, accelY = 0   ;
+        double velX = 0, velY = 0, accelX = 0, accelY = 0;
+
+        point.x = xCoefficents[0];
+        point.y = yCoefficents[0];
+        velX = xCoefficents[1];
+        velY = yCoefficents[1];
+        accelX = 2;
+        accelY = 2;
+
+
+        poses.set(0, poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, );
+
+
 
         for (double time = 0.0; time < 1.0; time+=0.001) {
-            Pose2d point = new Pose2d(0,0,0);
+            point = new Pose2d(0,0,0);
 
             point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
             point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
