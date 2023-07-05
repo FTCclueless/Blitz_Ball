@@ -63,8 +63,11 @@ public class Spline {
         accelX = 2;
         accelY = 2;
 
+        double tempR;
+        tempR = Math.pow(velX*velX + velY*velY , 3/2);
 
-        poses.set(0, poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, );
+
+        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, 0));
 
 
 
@@ -92,12 +95,12 @@ public class Spline {
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
 
-                poses.add(new SplinePose2d(point, reversed));
+                poses.add(new SplinePose2d(point, reversed,0));
 
                 lastPoint = point;
             }
         }
-        poses.add(new SplinePose2d(p, reversed));
+        poses.add(new SplinePose2d(p, reversed,0));
 
         return this;
     }
