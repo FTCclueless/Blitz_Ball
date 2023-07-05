@@ -108,7 +108,7 @@ public class Spline {
         // gets the acceleration which is second derivative of position
         accelX = 2.0 + 6.0*xCoefficents[3];
         accelY = 2.0 + 6.0*xCoefficents[3];
-        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
+        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX - accelX * velY);
 
         poses.add(new SplinePose2d(p, reversed,tempR));
 
