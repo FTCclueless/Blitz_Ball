@@ -299,7 +299,7 @@ public class Drivetrain {
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= Math.min(curvyCompVariable/Math.abs(weighedR), 1); // THIS WORKS AND KYLE DOES NOT KNOW WHY
+                motorPowers[i] *= Math.min(Math.abs(weighedR)/curvyCompVariable, 1); // THIS WORKS AND KYLE DOES NOT KNOW WHY
                 motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
