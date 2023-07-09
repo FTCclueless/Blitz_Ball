@@ -30,7 +30,12 @@ public class Drivetrain {
     public static double maxDeviationFromPath = 12;
     public static double speed = 0.6;
     public static double curvyCompVariable = 20;
-    public static int futureIndexes = 6;
+    public static int futureIndexes = 6; //each index is inchesPerPointGenerated apart (pre-calculated radius)
+    public static int pastIndexes = 100; //each index is 1 loop apart (instantaneous dynamic radius)
+    public static double futurePastWeight = 0.6; //weight of future to past
+    public static double maxRadiusSum = 30; //needed so outliers don't completely wreck havoc on average
+
+
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -43,6 +48,11 @@ public class Drivetrain {
 
     private Spline currentPath = null;
     private int pathIndex = 0;
+
+    private double[] prevR = new double[pastIndexes];
+    int prevRIndex = 0;
+    boolean pastRFull = false;
+    double sumPrev = 0;
 
     public Drivetrain(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.motorPriorities = motorPriorities;
@@ -210,19 +220,7 @@ public class Drivetrain {
             TelemetryUtil.packet.put("radius", radius);
             TelemetryUtil.packet.put("theta", theta);*/
 
-            TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
-            double turn = TRACK_WIDTH / 2 / radius;
-            double fwd = currentPath.poses.get(pathIndex).reversed ? -1 : 1;
-            double[] motorPowers = {
-                fwd - turn,
-                fwd - turn,
-                fwd + turn,
-                fwd + turn
-            };
-            TelemetryUtil.packet.put("fwd", fwd);
-            TelemetryUtil.packet.put("turn", turn);
-            TelemetryUtil.packet.put("radius", radius);
-            TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
+
 
             // Clippy clippy
             int start = pathIndex;
@@ -234,20 +232,60 @@ public class Drivetrain {
                 end = currentPath.poses.size();
             }
 
-            double predictedFutureR = 0;
+            double averageFutureR = 0;
             for (int i = start; i < end; i++) {
-                predictedFutureR += currentPath.poses.get(i).radius;
+                averageFutureR += Math.abs(currentPath.poses.get(i).radius);
             }
-            if (predictedFutureR == 0) {
+            if (averageFutureR == 0) {
                 // No breaking allowed
-                predictedFutureR = radius;
+                averageFutureR = Math.abs(radius);
             } else {
-                predictedFutureR /= end - start;
+                averageFutureR /= end - start;
             }
-            TelemetryUtil.packet.put("I HATE THIS", predictedFutureR);
+            TelemetryUtil.packet.put("I HATE THIS", averageFutureR);
 
 
 
+
+            sumPrev += Math.min(Math.abs(radius), maxRadiusSum);
+
+            if (pastRFull) {
+                sumPrev -= prevR[prevRIndex];
+            }
+            prevR[prevRIndex] = Math.min(Math.abs(radius),maxRadiusSum);
+
+            prevRIndex++;
+            if (prevRIndex >= pastIndexes) {
+                prevRIndex = 0;
+                pastRFull = true;
+            }
+
+            double averagePrevR;
+            if (pastRFull) {
+                averagePrevR = sumPrev/pastIndexes;
+            }
+            else {
+                averagePrevR = sumPrev/prevRIndex;
+            }
+
+            double weighedR = futurePastWeight*averageFutureR + (1.0-futurePastWeight)*averagePrevR;
+
+
+
+
+            TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
+            double turn = TRACK_WIDTH / 2 / radius;
+            double fwd = currentPath.poses.get(pathIndex).reversed ? -1 : 1;
+            double[] motorPowers = {
+                    fwd - turn,
+                    fwd - turn,
+                    fwd + turn,
+                    fwd + turn
+            };
+            TelemetryUtil.packet.put("fwd", fwd);
+            TelemetryUtil.packet.put("turn", turn);
+            TelemetryUtil.packet.put("radius", radius);
+            TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
 
             // Post 1 normalization
             double max = 1;
@@ -257,7 +295,7 @@ public class Drivetrain {
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= Math.min(curvyCompVariable / Math.abs(predictedFutureR), 1);
+                motorPowers[i] *= Math.min(Math.abs(averageFutureR)/curvyCompVariable, 1);
                 motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
