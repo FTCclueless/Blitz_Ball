@@ -63,9 +63,10 @@ public class Spline {
         accelX = 2*yCoefficents[2];
         accelY = 2*yCoefficents[2];
 
-        double tempR;
-        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
-
+        double tempR = Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
+        if (Double.isNaN(tempR) || Double.isInfinite(tempR)) {
+            System.out.println("HOLY JESUS SOMETHING BAD HAPPENED (FIRST TEMPR IS BRICKED)");
+        }
 
         poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, tempR));
 
@@ -109,10 +110,11 @@ public class Spline {
         // gets the acceleration which is second derivative of position
         accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3];
         accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3];
-        tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX - accelX * velY);
+        if (Math.abs(accelY*velX - accelX * velY) <= 0.1) {
+            tempR = Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
+        }
 
         poses.add(new SplinePose2d(p, reversed,tempR));
-        System.out.println("pathIndex: " + poses.size() + " radius: " + tempR);
 
         return this;
     }

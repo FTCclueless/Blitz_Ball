@@ -28,5 +28,9 @@ public class PurePursuitTest extends LinearOpMode {
         waitForStart();
         robot.followSpline(spline1, this);
         robot.followSpline(spline2, this);
+
+        while (!isStopRequested()) {
+            robot.update();
+        }
     }
 }

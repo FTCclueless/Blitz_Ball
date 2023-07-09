@@ -164,7 +164,7 @@ public class Drivetrain {
                 tempLookAheadR += 0.05;
                 if (tempLookAheadR >= maxDeviationFromPath) {
                     Pose2d temptemp = null;
-                    if (pathIndex < currentPath.poses.size() - 1) {
+                    if (pathIndex < currentPath.poses.size()) {
                         temptemp = currentPath.poses.get(pathIndex + 1);
                     } else {
                         temptemp = currentPath.poses.get(pathIndex);
@@ -242,10 +242,6 @@ public class Drivetrain {
             } else {
                 averageFutureR /= end - start;
             }
-            TelemetryUtil.packet.put("I HATE THIS", averageFutureR);
-
-
-
 
             sumPrev += Math.min(Math.abs(radius), maxRadiusSum);
 
@@ -293,8 +289,7 @@ public class Drivetrain {
                 max = Math.max(max, power);
             }
 
-
-            TelemetryUtil.packet.put("average futurePast", weighedR);
+            TelemetryUtil.packet.put("weighedR", weighedR);
             TelemetryUtil.packet.put("instantaneous R", currentPath.poses.get(pathIndex).radius);
 
             for (int i = 0; i < motorPowers.length; i++) {
