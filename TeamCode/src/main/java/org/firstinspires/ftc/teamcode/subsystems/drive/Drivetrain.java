@@ -26,14 +26,14 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 10;
+    public static double lookAheadRadius = 13;
     public static double maxDeviationFromPath = 12;
-    public static double speed = 0.6;
+    public static double speed = 0.7;
     public static double curvyCompVariable = 20;
     public static int futureIndexes = 6; //each index is inchesPerPointGenerated apart (pre-calculated radius)
-    public static int pastIndexes = 100; //each index is 1 loop apart (instantaneous dynamic radius)
+    public static int pastIndexes = 15; //each index is 1 loop apart (instantaneous dynamic radius)
     public static double futurePastWeight = 0.6; //weight of future to past
-    public static double maxRadiusSum = 30; //needed so outliers don't completely wreck havoc on average
+    public static double maxRadiusSum = 35; //needed so outliers don't completely wreck havoc on average
 
 
 
@@ -295,10 +295,11 @@ public class Drivetrain {
 
 
             TelemetryUtil.packet.put("average futurePast", weighedR);
+            TelemetryUtil.packet.put("instantaneous R", currentPath.poses.get(pathIndex).radius);
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= Math.min(Math.abs(weighedR)/curvyCompVariable, 1);
+                motorPowers[i] *= Math.min(curvyCompVariable/Math.abs(weighedR), 1); // THIS WORKS AND KYLE DOES NOT KNOW WHY
                 motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);

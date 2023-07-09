@@ -60,8 +60,8 @@ public class Spline {
         point.y = yCoefficents[0];
         velX = xCoefficents[1];
         velY = yCoefficents[1];
-        accelX = 2;
-        accelY = 2;
+        accelX = 2*yCoefficents[2];
+        accelY = 2*yCoefficents[2];
 
         double tempR;
         tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
@@ -88,8 +88,8 @@ public class Spline {
                 velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
 
                 // gets the acceleration which is second derivative of position
-                accelX = 2.0 + 6.0*xCoefficents[3]*time;
-                accelY = 2.0 + 6.0*xCoefficents[3]*time;
+                accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3]*time;
+                accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3]*time;
 
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
                 point.heading = Math.atan2(velY,velX);
@@ -98,6 +98,7 @@ public class Spline {
                 tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
 
                 poses.add(new SplinePose2d(point, reversed,tempR));
+                System.out.println("pathIndex: " + poses.size() + " radius: " + tempR);
 
                 lastPoint = point;
             }
@@ -106,11 +107,12 @@ public class Spline {
         velY = yCoefficents[1] + 2.0*yCoefficents[2] + 3.0*yCoefficents[3];
 
         // gets the acceleration which is second derivative of position
-        accelX = 2.0 + 6.0*xCoefficents[3];
-        accelY = 2.0 + 6.0*xCoefficents[3];
+        accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3];
+        accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3];
         tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX - accelX * velY);
 
         poses.add(new SplinePose2d(p, reversed,tempR));
+        System.out.println("pathIndex: " + poses.size() + " radius: " + tempR);
 
         return this;
     }
