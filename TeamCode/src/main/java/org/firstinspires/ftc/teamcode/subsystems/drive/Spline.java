@@ -33,6 +33,20 @@ public class Spline {
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
+    public double findR(double time, double[] xCoefficents, double[] yCoefficents){
+        // gets the velocity because the derivative of position = velocity
+        double velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
+        double velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
+
+        // gets the acceleration which is second derivative of position
+        double accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3]*time;
+        double accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3]*time;
+        if ((accelY * velX - accelX * velY) != 0) {
+            return Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
+        }
+        return 100; // straight line
+    }
+
     public Spline addPoint(Pose2d p) {
         // https://www.desmos.com/calculator/yi3jovk0hp
         Pose2d point = new Pose2d(0,0,0);
@@ -53,24 +67,15 @@ public class Spline {
         yCoefficents[2] = 3*p.y - arbitraryVelocity*Math.sin(p.heading) - 2*yCoefficents[1] - 3*yCoefficents[0];
         yCoefficents[3] = p.y - yCoefficents[0] - yCoefficents[1] - yCoefficents[2];
 
-
-        double velX = 0, velY = 0, accelX = 0, accelY = 0;
-
         point.x = xCoefficents[0];
         point.y = yCoefficents[0];
-        velX = xCoefficents[1];
-        velY = yCoefficents[1];
-        accelX = 2*yCoefficents[2];
-        accelY = 2*yCoefficents[2];
 
-        double tempR = Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
+        double tempR = findR(0,xCoefficents,yCoefficents);
         if (Double.isNaN(tempR) || Double.isInfinite(tempR)) {
             System.out.println("HOLY JESUS SOMETHING BAD HAPPENED (FIRST TEMPR IS BRICKED)");
         }
 
-        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, tempR));
-
-
+        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, findR(0,xCoefficents,yCoefficents)));
 
         for (double time = 0.0; time < 1.0; time+=0.001) {
             point = new Pose2d(0,0,0);
@@ -78,43 +83,23 @@ public class Spline {
             point.x = xCoefficents[0] + xCoefficents[1]*time + xCoefficents[2]*time*time + xCoefficents[3]*time*time*time;
             point.y = yCoefficents[0] + yCoefficents[1]*time + yCoefficents[2]*time*time + yCoefficents[3]*time*time*time;
 
-
-
-
-
             if(lastPoint.getDistanceFromPoint(point) > inchesPerNewPointGenerated) { // new point every two inches
 
                 // gets the velocity because the derivative of position = velocity
-                velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
-                velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
-
-                // gets the acceleration which is second derivative of position
-                accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3]*time;
-                accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3]*time;
-
+                double velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
+                double velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
                 // heading is equal to the inverse tangent of velX and velY because velX and velY have a magnitude and a direction and soh cah toa
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
 
-                tempR = Math.pow(velX*velX + velY*velY , 1.5)/ (accelY*velX -accelX * velY);
-
-                poses.add(new SplinePose2d(point, reversed,tempR));
+                poses.add(new SplinePose2d(point, reversed, findR(time,xCoefficents,yCoefficents)));
                 System.out.println("pathIndex: " + poses.size() + " radius: " + tempR);
 
                 lastPoint = point;
             }
         }
-        velX = xCoefficents[1] + 2.0*xCoefficents[2] + 3.0*xCoefficents[3];
-        velY = yCoefficents[1] + 2.0*yCoefficents[2] + 3.0*yCoefficents[3];
 
-        // gets the acceleration which is second derivative of position
-        accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3];
-        accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3];
-        if (Math.abs(accelY*velX - accelX * velY) <= 0.1) {
-            tempR = Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
-        }
-
-        poses.add(new SplinePose2d(p, reversed,tempR));
+        poses.add(new SplinePose2d(p, reversed, findR(1.0, xCoefficents, yCoefficents)));
 
         return this;
     }
