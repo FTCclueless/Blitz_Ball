@@ -33,7 +33,7 @@ public class Drivetrain {
     public static int futureIndexes = 6; //each index is inchesPerPointGenerated apart (pre-calculated radius)
     public static int pastIndexes = 15; //each index is 1 loop apart (instantaneous dynamic radius)
     public static double futurePastWeight = 0.6; //weight of future to past
-    public static double maxRadiusSum = 35; //needed so outliers don't completely wreck havoc on average
+    public static double maxRadius = 35; //needed so outliers don't completely wreck havoc on average
 
 
 
@@ -243,12 +243,12 @@ public class Drivetrain {
                 averageFutureR /= end - start;
             }
 
-            sumPrev += Math.min(Math.abs(radius), maxRadiusSum);
+            sumPrev += Math.min(Math.abs(radius), maxRadius);
 
             if (pastRFull) {
                 sumPrev -= prevR[prevRIndex];
             }
-            prevR[prevRIndex] = Math.min(Math.abs(radius),maxRadiusSum);
+            prevR[prevRIndex] = Math.min(Math.abs(radius), maxRadius);
 
             prevRIndex++;
             if (prevRIndex >= pastIndexes) {

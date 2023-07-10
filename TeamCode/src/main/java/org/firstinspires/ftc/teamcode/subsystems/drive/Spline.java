@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
-import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 import java.util.ArrayList;
@@ -44,10 +43,10 @@ public class Spline {
         // gets the acceleration which is second derivative of position
         double accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3]*time;
         double accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3]*time;
-        if ((accelY * velX - accelX * velY) != 0) {
-            return Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
-        }
-        return 100; // straight line
+
+        return Math.min(Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY),Drivetrain.maxRadius);
+
+
     }
 
     public Spline addPoint(Pose2d p) {
