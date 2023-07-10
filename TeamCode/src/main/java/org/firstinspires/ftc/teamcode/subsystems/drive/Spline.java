@@ -33,7 +33,10 @@ public class Spline {
         this.inchesPerNewPointGenerated = inchesPerNewPointGenerated;
     }
 
-    public double findR(double time, double[] xCoefficents, double[] yCoefficents){
+    double[] xCoefficents = new double[4];
+    double[] yCoefficents = new double[4];
+
+    public double findR(double time){
         // gets the velocity because the derivative of position = velocity
         double velX = xCoefficents[1] + 2.0*xCoefficents[2]*time + 3.0*xCoefficents[3]*time*time;
         double velY = yCoefficents[1] + 2.0*yCoefficents[2]*time + 3.0*yCoefficents[3]*time*time;
@@ -51,9 +54,6 @@ public class Spline {
         // https://www.desmos.com/calculator/yi3jovk0hp
         Pose2d point = new Pose2d(0,0,0);
 
-        double[] xCoefficents = new double[4];
-        double[] yCoefficents = new double[4];
-
         Pose2d lastPoint = poses.get(poses.size()-1); // when you add a new spline the last point becomes the starting point for the new spline
 
         double arbitraryVelocity = 1.25*Math.sqrt(Math.pow((lastPoint.x - p.x),2) + Math.pow((lastPoint.y - p.y),2));
@@ -70,12 +70,12 @@ public class Spline {
         point.x = xCoefficents[0];
         point.y = yCoefficents[0];
 
-        double tempR = findR(0,xCoefficents,yCoefficents);
-        if (Double.isNaN(tempR) || Double.isInfinite(tempR)) {
+        double firstR = findR(0);
+        if (Double.isNaN(firstR) || Double.isInfinite(firstR)) {
             System.out.println("HOLY JESUS SOMETHING BAD HAPPENED (FIRST TEMPR IS BRICKED)");
         }
 
-        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, findR(0,xCoefficents,yCoefficents)));
+        poses.set(0, new SplinePose2d(poses.get(0).x, poses.get(0).y, poses.get(0).heading, poses.get(0).reversed, firstR));
 
         for (double time = 0.0; time < 1.0; time+=0.001) {
             point = new Pose2d(0,0,0);
@@ -92,14 +92,14 @@ public class Spline {
                 point.heading = Math.atan2(velY,velX);
                 point.clipAngle();
 
-                poses.add(new SplinePose2d(point, reversed, findR(time,xCoefficents,yCoefficents)));
-                System.out.println("pathIndex: " + poses.size() + " radius: " + tempR);
+                poses.add(new SplinePose2d(point, reversed, findR(time)));
+                System.out.println("pathIndex: " + poses.size() + " radius: " + findR(time));
 
                 lastPoint = point;
             }
         }
 
-        poses.add(new SplinePose2d(p, reversed, findR(1.0, xCoefficents, yCoefficents)));
+        poses.add(new SplinePose2d(p, reversed, findR(1.0)));
 
         return this;
     }
