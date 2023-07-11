@@ -45,7 +45,7 @@ public class Spline {
         double accelX = 2.0*xCoefficents[2] + 6.0*xCoefficents[3]*time;
         double accelY = 2.0*yCoefficents[2] + 6.0*yCoefficents[3]*time;
         if ((accelY * velX - accelX * velY) != 0) {
-            return Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY);
+            return Math.min(Math.abs(Math.pow(velX * velX + velY * velY, 1.5) / (accelY * velX - accelX * velY)),100);
         }
         return 100; // straight line
     }

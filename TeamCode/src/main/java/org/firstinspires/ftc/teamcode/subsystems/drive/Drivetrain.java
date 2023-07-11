@@ -26,16 +26,11 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 13;
-    public static double maxDeviationFromPath = 12;
-    public static double speed = 0.7;
-    public static double curvyCompVariable = 20;
-    public static int futureIndexes = 6; //each index is inchesPerPointGenerated apart (pre-calculated radius)
-    public static int pastIndexes = 15; //each index is 1 loop apart (instantaneous dynamic radius)
-    public static double futurePastWeight = 0.6; //weight of future to past
-    public static double maxRadiusSum = 35; //needed so outliers don't completely wreck havoc on average
 
+    double maxRadius = 20;
 
+    double maxSpeed = 54;
+    double maxTurn = maxSpeed / (TRACK_WIDTH);
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -48,11 +43,6 @@ public class Drivetrain {
 
     private Spline currentPath = null;
     private int pathIndex = 0;
-
-    private double[] prevR = new double[pastIndexes];
-    int prevRIndex = 0;
-    boolean pastRFull = false;
-    double sumPrev = 0;
 
     public Drivetrain(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.motorPriorities = motorPriorities;
@@ -116,63 +106,42 @@ public class Drivetrain {
         }
 
         if (currentPath != null) {
-            /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
-                if (pathIndex == currentPath.poses.size() - 1) {
-                    doNotMove = true;
-                    return;
-                }
-
+            //Find the closest point on the path to the robot
+            double distanceToClosestPoint = currentPath.poses.get(pathIndex).getDistanceFromPoint(estimate);
+            double distanceToNextPoint = currentPath.poses.get(Math.min(pathIndex + 1,currentPath.poses.size() - 1)).getDistanceFromPoint(estimate);
+            while (distanceToClosestPoint > distanceToNextPoint && pathIndex < currentPath.poses.size() - 1) {
                 pathIndex++;
-            }*/
-
-            double distance = currentPath.poses.get(pathIndex).getDistanceFromPoint(estimate);
-            for (int i = pathIndex + 1; i < currentPath.poses.size(); i++) {
-                double tdistance = currentPath.poses.get(i).getDistanceFromPoint(estimate);
-                if (tdistance < distance) {
-                    distance = tdistance;
-                    pathIndex = i;
-                }
+                distanceToClosestPoint = distanceToNextPoint;
+                distanceToNextPoint = currentPath.poses.get(pathIndex + 1).getDistanceFromPoint(estimate);
             }
-
-            if (currentPath.poses.get(pathIndex).reversed) {
-                estimate.heading += Math.PI;
-            }
-
-            if (pathIndex >= currentPath.poses.size() - 1) {
-                // Do this well later
-                doNotMove = true;
-                return;
-            }
-
-            TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
-
-            Vector2 temp;
-            double tempLookAheadR = Drivetrain.lookAheadRadius;
-            Vector2 lookAhead = null;
-
-            while (lookAhead == null) {
-                for (int i = pathIndex; i < currentPath.poses.size() - 1; i++) {
-                    if (pathIndex != currentPath.poses.size()) {
-
-                        temp = lineCircleIntersection(currentPath.poses.get(i), currentPath.poses.get(i + 1), estimate, tempLookAheadR);
-                        if (temp != null) {
-                            pathIndex = i;
-                            lookAhead = temp;
-                        }
-                    }
-                }
-                tempLookAheadR += 0.05;
-                if (tempLookAheadR >= maxDeviationFromPath) {
-                    Pose2d temptemp = null;
-                    if (pathIndex < currentPath.poses.size()) {
-                        temptemp = currentPath.poses.get(pathIndex + 1);
-                    } else {
-                        temptemp = currentPath.poses.get(pathIndex);
-                    }
-                    lookAhead = new Vector2(temptemp.x, temptemp.y);
+            //Find the target for the robot to go to
+            double pathCurvyness = 0;
+            int targetIndex = pathIndex;
+            double targetRadius = currentPath.poses.get(targetIndex).getDistanceFromPoint(estimate);
+            double lastRadius = targetRadius;
+            while (pathCurvyness < 0.2 && targetRadius < maxRadius && targetIndex < currentPath.poses.size() - 1){
+                pathCurvyness += 1/Math.max(currentPath.poses.get(targetIndex).radius,8);
+                targetIndex ++;
+                lastRadius = targetRadius;
+                targetRadius = currentPath.poses.get(targetIndex).getDistanceFromPoint(estimate);
+                if (targetRadius < lastRadius){ //If the radius becomes smaller it means you are missing part of the trajectory and therefore we do this so that it finds the next point again
+                    targetIndex --;
+                    targetRadius = lastRadius;
                     break;
                 }
             }
+            //this kinda jank but will leave for now
+            if (currentPath.poses.get(pathIndex).reversed) {
+                estimate.heading += Math.PI;
+            }
+            //This is jank & ends the path
+            if (pathIndex == targetIndex && targetIndex ==currentPath.poses.size() - 1) {
+                doNotMove = true;
+                return;
+            }
+            Pose2d lookAhead = currentPath.poses.get(targetIndex);
+
+            TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
 
             // Plot the lookahead point
             canvas.setFill("#ff0000");
@@ -184,14 +153,8 @@ public class Drivetrain {
                 0
             );
 
-            /*double a = -Math.tan(AngleUtil.clipAngle(estimate.heading));
-            double b = 1;
-            double c = Math.tan(AngleUtil.clipAngle(estimate.heading))*estimate.x-estimate.y;
-            TelemetryUtil.packet.put("abc", a + " " + b + " " + c);*/
-
             double relativeErrorY = error.y * Math.cos(estimate.heading) - error.x * Math.sin(estimate.heading);
-
-            double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2))));
+            double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2)))); // why calculate it like this??????
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
             double radius = (error.x * error.x + error.y * error.y) / (2 * relativeErrorY);
@@ -209,69 +172,13 @@ public class Drivetrain {
                 canvas.strokeCircle(perp.x, perp.y, Math.abs(radius));
             }
 
-            /*canvas.setStroke("#00ffff");
-            canvas.setStroke("#0000ff");
-            perp = new Vector2(-Math.sin(estimate.heading), Math.cos(estimate.heading));
-            perp.norm();
-            perp.mul(relativeErrorY);
-            perp.add(new Vector2(estimate.x, estimate.y));
-            canvas.strokeLine(estimate.x, estimate.y, perp.x, perp.y);
-
-            TelemetryUtil.packet.put("radius", radius);
-            TelemetryUtil.packet.put("theta", theta);*/
-
-
-
-            // Clippy clippy
-            int start = pathIndex;
-            int end = pathIndex + futureIndexes;
-            if (start < 0) {
-                start = 0;
-            }
-            if (end > currentPath.poses.size()) {
-                end = currentPath.poses.size();
-            }
-
-            double averageFutureR = 0;
-            for (int i = start; i < end; i++) {
-                averageFutureR += Math.abs(currentPath.poses.get(i).radius);
-            }
-            if (averageFutureR == 0) {
-                // No breaking allowed
-                averageFutureR = Math.abs(radius);
-            } else {
-                averageFutureR /= end - start;
-            }
-
-            sumPrev += Math.min(Math.abs(radius), maxRadiusSum);
-
-            if (pastRFull) {
-                sumPrev -= prevR[prevRIndex];
-            }
-            prevR[prevRIndex] = Math.min(Math.abs(radius),maxRadiusSum);
-
-            prevRIndex++;
-            if (prevRIndex >= pastIndexes) {
-                prevRIndex = 0;
-                pastRFull = true;
-            }
-
-            double averagePrevR;
-            if (pastRFull) {
-                averagePrevR = sumPrev/pastIndexes;
-            }
-            else {
-                averagePrevR = sumPrev/prevRIndex;
-            }
-
-            double weighedR = futurePastWeight*averageFutureR + (1.0-futurePastWeight)*averagePrevR;
-
-
-
-
             TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
-            double turn = TRACK_WIDTH / 2 / radius;
-            double fwd = currentPath.poses.get(pathIndex).reversed ? -1 : 1;
+            double speed = Math.max(Math.min(Math.abs(targetRadius)/maxRadius, 1),0.5); //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
+            double targetTurn = speed * (TRACK_WIDTH / 2.0) / radius;
+            double targetFwd = speed * (currentPath.poses.get(pathIndex).reversed ? -1 : 1);
+            //apply the feedforward
+            double fwd = targetFwd + (targetFwd - localizer.relCurrentVel.x/maxSpeed) * 0.35;
+            double turn = targetTurn + (targetTurn - localizer.relCurrentVel.heading/maxTurn) * 0.35;
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,
@@ -281,7 +188,6 @@ public class Drivetrain {
             TelemetryUtil.packet.put("fwd", fwd);
             TelemetryUtil.packet.put("turn", turn);
             TelemetryUtil.packet.put("radius", radius);
-            TelemetryUtil.packet.put("tempLookR", tempLookAheadR);
 
             // Post 1 normalization
             double max = 1;
@@ -289,13 +195,8 @@ public class Drivetrain {
                 max = Math.max(max, power);
             }
 
-            TelemetryUtil.packet.put("weighedR", weighedR);
-            TelemetryUtil.packet.put("instantaneous R", currentPath.poses.get(pathIndex).radius);
-
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= Math.min(Math.abs(weighedR)/curvyCompVariable, 1); // THIS WORKS AND KYLE DOES NOT KNOW WHY
-                motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
                 TelemetryUtil.packet.put("Max", max);
