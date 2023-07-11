@@ -15,11 +15,12 @@ public class PurePursuitTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Drivetrain drivetrain = robot.drivetrain;
 
-        drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
-        Pose2d midPoint = new Pose2d(52,30,Math.toRadians(90));
-        Spline spline1 = new Spline(new Pose2d(0, 0, 0), 2)
+        double garbageValue = -20;
+        drivetrain.setPoseEstimate(new Pose2d(garbageValue, 0, 0));
+        Pose2d midPoint = new Pose2d(52 + garbageValue,30,Math.toRadians(90));
+        Spline spline1 = new Spline(drivetrain.getPoseEstimate(), 2)
             .addPoint(new Pose2d(midPoint.x - 16, 0, 0))
-            .addPoint(midPoint);
+            .addPoint(new Pose2d(midPoint.x, midPoint.y, midPoint.heading));
         Spline spline2 = new Spline(midPoint, 2)
             .setReversed(true)
             .addPoint(new Pose2d(midPoint.x + 16,0,0))

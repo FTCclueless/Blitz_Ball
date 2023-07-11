@@ -14,7 +14,9 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
+import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
@@ -26,14 +28,21 @@ import java.util.List;
 @Config
 public class Drivetrain {
     // Pure pursuit tuning values
-    public static double lookAheadRadius = 13;
+    public static double lookAheadRadius = 20;
     public static double maxDeviationFromPath = 12;
-    public static double speed = 0.7;
-    public static double curvyCompVariable = 20;
-    public static int futureIndexes = 6; //each index is inchesPerPointGenerated apart (pre-calculated radius)
-    public static int pastIndexes = 15; //each index is 1 loop apart (instantaneous dynamic radius)
-    public static double futurePastWeight = 0.6; //weight of future to past
-    public static double maxRadius = 35; //needed so outliers don't completely wreck havoc on average
+    public static double speed = 1;
+    public static double curvyCompVariable = 50;
+    public static int futureIndexes = 8; //each index is inchesPerPointGenerated apart (pre-calculated radius)
+    public static int pastIndexes = 8; //each index is 1 loop apart (instantaneous dynamic radius)
+    public static double futurePastWeight = 0.8; //weight of future to past
+    public static double maxRadius = 70; //needed so outliers don't completely wreck havoc on average
+    public static double slowDown = 0.3;
+    public static double pathCompletedForSlowdown = 0.9;
+
+    //stay in place PID at end
+    public static PID headingPID = new PID(1.0, 0, 0);
+    public static PID forwardPID = new PID(1.0, 0, 0);
+
 
 
 
@@ -45,6 +54,7 @@ public class Drivetrain {
 
     public TwoWheelLocalizer localizer;
     private boolean doNotMove = false;
+    private boolean correctHeading = false;
 
     private Spline currentPath = null;
     private int pathIndex = 0;
@@ -88,6 +98,7 @@ public class Drivetrain {
         currentPath = path;
         pathIndex = 0;
         doNotMove = false;
+        correctHeading = false;
     }
 
     public Spline getCurrentPath() {
@@ -106,14 +117,8 @@ public class Drivetrain {
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
         Pose2d estimate = localizer.getPoseEstimate();
 
-        TelemetryUtil.packet.put("done", doNotMove);
-        if (doNotMove) {
-            // TODO its kinda bad
-            for (DcMotorEx motor : motors) {
-                motor.setPower(0);
-            }
-            return;
-        }
+        TelemetryUtil.packet.put("done", doNotMove + " " + correctHeading);
+
 
         if (currentPath != null) {
             /*while (estimate.getDistanceFromPoint(currentPath.poses.get(pathIndex)) <= 8) {
@@ -140,7 +145,7 @@ public class Drivetrain {
 
             if (pathIndex >= currentPath.poses.size() - 1) {
                 // Do this well later
-                doNotMove = true;
+                correctHeading = true;
                 return;
             }
 
@@ -193,6 +198,47 @@ public class Drivetrain {
 
             double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2))));
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
+
+            if (correctHeading) {
+                // TODO its kinda bad
+
+                double headingError = AngleUtil.clipAngle(currentPath.poses.get(currentPath.poses.size()-1).heading-estimate.heading);
+
+                double turn = headingPID.getOut(headingError);;
+                double fwd = forwardPID.getOut(relativeErrorX);
+                TelemetryUtil.packet.put("headingError ", headingError);
+                TelemetryUtil.packet.put("a", headingError);
+
+                double[] motorPowers = {
+                        fwd - turn,
+                        fwd - turn,
+                        fwd + turn,
+                        fwd + turn
+                };
+                double max = 1;
+                for (double power : motorPowers) {
+                    max = Math.max(max, power);
+                }
+
+                for (int i = 0; i < motorPowers.length; i++) {
+                    motorPowers[i] /= max;
+                    motorPriorities.get(i).setTargetPower(motorPowers[i]);
+                }
+
+                if (Math.abs(headingError) < Math.toRadians(5.0)) {
+                    doNotMove = true;
+                }
+
+                return;
+            }
+
+            if (doNotMove) {
+                for (int i = 0; i < 4; i++) {
+
+                    motorPriorities.get(i).setTargetPower(0);
+                }
+                return;
+            }
 
             double radius = (error.x * error.x + error.y * error.y) / (2 * relativeErrorY);
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
@@ -294,7 +340,10 @@ public class Drivetrain {
 
             for (int i = 0; i < motorPowers.length; i++) {
                 motorPowers[i] /= max;
-                motorPowers[i] *= Math.min(Math.abs(weighedR)/curvyCompVariable, 1); // THIS WORKS AND KYLE DOES NOT KNOW WHY
+                motorPowers[i] *= Math.pow(Math.min(Math.abs(weighedR)/curvyCompVariable, 1),2);
+                if (pathIndex >= (int) (currentPath.poses.size() * pathCompletedForSlowdown)) {
+                    motorPowers[i] *= ((double) currentPath.poses.size() / pathIndex) * slowDown;
+                }
                 motorPowers[i] *= speed;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
