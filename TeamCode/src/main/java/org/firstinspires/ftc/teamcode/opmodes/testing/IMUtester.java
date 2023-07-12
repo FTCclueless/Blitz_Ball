@@ -12,11 +12,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 @Autonomous
 public class IMUtester extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+
         BHI260IMU imu = hardwareMap.get(BHI260IMU.class, "imu");
         BHI260IMU.Parameters params = new IMU.Parameters(new RevHubOrientationOnRobot(
             RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
@@ -25,15 +27,20 @@ public class IMUtester extends LinearOpMode {
         imu.initialize(params);
 
         waitForStart();
+        double past = 0;
+        double sum = 0;
+        double loops = 0;
 
         while (opModeIsActive()) {
-            Orientation orientation = imu.getRobotOrientation(
-                AxesReference.INTRINSIC,
-                AxesOrder.XYZ,
-                AngleUnit.DEGREES
-            );
-            telemetry.addData("yaw", orientation.firstAngle + " " + System.currentTimeMillis());
-            telemetry.update();
+            double start = System.nanoTime();
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            double end = System.nanoTime();
+            loops ++;
+            sum += ((start - end)/1.0E9);
+
+            System.out.println("yaw " + orientation.getYaw(AngleUnit.DEGREES) + " " + sum/loops);
+            past = System.currentTimeMillis();
+
         }
     }
 }
