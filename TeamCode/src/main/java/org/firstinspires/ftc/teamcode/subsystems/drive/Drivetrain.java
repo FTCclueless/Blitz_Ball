@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -27,7 +28,12 @@ import java.util.List;
 public class Drivetrain {
     // Pure pursuit tuning values
 
-    double maxRadius = 20;
+    public static double maxRadius = 20;
+    public static double headingCorrectionP = 1;
+    public static double minRadius = 5;
+    public static double maxCurve = 0.3;
+    public static double turnMul = 1;
+    public static double headingError = 3;
 
     double maxSpeed = 54;
     double maxTurn = maxSpeed / (TRACK_WIDTH);
@@ -39,7 +45,6 @@ public class Drivetrain {
     private Sensors sensors;
 
     public TwoWheelLocalizer localizer;
-    private boolean doNotMove = false;
 
     private Spline currentPath = null;
     private int pathIndex = 0;
@@ -77,7 +82,6 @@ public class Drivetrain {
     public void setCurrentPath(Spline path) {
         currentPath = path;
         pathIndex = 0;
-        doNotMove = false;
     }
 
     public Spline getCurrentPath() {
@@ -96,15 +100,6 @@ public class Drivetrain {
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
         Pose2d estimate = localizer.getPoseEstimate();
 
-        TelemetryUtil.packet.put("done", doNotMove);
-        if (doNotMove) {
-            // TODO its kinda bad
-            for (DcMotorEx motor : motors) {
-                motor.setPower(0);
-            }
-            return;
-        }
-
         if (currentPath != null) {
             //Find the closest point on the path to the robot
             double distanceToClosestPoint = currentPath.poses.get(pathIndex).getDistanceFromPoint(estimate);
@@ -112,14 +107,14 @@ public class Drivetrain {
             while (distanceToClosestPoint > distanceToNextPoint && pathIndex < currentPath.poses.size() - 1) {
                 pathIndex++;
                 distanceToClosestPoint = distanceToNextPoint;
-                distanceToNextPoint = currentPath.poses.get(pathIndex + 1).getDistanceFromPoint(estimate);
+                distanceToNextPoint = currentPath.poses.get(Math.min(pathIndex + 1,currentPath.poses.size() - 1)).getDistanceFromPoint(estimate);
             }
             //Find the target for the robot to go to
             double pathCurvyness = 0;
             int targetIndex = pathIndex;
             double targetRadius = currentPath.poses.get(targetIndex).getDistanceFromPoint(estimate);
             double lastRadius = targetRadius;
-            while (pathCurvyness < 0.2 && targetRadius < maxRadius && targetIndex < currentPath.poses.size() - 1){
+            while ((pathCurvyness < maxCurve || targetRadius < minRadius) && targetRadius < maxRadius && targetIndex < currentPath.poses.size() - 1){
                 pathCurvyness += 1/Math.max(currentPath.poses.get(targetIndex).radius,8);
                 targetIndex ++;
                 lastRadius = targetRadius;
@@ -134,11 +129,7 @@ public class Drivetrain {
             if (currentPath.poses.get(pathIndex).reversed) {
                 estimate.heading += Math.PI;
             }
-            //This is jank & ends the path
-            if (pathIndex == targetIndex && targetIndex ==currentPath.poses.size() - 1) {
-                doNotMove = true;
-                return;
-            }
+
             Pose2d lookAhead = currentPath.poses.get(targetIndex);
 
             TelemetryUtil.packet.put("pathIndex", pathIndex + "/" + currentPath.poses.size());
@@ -174,11 +165,27 @@ public class Drivetrain {
 
             TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
             double speed = Math.max(Math.min(Math.abs(targetRadius)/maxRadius, 1),0.5); //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
-            double targetTurn = speed * (TRACK_WIDTH / 2.0) / radius;
             double targetFwd = speed * (currentPath.poses.get(pathIndex).reversed ? -1 : 1);
+            double targetTurn = speed * (TRACK_WIDTH / 2.0) / radius;
+            if (targetRadius < minRadius) {
+                targetTurn = AngleUtil.clipAngle(currentPath.poses.get(targetIndex).heading - estimate.heading) * headingCorrectionP;
+                if (pathIndex >= currentPath.poses.size() - 1) {
+                    targetFwd = 0;
+                }
+            }
+
+            if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(AngleUtil.clipAngle(currentPath.poses.get(targetIndex).heading - estimate.heading)) < Math.toRadians(headingError)) {
+                currentPath = null;
+                for (MotorPriority motor : motorPriorities) {
+                    motor.setTargetPower(0);
+                }
+                return;
+            }
+
             //apply the feedforward
             double fwd = targetFwd + (targetFwd - localizer.relCurrentVel.x/maxSpeed) * 0.35;
             double turn = targetTurn + (targetTurn - localizer.relCurrentVel.heading/maxTurn) * 0.35;
+            turn *= turnMul;
             double[] motorPowers = {
                     fwd - turn,
                     fwd - turn,
@@ -334,7 +341,7 @@ public class Drivetrain {
     }
 
     public boolean isBusy() {
-        return !doNotMove;
+        return currentPath == null;
     }
 
     public Vector2 lineCircleIntersection(Pose2d start, Pose2d end, Pose2d robot, double radius) {
