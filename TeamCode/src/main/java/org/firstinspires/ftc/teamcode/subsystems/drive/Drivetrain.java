@@ -79,7 +79,6 @@ public class Drivetrain {
         leftRear.setDirection(DcMotor.Direction.REVERSE);
 
         localizer = new TwoWheelLocalizer(hardwareMap);
-        localizer.setIMU(sensors.getImu());
     }
 
     public void setCurrentPath(Spline path) {
@@ -192,7 +191,7 @@ public class Drivetrain {
 
             //apply the feedforward
             double fwd = targetFwd + (targetFwd - localizer.relCurrentVel.x/maxSpeed) * 0.35;
-            double turn = targetTurn + (targetTurn - localizer.relCurrentVel.heading/maxTurn) * 0.35;
+            double turn = targetTurn + (targetTurn - localizer.relCurrentVel.heading/maxTurn) * 0.2 ;
             turn *= turnMul;
             double[] motorPowers = {
                     fwd - turn,

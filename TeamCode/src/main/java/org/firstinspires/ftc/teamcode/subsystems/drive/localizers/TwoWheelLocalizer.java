@@ -1,8 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 
+import com.qualcomm.hardware.bosch.BHI260IMU;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Encoder;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -12,6 +18,7 @@ import java.util.ArrayList;
 public class TwoWheelLocalizer {
     public Encoder[] encoders;
     long lastTime = System.nanoTime();
+    private long imuLastUpdateTime = System.currentTimeMillis();
     public double x = 0;
     public double y = 0;
     public double heading = 0;
@@ -24,23 +31,31 @@ public class TwoWheelLocalizer {
     ArrayList<Pose2d> poseHistory = new ArrayList<Pose2d>();
     ArrayList<Pose2d> relHistory = new ArrayList<Pose2d>();
     ArrayList<Double> loopTimeHistory = new ArrayList<Double>();
-
-    IMU imu;
+    private final BHI260IMU imu;
 
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
         encoders[0] = new Encoder(new Pose2d(0,5.724968),  -1); // left
         encoders[1] = new Encoder(new Pose2d(0,-5.572898885),-1); // right
-    }
-
-    public void setIMU(IMU imu){
-        this.imu = imu;
+        imu = hardwareMap.get(BHI260IMU.class, "imu");
+        BHI260IMU.Parameters params = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+        ));
+        imu.initialize(params);
     }
 
     public void updateEncoders(int[] encoders) {
         for (int i = 0; i < this.encoders.length; i ++) {
             this.encoders[i].update(encoders[i]);
+        }
+
+        if (System.currentTimeMillis() - imuLastUpdateTime >= 150) {
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            double errorH = AngleUtil.clipAngle(orientation.getYaw(AngleUnit.RADIANS) - currentPose.heading);
+            currentPose.heading += errorH / 2;
+            imuLastUpdateTime = System.currentTimeMillis();
         }
     }
 
