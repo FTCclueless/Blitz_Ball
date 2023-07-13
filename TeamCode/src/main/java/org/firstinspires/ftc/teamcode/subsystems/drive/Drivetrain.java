@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.checkerframework.checker.units.qual.Angle;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
@@ -29,11 +30,13 @@ public class Drivetrain {
     // Pure pursuit tuning values
 
     public static double maxRadius = 20;
-    public static double headingCorrectionP = 1;
-    public static double minRadius = 5;
+    public static double headingCorrectionP = 0.8;
+    public static double minRadius = 11;
     public static double maxCurve = 0.3;
     public static double turnMul = 1;
-    public static double headingError = 3;
+    public static double headingError = 5;
+    public static double minSpeedFollowPath = 0.3;
+    public static double slowdown = 0.25;
 
     double maxSpeed = 54;
     double maxTurn = maxSpeed / (TRACK_WIDTH);
@@ -126,9 +129,10 @@ public class Drivetrain {
                 }
             }
             //this kinda jank but will leave for now
-            if (currentPath.poses.get(pathIndex).reversed) {
+
+            /*if (currentPath.poses.get(pathIndex).reversed) {
                 estimate.heading += Math.PI;
-            }
+            }*/
 
             Pose2d lookAhead = currentPath.poses.get(targetIndex);
 
@@ -141,14 +145,17 @@ public class Drivetrain {
             Pose2d error = new Pose2d(
                 lookAhead.x - estimate.x,
                 lookAhead.y - estimate.y,
-                0
+                AngleUtil.clipAngle(lookAhead.heading - estimate.heading + (currentPath.poses.get(pathIndex).reversed ? Math.PI : 0))
             );
 
             double relativeErrorY = error.y * Math.cos(estimate.heading) - error.x * Math.sin(estimate.heading);
-            double relativeErrorX = Math.abs(Math.sqrt(Math.abs(Math.sqrt(error.x * error.x + error.y * error.y) - Math.pow(relativeErrorY, 2)))); // why calculate it like this??????
+            double relativeErrorX = error.x * Math.cos(estimate.heading) + error.y * Math.sin(estimate.heading); // why calculate it like this??????
+
+
             TelemetryUtil.packet.put("rel_error", relativeErrorX + " " + relativeErrorY);
 
             double radius = (error.x * error.x + error.y * error.y) / (2 * relativeErrorY);
+            radius *= Math.signum(relativeErrorX);
             double theta = Math.atan2(relativeErrorY, relativeErrorX);
 
             // Plot the circle thing
@@ -164,17 +171,18 @@ public class Drivetrain {
             }
 
             TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
-            double speed = Math.max(Math.min(Math.abs(targetRadius)/maxRadius, 1),0.5); //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
-            double targetFwd = speed * (currentPath.poses.get(pathIndex).reversed ? -1 : 1);
-            double targetTurn = speed * (TRACK_WIDTH / 2.0) / radius;
-            if (targetRadius < minRadius) {
-                targetTurn = AngleUtil.clipAngle(currentPath.poses.get(targetIndex).heading - estimate.heading) * headingCorrectionP;
-                if (pathIndex >= currentPath.poses.size() - 1) {
-                    targetFwd = 0;
-                }
-            }
+            double speed = targetRadius > minRadius ?
+                    (targetRadius-minRadius)/(maxRadius-minRadius)*(1.0 - minSpeedFollowPath) + minSpeedFollowPath :
+                    (Math.abs(relativeErrorX)/minRadius)*(minSpeedFollowPath - slowdown) + slowdown; //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
+            double targetFwd = speed * (Math.abs(relativeErrorX) > 0.5 ? Math.signum(relativeErrorX) : 0);
+            double targetTurn = speed * (targetRadius > minRadius ?
+                    (TRACK_WIDTH / 2.0) / radius :
+                    error.heading * headingCorrectionP);
 
-            if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(AngleUtil.clipAngle(currentPath.poses.get(targetIndex).heading - estimate.heading)) < Math.toRadians(headingError)) {
+            TelemetryUtil.packet.put("error heading", error.heading);
+
+
+            if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(error.heading) < Math.toRadians(headingError)) {
                 currentPath = null;
                 for (MotorPriority motor : motorPriorities) {
                     motor.setTargetPower(0);
