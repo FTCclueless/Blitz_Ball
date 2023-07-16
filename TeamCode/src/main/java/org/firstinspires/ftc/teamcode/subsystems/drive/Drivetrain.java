@@ -123,7 +123,7 @@ public class Drivetrain {
             double pathCurvyness = 0;
             int targetIndex = pathIndex;
             double targetRadius = currentPath.poses.get(targetIndex).getDistanceFromPoint(estimate);
-            double lastRadius = targetRadius;
+            double lastRadius;
             while ((pathCurvyness < maxCurve || targetRadius < minRadius) && targetRadius < maxRadius && targetIndex < currentPath.poses.size() - 1){
                 pathCurvyness += 1/Math.max(currentPath.poses.get(targetIndex).radius,8);
                 targetIndex ++;
@@ -136,10 +136,11 @@ public class Drivetrain {
                 }
             }
             //this kinda jank but will leave for now
-
-            /*if (currentPath.poses.get(pathIndex).reversed) {
+            /*
+            if (currentPath.poses.get(pathIndex).reversed) {
                 estimate.heading += Math.PI;
-            }*/
+            }
+             */
 
             Pose2d lookAhead = currentPath.poses.get(targetIndex);
 
@@ -154,6 +155,7 @@ public class Drivetrain {
                 lookAhead.y - estimate.y,
                 AngleUtil.clipAngle(lookAhead.heading - estimate.heading + (currentPath.poses.get(pathIndex).reversed ? Math.PI : 0))
             );
+
 
             double relativeErrorY = error.y * Math.cos(estimate.heading) - error.x * Math.sin(estimate.heading);
             double relativeErrorX = error.x * Math.cos(estimate.heading) + error.y * Math.sin(estimate.heading); // why calculate it like this??????
@@ -178,18 +180,16 @@ public class Drivetrain {
             }
 
             TelemetryUtil.packet.put("Reversed", currentPath.poses.get(pathIndex).reversed);
-            double speed = targetRadius > minRadius ?
-                    (targetRadius-minRadius)/(maxRadius-minRadius)*(1.0 - minSpeedFollowPath) + minSpeedFollowPath :
-                    (Math.abs(relativeErrorX)/minRadius)*(minSpeedFollowPath - slowdown) + slowdown; //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
-            double targetFwd = speed * (Math.abs(relativeErrorX) > 0.5 ? Math.signum(relativeErrorX) : 0);
-            double targetTurn = speed * (targetRadius > minRadius ?
-                    (TRACK_WIDTH / 2.0) / radius :
-                    error.heading * headingCorrectionP);
+            double minSpeedFollowingPath = 0.4, slowSpeed = 0.2;
+            double speed = targetRadius > minRadius ? //Find the speed based on the radius -> determined by the curvyness of the path infront of robot
+                    (targetRadius-minRadius)/(maxRadius-minRadius)*(1.0 - minSpeedFollowingPath) + minSpeedFollowingPath : //slow down to a min speed when turning
+                    (Math.abs(relativeErrorX)/minRadius)*(minSpeedFollowingPath - slowSpeed) + slowSpeed;// when within the end slow down
+            double targetFwd = speed * (Math.abs(relativeErrorX) > 0.5 ? Math.signum(relativeErrorX) : 0);//stops the robot when it is within 0.5 inches from end
+            double targetTurn = targetRadius > minRadius ? //are you within the ending of the path
+                    speed * (TRACK_WIDTH / 2.0) / radius : //arc the robot to the point
+                    error.heading * headingCorrectionP;//make the robot turn to the correct heading for the point at the end of the robot's path
 
-            TelemetryUtil.packet.put("error heading", error.heading);
-
-
-            if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(error.heading) < Math.toRadians(headingError)) {
+            if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(AngleUtil.clipAngle(currentPath.poses.get(targetIndex).heading - estimate.heading)) < Math.toRadians(headingError)) { // end the path
                 currentPath = null;
                 for (int i = 0; i < 4; i++) {
                     motorPriorities.get(i).setTargetPower(0);
