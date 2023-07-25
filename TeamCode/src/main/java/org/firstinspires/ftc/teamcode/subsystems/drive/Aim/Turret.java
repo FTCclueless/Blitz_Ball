@@ -36,7 +36,7 @@ public class Turret {
 
 
     public Turret(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
-        turretMotor = hardwareMap.get(DcMotorEx.class, "Turret Motor");
+        turretMotor = hardwareMap.get(DcMotorEx.class, "turret");
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -58,7 +58,7 @@ public class Turret {
         return errorAngle - currentAngle <= errorMargin;
     }
 
-    public void drive(Gamepad gamepad) {
+    public void move(Gamepad gamepad) {
         turretPower = gamepad.right_stick_x;
         motorPriorities.get(4).setTargetPower(turretPid.getOut(turretPower));
     }
