@@ -65,11 +65,15 @@ public class Drivetrain {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         for (int i = 0; i < motors.size(); i++) {
+            //motors.get(i).getMotorType().setAchieveableMaxRPMFraction(1.0);
+
+
             MotorConfigurationType motorConfigurationType = motors.get(i).getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
             motors.get(i).setMotorType(motorConfigurationType);
 
             motorPriorities.add(new MotorPriority(motors.get(i), 3, 5));
+
         }
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
