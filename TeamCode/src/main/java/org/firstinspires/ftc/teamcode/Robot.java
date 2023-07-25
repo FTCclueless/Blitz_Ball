@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.drive.Aim.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.drive.Aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
@@ -22,6 +24,8 @@ public class Robot {
 
     public Sensors sensors;
     public Drivetrain drivetrain;
+    public Turret turret;
+    public Shooter shooter;
 
     public ArrayList<MotorPriority> motorPriorities = new ArrayList<>();
 
@@ -32,6 +36,8 @@ public class Robot {
 
         sensors = new Sensors(hardwareMap, motorPriorities);
         drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
+        turret = new Turret(hardwareMap, motorPriorities);
+        shooter = new Shooter(hardwareMap, motorPriorities);
     }
 
     public void update() {

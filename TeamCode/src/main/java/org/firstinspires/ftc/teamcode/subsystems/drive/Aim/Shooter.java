@@ -33,8 +33,8 @@ public class Shooter {
 
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        leftShooterHood = new MyServo(hardwareMap.get(Servo.class, "leftShooterHood"),"axon");
-        rightShooterHood = new MyServo(hardwareMap.get(Servo.class, "rightShooterHood"), "axon");
+        leftShooterHood = new MyServo(hardwareMap.get(Servo.class, "leftShooterHood"),"axon", false);
+        rightShooterHood = new MyServo(hardwareMap.get(Servo.class, "rightShooterHood"), "axon", true);
 
         this.motorPriorities = motorPriorities;
 
@@ -58,5 +58,8 @@ public class Shooter {
         shooterErrorPower = shooterTargetPower-shooterCurrentPower;
 
         motorPriorities.get(5).setTargetPower(shooterPID.getOut(shooterErrorAngle));
+
+        leftShooterHood.setAngle(shooterTargetAngle);
+        rightShooterHood.setAngle(shooterTargetAngle);
     }
 }

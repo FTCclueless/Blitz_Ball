@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.TICKS_PER_RADIAN;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
@@ -34,7 +35,7 @@ public class Turret {
 
 
 
-    public Turret(HardwareMap hardwareMap, double robotPosition, ArrayList<MotorPriority> motorPriorities) {
+    public Turret(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         turretMotor = hardwareMap.get(DcMotorEx.class, "Turret Motor");
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -55,6 +56,10 @@ public class Turret {
 
     public boolean isComplete(double errorMargin) {
         return errorAngle - currentAngle <= errorMargin;
+    }
+
+    public void drive(Gamepad gamepad) {
+        turretPower = gamepad.right_stick_x;
     }
 
 
