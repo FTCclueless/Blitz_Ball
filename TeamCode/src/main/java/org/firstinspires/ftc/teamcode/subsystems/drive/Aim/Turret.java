@@ -60,6 +60,7 @@ public class Turret {
 
     public void drive(Gamepad gamepad) {
         turretPower = gamepad.right_stick_x;
+        motorPriorities.get(4).setTargetPower(turretPid.getOut(turretPower));
     }
 
 

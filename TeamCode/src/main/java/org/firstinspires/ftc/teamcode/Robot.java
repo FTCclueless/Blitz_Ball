@@ -49,6 +49,7 @@ public class Robot {
     private void updateSubsystems() {
         sensors.update();
         drivetrain.update();
+        turret.update();
 
         MotorPriority.updateMotors(motorPriorities);
     }
