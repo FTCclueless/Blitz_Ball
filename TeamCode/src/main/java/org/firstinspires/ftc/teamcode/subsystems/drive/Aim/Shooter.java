@@ -50,6 +50,6 @@ public class Shooter {
         shooterErrorAngle = shooterTargetAngle-shooterCurrentAngle;
         shooterErrorPower = shooterTargetPower-shooterCurrentPower;
 
-        motorPriorities.get(5).setTargetPower(shooterErrorPower);
+        motorPriorities.get(5).setTargetPower(shooterPID.getOut(shooterErrorAngle));
     }
 }
