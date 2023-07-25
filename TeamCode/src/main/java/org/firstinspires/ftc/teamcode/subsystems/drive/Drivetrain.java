@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.drive;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.DRIVETRAIN_ENABLED;
 import static org.firstinspires.ftc.teamcode.utils.Globals.MIN_MOTOR_POWER_TO_OVERCOME_FRICTION;
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -99,8 +100,10 @@ public class Drivetrain {
 
         updateLocalizer();
 
+
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
         Pose2d estimate = localizer.getPoseEstimate();
+        ROBOT_POSITION = new Pose2d(estimate.x, estimate.y,estimate.heading);
 
         if (currentPath != null) {
             //Find the closest point on the path to the robot
@@ -183,8 +186,8 @@ public class Drivetrain {
 
             if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(error.heading) < Math.toRadians(headingError)) {
                 currentPath = null;
-                for (MotorPriority motor : motorPriorities) {
-                    motor.setTargetPower(0);
+                for (int i = 0; i < 4; i++) {
+                    motorPriorities.get(i).setTargetPower(0);
                 }
                 return;
             }

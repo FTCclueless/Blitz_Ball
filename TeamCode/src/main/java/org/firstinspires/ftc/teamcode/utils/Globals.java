@@ -5,11 +5,21 @@ public class Globals {
     public static long LOOP_START = System.nanoTime();
     public static double LOOP_TIME = 0.0;
 
+
+
+
+
     // drivetrain
     public static boolean DRIVETRAIN_ENABLED = true;
     public static double TRACK_WIDTH = 13.3750297033534346;
     public static double MIN_MOTOR_POWER_TO_OVERCOME_FRICTION = 0.1;
     public static double MAX_DRIVETRAIN_SPEED = 75;
+
+    // turret
+    public static double TICKS_PER_RADIAN = 336.607748257;
+
+
+    public static Pose2d ROBOT_POSITION =new Pose2d(0,0,0);
 
     // loop time methods
     public static void START_LOOP() {

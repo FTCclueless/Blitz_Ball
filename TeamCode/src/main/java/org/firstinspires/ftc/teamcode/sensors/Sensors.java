@@ -19,15 +19,18 @@ public class Sensors {
     LynxModule controlHub, expansionHub;
     private ArrayList<MotorPriority> motorPriorities;
 
-    private IMU imu;
+    //private IMU imu;
     private int[] odometry = new int[2];
+
+
+    private double turretAngle;
 
     public Sensors (HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         this.motorPriorities = motorPriorities;
 
         initHubs(hardwareMap);
 
-        imu = hardwareMap.get(IMU.class, "imu");
+        /*imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters params = new IMU.Parameters(
             new RevHubOrientationOnRobot(new Orientation(
@@ -38,7 +41,7 @@ public class Sensors {
                 0 // Apparently unused
             ))
         );
-        imu.initialize(params);
+        imu.initialize(params);*/
     }
 
     private void initHubs(HardwareMap hardwareMap) {
@@ -54,6 +57,7 @@ public class Sensors {
 
     public void update() {
         updateControlHub();
+        updateExpansionHub();
         updateTelemetry();
     }
 
@@ -61,11 +65,23 @@ public class Sensors {
         try {
             odometry[0] = motorPriorities.get(0).motor[0].getCurrentPosition(); // left
             odometry[1] = motorPriorities.get(1).motor[0].getCurrentPosition(); // right
+
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
             e.printStackTrace();
             Log.e("******* fail", "control hub failed");
+        }
+    }
+
+    private void updateExpansionHub() {
+        try {
+            turretAngle = motorPriorities.get(4).motor[0].getCurrentPosition(); // turret motor
+        }
+        catch (Exception e) {
+            Log.e("******* Error due to ", e.getClass().getName());
+            e.printStackTrace();
+            Log.e("******* fail", "expansion hub failed");
         }
     }
 
@@ -75,7 +91,7 @@ public class Sensors {
         return odometry;
     }
 
-    public IMU getImu() {
+    /*public IMU getImu() {
         return imu;
     }
 
@@ -89,12 +105,12 @@ public class Sensors {
         );
 
         return normalizeAngle(robotOrientation.firstAngle);
-    }
+    }*/
 
     double normalizedHeading = 0.0;
     double lastImuHeading = 0.0;
 
-    public double normalizeAngle(double imuHeading) {
+    /*public double normalizeAngle(double imuHeading) {
         double deltaHeading = imuHeading - lastImuHeading;
         while (Math.abs(deltaHeading) > Math.PI){
             deltaHeading -= Math.PI * 2 * Math.signum(deltaHeading);
@@ -102,5 +118,11 @@ public class Sensors {
         lastImuHeading = imuHeading;
         normalizedHeading += deltaHeading;
         return normalizedHeading;
+    }*/
+
+
+    public double getTurretAngle() {
+        return turretAngle;
     }
 }
+
