@@ -11,7 +11,7 @@ public class Globals {
 
     // drivetrain
     public static boolean DRIVETRAIN_ENABLED = true;
-    public static double TRACK_WIDTH = 13.3750297033534346;
+    public static double TRACK_WIDTH = 7.351173256 + 7.00091155; // 13.3750297033534346;
     public static double MIN_MOTOR_POWER_TO_OVERCOME_FRICTION = 0.1;
     public static double MAX_DRIVETRAIN_SPEED = 75;
 

@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -36,8 +37,8 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new Pose2d(0,5.724968),  -1); // left
-        encoders[1] = new Encoder(new Pose2d(0,-5.572898885),-1); // right
+        encoders[0] = new Encoder(new Pose2d(0,-7.351173256),  -1); // left
+        encoders[1] = new Encoder(new Pose2d(0,7.00091155),-1); // right
         imu = hardwareMap.get(BHI260IMU.class, "imu");
         BHI260IMU.Parameters params = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
@@ -51,7 +52,7 @@ public class TwoWheelLocalizer {
             this.encoders[i].update(encoders[i]);
         }
 
-        if (System.currentTimeMillis() - imuLastUpdateTime >= 150) {
+        if (System.currentTimeMillis() - imuLastUpdateTime >= 350) {
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             double errorH = AngleUtil.clipAngle(orientation.getYaw(AngleUnit.RADIANS) - currentPose.heading);
             currentPose.heading += errorH / 2;
