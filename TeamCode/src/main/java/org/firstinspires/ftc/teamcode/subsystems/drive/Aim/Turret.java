@@ -42,6 +42,7 @@ public class Turret {
 
 
         currentAngle = turretMotor.getCurrentPosition() / TICKS_PER_RADIAN / turretGearRatio;
+        targetAngle = currentAngle;
 
         this.motorPriorities = motorPriorities;
         motorPriorities.add(new MotorPriority(turretMotor, 3, 5));
