@@ -16,10 +16,17 @@ import org.firstinspires.ftc.teamcode.utils.PID;
 
 import java.util.ArrayList;
 
+enum State {
+    PID_ENABLED,
+    AUTOAIM,
+    MANUAL_CONTROL
+}
+
 @Config
 public class Turret {
-    public static double slowdownPercent = 20;
-    public static double maxSpeed = 1000;
+    public static final double maxRotation = Math.toRadians(270);
+    public static double maxVelocity = 1;
+    public State state = State.MANUAL_CONTROL;
     public static boolean pidEnabled = false;
     public static PID turretPid = new PID(1,0,0);
 
@@ -55,6 +62,10 @@ public class Turret {
     }
 
     public void setTargetAngle(double angle) {
+        while (Math.abs(angle) > maxRotation) {
+            angle -= Math.PI * 2.0 * Math.signum(angle);
+        }
+
         this.targetAngle = angle;
     }
 
@@ -63,23 +74,27 @@ public class Turret {
     }
 
     public void move(Gamepad gamepad) {
-        System.out.println(gamepad.right_stick_x);
         motorPriorities.get(4).setTargetPower(gamepad.right_stick_x);
     }
 
 
 
     public void update() {
-        if (pidEnabled) {
-            currentAngle = turretMotor.getCurrentPosition() / TICKS_PER_RADIAN / turretGearRatio;
-            errorAngle = AngleUtil.clipAngle(targetAngle - currentAngle);
-            turretPower = turretPid.getOut(errorAngle);
+        switch (state) {
+            case MANUAL_CONTROL:
+                // FIXME: ask later if we should pass gamepad to all updates
+                break;
+            case AUTOAIM:
+                break;
+            case PID_ENABLED:
+                currentAngle = turretMotor.getCurrentPosition() / TICKS_PER_RADIAN / turretGearRatio;
+                errorAngle = AngleUtil.clipAngle(targetAngle - currentAngle);
+                turretPower = turretPid.getOut(errorAngle);
 
-            //do motion profiling
+                //do motion profiling
 
-            motorPriorities.get(4).setTargetPower(turretPid.getOut(errorAngle));
+                motorPriorities.get(4).setTargetPower(turretPid.getOut(errorAngle));
+                break;
         }
-
-        }
-
+    }
 }
