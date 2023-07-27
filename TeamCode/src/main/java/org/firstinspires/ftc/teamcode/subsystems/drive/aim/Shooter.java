@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.subsystems.drive.Aim;
+package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
 
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;

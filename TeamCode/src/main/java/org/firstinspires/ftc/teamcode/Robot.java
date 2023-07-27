@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.subsystems.drive.Aim.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.drive.Aim.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
@@ -49,7 +49,7 @@ public class Robot {
     private void updateSubsystems() {
         sensors.update();
         drivetrain.update();
-
+        turret.update();
 
         MotorPriority.updateMotors(motorPriorities);
     }

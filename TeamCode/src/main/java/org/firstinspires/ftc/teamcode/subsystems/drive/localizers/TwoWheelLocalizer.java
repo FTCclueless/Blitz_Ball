@@ -37,7 +37,7 @@ public class TwoWheelLocalizer {
     public TwoWheelLocalizer(HardwareMap hardwareMap) {
         encoders = new Encoder[2];
 
-        encoders[0] = new Encoder(new Pose2d(0,-7.351173256),  -1); // left
+        encoders[0] = new Encoder(new Pose2d(0,-7.351173256),  1); // left
         encoders[1] = new Encoder(new Pose2d(0,7.00091155),-1); // right
         imu = hardwareMap.get(BHI260IMU.class, "imu");
         BHI260IMU.Parameters params = new IMU.Parameters(new RevHubOrientationOnRobot(
