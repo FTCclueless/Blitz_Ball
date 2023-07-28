@@ -24,6 +24,7 @@ public class Sensors {
 
 
     private double turretAngle;
+    private double turretVelocity;
 
     public Sensors (HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         this.motorPriorities = motorPriorities;
@@ -77,6 +78,7 @@ public class Sensors {
     private void updateExpansionHub() {
         try {
             turretAngle = motorPriorities.get(4).motor[0].getCurrentPosition(); // turret motor
+            turretVelocity = motorPriorities.get(4).motor[0].getVelocity(AngleUnit.RADIANS);
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
@@ -123,6 +125,9 @@ public class Sensors {
 
     public double getTurretAngle() {
         return turretAngle;
+    }
+    public double getTurretVelocity() {
+        return turretVelocity;
     }
 }
 
