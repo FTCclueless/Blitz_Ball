@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.PID;
+import org.firstinspires.ftc.teamcode.utils.TrapezoidMotionProfile;
 
 import java.util.ArrayList;
 
@@ -25,7 +26,8 @@ enum State {
 @Config
 public class Turret {
     public static final double maxRotation = Math.toRadians(270);
-    public static double maxVelocity = 1;
+    public static double maxVelocity = 2540;
+    public static double maxAccel = 2000;
     public State state = State.MANUAL_CONTROL;
     public static boolean pidEnabled = false;
     public static PID turretPid = new PID(1,0,0);
@@ -42,6 +44,8 @@ public class Turret {
     double turretVelocity;
     double turretPower;
     ArrayList<MotorPriority> motorPriorities;
+
+    public static TrapezoidMotionProfile turretMotionProfile = new TrapezoidMotionProfile(maxAccel,maxVelocity);
 
 
 
@@ -67,6 +71,7 @@ public class Turret {
         }
 
         this.targetAngle = angle;
+
     }
 
     public boolean isComplete(double errorMargin) {

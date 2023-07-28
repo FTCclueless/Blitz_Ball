@@ -6,9 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 @Autonomous(group = "tests")
 public class TurretTest extends LinearOpMode {
+    double x = 0;
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
@@ -22,6 +24,8 @@ public class TurretTest extends LinearOpMode {
             // drivetrain.drive(gamepad1);
             turret.move(gamepad1);
             robot.update();
+
+
         }
 
 

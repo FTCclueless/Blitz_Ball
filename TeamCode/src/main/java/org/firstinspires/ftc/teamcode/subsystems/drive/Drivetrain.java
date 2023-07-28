@@ -73,7 +73,6 @@ public class Drivetrain {
             motors.get(i).setMotorType(motorConfigurationType);
 
             motorPriorities.add(new MotorPriority(motors.get(i), 3, 5));
-
         }
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
