@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.utils;
 
-public class TrapezoidMotionProfile {
+public class PosSecTrapMotionProfile {
     double maxAccel;
     double maxVel;
     double startPos;
@@ -21,13 +21,16 @@ public class TrapezoidMotionProfile {
 
     double sign;
 
+    double startTime;
 
 
 
 
 
 
-    public TrapezoidMotionProfile(double maxAccel, double maxVel) {
+
+
+    public PosSecTrapMotionProfile(double maxAccel, double maxVel) {
         this.maxAccel = maxAccel;
         this.maxVel = maxVel;
 
@@ -36,7 +39,8 @@ public class TrapezoidMotionProfile {
 
     }
 
-    public void setDistance(double targetPos, double currentPos, double currentVel) {
+    public void setDistance(double targetPos, double currentPos, double currentVel, double time) {
+        startTime = time;
         this.targetPos = targetPos;
         distance = targetPos-currentPos;
         startPos = currentPos;
@@ -48,18 +52,18 @@ public class TrapezoidMotionProfile {
 
         sign = Math.signum(distance);
 
-        double tempMaxVel;
+        double tempMaxVel = maxVel;
         if (accelDist > Math.abs(distance/2)) {
             halfTime = Math.sqrt(Math.abs(distance/2) / (0.5*maxAccel)) - currentVel/maxAccel;
             tempMaxVel = halfTime*maxAccel;
 
-            accelTime = tempMaxVel/maxAccel;
+            accelTime = halfTime;
             accelDist = 0.5 * maxAccel* accelTime * accelTime + startVel * accelTime; //
         }
 
         cruiseDist = Math.abs(distance)-accelDist;
-
-        decelDist = accelDist + cruiseDist + decelDist;
+        cruiseTime = cruiseDist/tempMaxVel;
+        decelTime = accelTime + cruiseTime + decelTime;
 
 
 
@@ -69,11 +73,11 @@ public class TrapezoidMotionProfile {
 
     }
 
-    public double getTargetVel(double currentPos) {
-        traveledDist = currentPos-startPos;
+    public double getTargetVel(double currentTime) {
+        double elapseTime = currentTime-startTime;
 
-        if (Math.abs(traveledDist) < accelDist || (sign == -1 && traveledDist > accelDist) || (sign == 1 && traveledDist < accelDist))  {
-            return maxAccel*(Math.sqrt(2*traveledDist/maxAccel)) * sign;
+        if (Math.abs(elapseTime) < accelTime)  {
+            return elapseTime * maxAccel * maxAccel + startVel *elapseTime;
         }
 
         else if (Math.abs(traveledDist) < cruiseTime) {
