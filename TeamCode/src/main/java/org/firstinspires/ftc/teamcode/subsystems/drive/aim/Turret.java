@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
 
-import static org.firstinspires.ftc.teamcode.utils.Globals.TICKS_PER_RADIAN;
 
 
 import com.acmerobotics.dashboard.config.Config;
@@ -10,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.PID;
@@ -25,6 +25,8 @@ enum State {
 
 @Config
 public class Turret {
+    private Sensors sensors;
+
     public static final double maxRotation = Math.toRadians(270);
     public static double maxVelocity = 2540;
     public static double maxAccel = 2000;
@@ -32,12 +34,14 @@ public class Turret {
     public static boolean pidEnabled = false;
     public static PID turretPid = new PID(1,0,0);
 
+    private final double ticksPerRadian = 30.113207547; //145.090909091 * 0.20754716981 (22/106)
 
-    final double turretGearRatio = 0.20754716981; // 22/106
 
 
     public double targetAngle;
     public double currentAngle;
+    public double zeroAngle;
+
     DcMotorEx turretMotor;
     double errorAngle;
 
@@ -55,8 +59,9 @@ public class Turret {
         turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        currentAngle = turretMotor.getCurrentPosition() / TICKS_PER_RADIAN / turretGearRatio;
+        zeroAngle = sensors.getTurretAngle() / ticksPerRadian;
         targetAngle = currentAngle;
+        turretVelocity = sensors.getTurretVelocity() / ticksPerRadian;
 
         this.motorPriorities = motorPriorities;
         motorPriorities.add(new MotorPriority(turretMotor, 3, 5));
@@ -69,6 +74,7 @@ public class Turret {
         while (Math.abs(angle) > maxRotation) {
             angle -= Math.PI * 2.0 * Math.signum(angle);
         }
+        turretMotionProfile.setTargetPos(angle, currentAngle, turretVelocity);
 
         this.targetAngle = angle;
 
@@ -85,20 +91,23 @@ public class Turret {
 
 
     public void update() {
+        currentAngle = sensors.getTurretAngle() / ticksPerRadian - zeroAngle;
+        errorAngle = targetAngle - currentAngle;
+        turretVelocity = sensors.getTurretVelocity() / ticksPerRadian;
+
         switch (state) {
             case MANUAL_CONTROL:
                 // FIXME: ask later if we should pass gamepad to all updates
                 break;
             case AUTOAIM:
+                turretPower = turretMotionProfile.getTargetVel(currentAngle);
+                motorPriorities.get(4).setTargetPower(turretPower);
                 break;
             case PID_ENABLED:
-                currentAngle = turretMotor.getCurrentPosition() / TICKS_PER_RADIAN / turretGearRatio;
-                errorAngle = AngleUtil.clipAngle(targetAngle - currentAngle);
                 turretPower = turretPid.getOut(errorAngle);
 
-                //do motion profiling
 
-                motorPriorities.get(4).setTargetPower(turretPid.getOut(errorAngle));
+                motorPriorities.get(4).setTargetPower(turretPower);
                 break;
         }
     }

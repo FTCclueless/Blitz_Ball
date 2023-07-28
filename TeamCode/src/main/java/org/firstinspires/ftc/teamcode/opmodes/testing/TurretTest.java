@@ -16,13 +16,16 @@ public class TurretTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Drivetrain drivetrain = robot.drivetrain;
         Turret turret =  robot.turret;
+
         Turret.pidEnabled = false;
 
         waitForStart();
 
         while(!isStopRequested()) {
             // drivetrain.drive(gamepad1);
-            turret.move(gamepad1);
+
+            drivetrain.update();
+            turret.update();
             robot.update();
 
 
