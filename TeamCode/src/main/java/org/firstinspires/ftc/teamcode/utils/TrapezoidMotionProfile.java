@@ -36,6 +36,7 @@ public class TrapezoidMotionProfile {
 
     }
 
+    //when you set target position/distance
     public void setDistance(double targetPos, double currentPos, double currentVel) {
         this.targetPos = targetPos;
         distance = targetPos-currentPos;
@@ -68,7 +69,7 @@ public class TrapezoidMotionProfile {
 
 
     }
-
+//every loop to get target velocity
     public double getTargetVel(double currentPos) {
         traveledDist = currentPos-startPos;
 
