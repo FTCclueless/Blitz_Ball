@@ -15,8 +15,7 @@ public class Globals {
     public static double MIN_MOTOR_POWER_TO_OVERCOME_FRICTION = 0.1;
     public static double MAX_DRIVETRAIN_SPEED = 75;
 
-    // turret
-    public static double TICKS_PER_RADIAN = 336.607748257;
+
 
 
     public static Pose2d ROBOT_POSITION =new Pose2d(0,0,0);

@@ -36,8 +36,8 @@ public class Robot {
 
         sensors = new Sensors(hardwareMap, motorPriorities);
         drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
-        turret = new Turret(hardwareMap, motorPriorities);
-        shooter = new Shooter(hardwareMap, motorPriorities);
+        turret = new Turret(hardwareMap, motorPriorities, sensors);
+        shooter = new Shooter(hardwareMap, motorPriorities, sensors);
     }
 
     public void update() {

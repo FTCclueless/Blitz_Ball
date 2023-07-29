@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.MyServo;
 import org.firstinspires.ftc.teamcode.utils.PID;
@@ -14,9 +15,12 @@ public class Shooter {
     DcMotorEx shooter;
     MyServo leftShooterHood;
     MyServo rightShooterHood;
+    Sensors sensors;
 
 
     ArrayList<MotorPriority> motorPriorities;
+
+    double shooterGearRatio = 46/9;
 
     double shooterTargetPower;
     double shooterTargetAngle;
@@ -30,10 +34,11 @@ public class Shooter {
     public static PID shooterPID = new PID(1,0,0);
 
 
-    public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
+    public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         leftShooterHood = new MyServo(hardwareMap.get(Servo.class, "leftShooterHood"),"axon", false);
         rightShooterHood = new MyServo(hardwareMap.get(Servo.class, "rightShooterHood"), "axon", true);
+        this.sensors = sensors;
 
         this.motorPriorities = motorPriorities;
 
