@@ -20,6 +20,8 @@ public class Shooter {
 
     ArrayList<MotorPriority> motorPriorities;
 
+    double shooterGearRatio = 46/9;
+
     double shooterTargetPower;
     double shooterTargetAngle;
 

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 @Autonomous(group = "tests")
 public class TurretTest extends LinearOpMode {
     double x = 0;
-    public static double target;
+
 
 
     @Override
@@ -30,11 +30,13 @@ public class TurretTest extends LinearOpMode {
             // drivetrain.drive(gamepad1);
 
 
+
+            robot.update();
+            turret.setTargetAngle(turret.target);
             TelemetryUtil.packet.put("error", turret.errorAngle);
             TelemetryUtil.packet.put("current", turret.currentAngle);
-            TelemetryUtil.packet.put("target", target);
-            robot.update();
-            turret.setTargetAngle(target);
+            TelemetryUtil.packet.put("target", turret.targetAngle);
+            TelemetryUtil.packet.put("velocity", robot.sensors.getTurretVelocity() / turret.ticksPerRadian);
 
 
         }
