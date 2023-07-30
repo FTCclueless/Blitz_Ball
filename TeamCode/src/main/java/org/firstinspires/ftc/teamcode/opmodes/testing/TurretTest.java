@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.testing;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
@@ -9,10 +11,13 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.TurretState;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
-
-@Autonomous(group = "tests")
+@Config
+@TeleOp(group = "tests")
 public class TurretTest extends LinearOpMode {
     double x = 0;
+
+    public static double target = 0.08;
+
 
 
 
@@ -30,12 +35,11 @@ public class TurretTest extends LinearOpMode {
             // drivetrain.drive(gamepad1);
 
 
-
             robot.update();
-            turret.setTargetAngle(turret.target);
-            TelemetryUtil.packet.put("error", turret.errorAngle);
-            TelemetryUtil.packet.put("current", turret.currentAngle);
-            TelemetryUtil.packet.put("target", turret.targetAngle);
+            turret.setTargetAngle(target);
+
+
+            TelemetryUtil.packet.put("current (rad)", (turret.currentAngle));
             TelemetryUtil.packet.put("velocity", robot.sensors.getTurretVelocity() / turret.ticksPerRadian);
 
 

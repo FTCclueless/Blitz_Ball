@@ -25,14 +25,14 @@ public class Turret {
     private Sensors sensors;
 
 
-    public final double ticksPerRadian = 30.113207547; //145.090909091 * 0.20754716981 (22/106)
+    public final double ticksPerRadian = 111.261143192; //145.090909091 / 0.20754716981 (22/106) / 2pi
 
     public static final double maxRotation = Math.toRadians(270);
-    public static double maxVelocity = 84.32837105944; // 2540 / 30.113207547
-    public static double maxAccel = 33.20802005031258; // 1000 / 30.113207547
+    public static double maxVelocity = 22.8291740236; // 2540 / 111.261143192
+    public static double maxAccel = 8.98786378884; // 1000 / 111.261143192
     public TurretState turretState = TurretState.MANUAL_CONTROL;
     public static boolean pidEnabled = false;
-    public static PID turretPid = new PID(1,0,0);
+    public static PID turretPid = new PID(0.1,0,0);
 
 
 
@@ -74,6 +74,9 @@ public class Turret {
     }
 
     public void setTargetAngle(double angle) {
+        if (targetAngle == angle) {
+            return;
+        }
         while (Math.abs(angle) > maxRotation) {
             angle -= Math.PI * 2.0 * Math.signum(angle);
         }
@@ -95,7 +98,6 @@ public class Turret {
 
     public void update() {
         currentAngle = sensors.getTurretAngle() / ticksPerRadian;
-        TelemetryUtil.packet.put("sensorTargetAngle", sensors.getTurretAngle() / ticksPerRadian);
         errorAngle = targetAngle - currentAngle;
         turretVelocity = sensors.getTurretVelocity() / ticksPerRadian;
 
@@ -104,7 +106,11 @@ public class Turret {
                 // FIXME: ask later if we should pass gamepad to all updates
                 break;
             case AUTOAIM:
-                turretPower = turretMotionProfile.getTargetVel(currentAngle)/ maxVelocity;
+                turretPower = turretMotionProfile.getTargetVel(currentAngle);
+                TelemetryUtil.packet.put("targetVel", turretPower);
+                turretPower /= maxVelocity;
+                turretPower *= 0.3
+
                 if (Math.abs(turretPower) < minPower) {
                     turretPower = minPower * Math.signum(turretPower);
                 }
