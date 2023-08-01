@@ -78,7 +78,7 @@ public class Sensors {
     private void updateExpansionHub() {
         try {
             turretAngle = motorPriorities.get(4).motor[0].getCurrentPosition(); // turret motor
-            turretVelocity = motorPriorities.get(4).motor[0].getVelocity();
+            turretVelocity = (double) motorPriorities.get(4).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());

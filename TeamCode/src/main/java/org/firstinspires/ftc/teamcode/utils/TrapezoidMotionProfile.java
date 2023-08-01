@@ -12,7 +12,7 @@ public class TrapezoidMotionProfile {
     double cruiseTime;
     double decelDist;
     double decelTime;
-    double traveledDist;
+    public double traveledDist;
     double distance;
 
     double halfTime;
@@ -45,31 +45,34 @@ public class TrapezoidMotionProfile {
     public void setTargetPos(double targetPos, double currentPos, double currentVel) {
         this.targetPos = targetPos;
         distance = targetPos-currentPos;
+        sign = Math.signum(distance);
         startPos = currentPos;
         startVel = currentVel;
-        accelTime = (maxVel-currentVel)/maxAccel;
+        accelTime = Math.abs((sign*maxVel-currentVel)/maxAccel);
         TelemetryUtil.packet.put("*** maxVel", maxVel);
         TelemetryUtil.packet.put("*** maxAccel", maxAccel);
         TelemetryUtil.packet.put("*** currentVel", currentVel);
         TelemetryUtil.packet.put("**accelTime", accelTime);
 
         decelTime = maxVel / maxAccel;
-        decelDist = 0.5 * maxAccel * decelTime * decelTime;
-        accelDist = 0.5 * maxAccel* accelTime * accelTime + startVel * accelTime; //probably broken maybe
+        decelDist = 0.5 * maxAccel * decelTime * decelTime; //positive
+        accelDist = Math.abs(0.5 * sign * maxAccel* accelTime * accelTime); //probably broken maybe
         TelemetryUtil.packet.put("accelDist", accelDist);
 
-        sign = Math.signum(distance);
+
 
 
         if (accelDist > Math.abs(distance/2)) {
 
-            halfTime = (-startVel + Math.sqrt(startVel*startVel + 4*maxAccel*sign*Math.abs(distance/2))) / 2 /maxAccel*sign;
+            //tempTime = (-startVel + Math.sqrt(startVel*startVel + 4*maxAccel*sign*Math.abs(distance/2))) / 2 /maxAccel*sign; //broken, need to do
+            //tempTime = Math.sqrt(sign*maxAccel*distance+(startVel*startVel/2))/maxAccel;
             TelemetryUtil.packet.put("halftime", halfTime);
-            //halfTime = Math.sqrt(Math.abs(distance/2) / (0.5*maxAccel)) - currentVel/maxAccel;
-            tempMaxVel = halfTime*maxAccel + startVel;
+            halfTime = Math.sqrt(Math.abs(distance/2) / (0.5*maxAccel)) - startVel /maxAccel;
+            tempMaxVel = halfTime *maxAccel*sign + startVel * halfTime;
+            TelemetryUtil.packet.put("tempMaxVel", tempMaxVel);
 
             accelTime = halfTime;
-            decelTime = tempMaxVel/maxAccel;
+            decelTime = Math.abs(tempMaxVel/maxAccel);
             accelDist = 0.5 * maxAccel* accelTime * accelTime + startVel * accelTime; //
             decelDist = maxAccel*decelTime;
         }
@@ -91,7 +94,7 @@ public class TrapezoidMotionProfile {
     }
 //every loop to get target velocity
     public double getTargetVel(double currentPos) {
-        traveledDist = Math.abs(currentPos-startPos) + offsetDist; //offsetDist is to prevent power from permanently being 0
+        //traveledDist = Math.abs(currentPos-startPos) + offsetDist; //offsetDist is to prevent power from permanently being 0
         TelemetryUtil.packet.put("traveledDist", traveledDist);
 
         TelemetryUtil.packet.put("** cruiseDist", cruiseDist);
@@ -105,24 +108,27 @@ public class TrapezoidMotionProfile {
         System.out.println(accelDist);
 
 
-        if (Math.abs(traveledDist) < accelDist + offsetDist || (sign == -1 && traveledDist > accelDist) || (sign == 1 && traveledDist < accelDist))  {
-            TelemetryUtil.packet.put("** Vel",maxAccel*(Math.sqrt(2*traveledDist/maxAccel)) * sign + startVel );
-            return maxAccel*(Math.sqrt(2*traveledDist/maxAccel)) * sign + startVel;
+        if (Math.abs(traveledDist) < accelDist + offsetDist || (sign == -1 && traveledDist > accelDist*sign) || (sign == 1 && traveledDist < accelDist))  {
+            TelemetryUtil.packet.put("pain", 10);
+
+            return maxAccel*(-startVel + Math.sqrt(startVel*startVel + 4 * maxAccel * sign * currentPos))/ (2*maxAccel*sign) * sign + startVel;
 
         }
 
         else if (Math.abs(traveledDist) < cruiseDist + offsetDist) {
-            TelemetryUtil.packet.put("** Vel", maxVel * sign);
+            TelemetryUtil.packet.put("pain", 20);
             return maxVel * sign;
         }
 
         else if (Math.abs(traveledDist) < decelThreshold + offsetDist) {
-            TelemetryUtil.packet.put("** Vel",maxVel-maxAccel*((2 * traveledDist/maxAccel) * sign) );
-            return maxVel-maxAccel*((2 * traveledDist/maxAccel) * sign);
+            TelemetryUtil.packet.put("pain", 30);
+            return maxAccel*(-startVel + Math.sqrt(startVel*startVel + 4 * maxAccel * sign* (distance-traveledDist)))/ (2 * maxAccel * sign) * sign;
         }
 
         else {
+            TelemetryUtil.packet.put("pain", 40);
             return 0;
+
         }
 
 

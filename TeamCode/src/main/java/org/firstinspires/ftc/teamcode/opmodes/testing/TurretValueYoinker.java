@@ -1,22 +1,25 @@
 package org.firstinspires.ftc.teamcode.opmodes.testing;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
-@Autonomous
+@TeleOp
 public class TurretValueYoinker extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotorEx turretMotor = hardwareMap.get(DcMotorEx.class, "turret");
 
         double maxVel = 0;
         double maxAccel = 0;
@@ -25,40 +28,54 @@ public class TurretValueYoinker extends LinearOpMode {
         double vel = 0;
         double lastVel = 0;
         double counter = 0;
-        double sum = 0;
-        FtcDashboard dash = FtcDashboard.getInstance();
-        TelemetryPacket p = new TelemetryPacket();
+        double sumPow = 0;
+        double sumPow2 = 0;
+        double sumVel = 0;
+        double sumVel2 = 0;
+        double sumProduct = 0;
+
 
         waitForStart();
 
-        for (int i = 0; i < 1000; i++) {
-            p.put("velocity", 0);
-            p.put("acceleration", 0);
-            p.put("avg accel", 0);
-            dash.sendTelemetryPacket(p);
-            sleep(20);
-        }
+        Robot robot = new Robot(hardwareMap);
+        Turret turret = robot.turret;
 
-        turretMotor.setPower(1);
 
-        while (!isStopRequested()) {
-            counter ++;
+
+
+
+        while (!isStopRequested() && counter < 10000) {
+            counter += 1;
+            robot.update();
             time = System.currentTimeMillis();
-            vel = turretMotor.getVelocity(AngleUnit.RADIANS);
-            double accel =  (vel-lastVel)/ (time-lastTime);
-            sum += accel;
-            p.put("velocity", vel);
-            p.put("acceleration", accel);
-            p.put("avg accel", sum / counter);
-            dash.sendTelemetryPacket(p);
+            vel = ((double)robot.sensors.getTurretVelocity()) / 111.261143192;
+            double power = counter/10000.0;
+            sumPow += power;
+            sumPow2 += power*power;
+            sumVel += vel;
+            sumVel2 += vel*vel;
+            sumProduct += (vel*power);
+
+            robot.motorPriorities.get(4).setTargetPower(power);
+            robot.update();
+
+
+
+
             // System.out.println("***** accel: " + accel + " " + "avg: " + sum/counter + " time: " + (time-lastTime));
 
             lastTime = time;
             lastVel = vel;
-            sleep(50);
+
 
 
             }
+        double yIntercept = (sumPow*sumVel2 - sumVel*sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
+        double slope = (counter * sumProduct - sumVel*sumPow) / (counter*sumVel2 - Math.pow(sumVel,2));
+
+        Log.e("yIntercept", "" + yIntercept);
+        Log.e("slope", "" + slope);
+
 
 
 

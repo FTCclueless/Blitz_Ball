@@ -13,14 +13,11 @@ import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
-import org.firstinspires.ftc.teamcode.utils.TrapezoidMotionProfile;
 
 import java.util.ArrayList;
 
 @Config
 public class Turret {
-    public static double minPower = 0.08;
-
 
     private Sensors sensors;
 
@@ -28,7 +25,6 @@ public class Turret {
     public final double ticksPerRadian = 111.261143192; //145.090909091 / 0.20754716981 (22/106) / 2pi
 
     public static final double maxRotation = Math.toRadians(270);
-    public static double maxVelocity = 22.8291740236; // 2540 / 111.261143192
     public static double maxAccel = 8.98786378884; // 1000 / 111.261143192
     public TurretState turretState = TurretState.MANUAL_CONTROL;
     public static boolean pidEnabled = false;
@@ -38,19 +34,22 @@ public class Turret {
 
 
 
-    public double targetAngle;
+    public double targetAngle = 0;
     public double currentAngle = 0;
 
     DcMotorEx turretMotor;
     public double errorAngle;
 
-    double turretVelocity;
+    public double turretVelocity;
     double turretPower;
     ArrayList<MotorPriority> motorPriorities;
 
-    public static TrapezoidMotionProfile turretMotionProfile = new TrapezoidMotionProfile(maxAccel,maxVelocity, 1);
-    public static double errorMargin;
-    public static double target;
+    public static double AngleToSlowDown = 1; //in radians
+    public static double velPerPow = 0.04257493408921866; //velocity per power
+    public static double minPowToOvercomeFriction = 0.07198230133005577; //minimum power to overcome friction
+    public static double maxVelocity = (1.0-minPowToOvercomeFriction)/velPerPow; //21.797296059415; // 2540 / 111.261143192
+    public static double accelMult = 1.2;
+    public static double errorMargin = Math.toRadians(3);
 
 
 
@@ -74,24 +73,45 @@ public class Turret {
     }
 
     public void setTargetAngle(double angle) {
-        if (targetAngle == angle) {
-            return;
-        }
-        while (Math.abs(angle) > maxRotation) {
-            angle -= Math.PI * 2.0 * Math.signum(angle);
-        }
-        turretMotionProfile.setTargetPos(angle, currentAngle, turretVelocity);
-
         this.targetAngle = angle;
+        while (Math.abs(targetAngle) > Math.PI) {
+            targetAngle -= Math.PI * 2.0 * Math.signum(targetAngle);
+        }
+        targetAngle = Math.min(Math.max(targetAngle,-1.0 * maxRotation),maxRotation);
+        errorAngle = targetAngle - currentAngle;
+        while (Math.abs(errorAngle) > Math.PI) {
+            errorAngle -= Math.PI * 2.0 * Math.signum(errorAngle);
+        }
+
+        if (Math.abs(currentAngle+errorAngle) > maxRotation) { //would I go out of bounds if I follow?
+            errorAngle -= Math.signum(errorAngle) * 2.0 * Math.PI; // add 360 to stay in bounds
+            /* no longer needed due to clips on targetAngle
+            if (maxRotation < Math.PI) { //check if you can reach everything
+                if (Math.abs(currentAngle+errorAngle) > maxRotation){ //check if new way around still puts us out
+                    Log.e("Turret", "Angle out of range");
+                    //find closer angle between maxRotation and -maxRotation from targetAngle
+                    targetAngle = maxRotation * Math.signum(targetAngle);
+                    errorAngle = targetAngle - currentAngle;
+                }
+            }
+            */
+        }
 
     }
 
     public boolean isComplete(double errorMargin) {
-        return errorAngle - currentAngle <= errorMargin;
+        return Math.abs(targetAngle - currentAngle) <= errorMargin;
     }
 
     public void move(Gamepad gamepad) {
         motorPriorities.get(4).setTargetPower(gamepad.right_stick_x);
+    }
+
+    public double feedForward() {
+        double targetSpeed = errorAngle * maxVelocity/ AngleToSlowDown;
+        targetSpeed = Math.max(Math.min(targetSpeed, maxVelocity), -maxVelocity);
+        double targetPower = targetSpeed * velPerPow + (targetSpeed - turretVelocity)/maxVelocity * accelMult + minPowToOvercomeFriction * ((Math.abs(errorAngle) > errorMargin) ? Math.signum(targetSpeed): 0);
+        return targetPower;
     }
 
 
@@ -106,17 +126,13 @@ public class Turret {
                 // FIXME: ask later if we should pass gamepad to all updates
                 break;
             case AUTOAIM:
-                turretPower = turretMotionProfile.getTargetVel(currentAngle);
-                TelemetryUtil.packet.put("targetVel", turretPower);
-                turretPower /= maxVelocity;
-                turretPower *= 0.3
 
-                if (Math.abs(turretPower) < minPower) {
-                    turretPower = minPower * Math.signum(turretPower);
-                }
+                turretPower = feedForward();
+                TelemetryUtil.packet.put("targetVel", turretPower);
+
+
 
                 motorPriorities.get(4).setTargetPower(turretPower);
-                TelemetryUtil.packet.put("***************** power ", turretPower);
                 /*if (isComplete(errorMargin)) {
                     turretState = TurretState.AUTOAIM;
                 }*/
