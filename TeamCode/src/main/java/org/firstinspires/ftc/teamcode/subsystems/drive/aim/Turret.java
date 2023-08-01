@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
 
 
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -31,9 +33,6 @@ public class Turret {
     public static PID turretPid = new PID(0.1,0,0);
 
 
-
-
-
     public double targetAngle = 0;
     public double currentAngle = 0;
 
@@ -50,6 +49,8 @@ public class Turret {
     public static double maxVelocity = (1.0-minPowToOvercomeFriction)/velPerPow; //21.797296059415; // 2540 / 111.261143192
     public static double accelMult = 1.2;
     public static double errorMargin = Math.toRadians(3);
+
+    public double offsetVel;
 
 
 
@@ -72,8 +73,13 @@ public class Turret {
 
     }
 
-    public void setTargetAngle(double angle) {
+    public void setTargetAngle(double angle){
+        setTargetAngle(angle,0);
+    }
+
+    public void setTargetAngle(double angle, double vel) {
         this.targetAngle = angle;
+        this.offsetVel = vel;
         while (Math.abs(targetAngle) > Math.PI) {
             targetAngle -= Math.PI * 2.0 * Math.signum(targetAngle);
         }
@@ -110,6 +116,7 @@ public class Turret {
     public double feedForward() {
         double targetSpeed = errorAngle * maxVelocity/ AngleToSlowDown;
         targetSpeed = Math.max(Math.min(targetSpeed, maxVelocity), -maxVelocity);
+        targetSpeed -= offsetVel;
         double targetPower = targetSpeed * velPerPow + (targetSpeed - turretVelocity)/maxVelocity * accelMult + minPowToOvercomeFriction * ((Math.abs(errorAngle) > errorMargin) ? Math.signum(targetSpeed): 0);
         return targetPower;
     }
@@ -130,7 +137,7 @@ public class Turret {
                 turretPower = feedForward();
                 TelemetryUtil.packet.put("targetVel", turretPower);
 
-
+                Log.e("made it to turretUpdate", "" + turretPower);
 
                 motorPriorities.get(4).setTargetPower(turretPower);
                 /*if (isComplete(errorMargin)) {

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.drive.aim.AutoAim;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
@@ -26,6 +27,7 @@ public class Robot {
     public Drivetrain drivetrain;
     public Turret turret;
     public Shooter shooter;
+    public AutoAim autoAim;
 
     public ArrayList<MotorPriority> motorPriorities = new ArrayList<>();
 
@@ -36,8 +38,9 @@ public class Robot {
 
         sensors = new Sensors(hardwareMap, motorPriorities);
         drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
-        turret = new Turret(hardwareMap, motorPriorities, sensors);
-        shooter = new Shooter(hardwareMap, motorPriorities, sensors);
+        autoAim = new AutoAim(hardwareMap, motorPriorities, sensors);
+        autoAim.setTarget1(12,12);
+        autoAim.setMainTarget(1);
     }
 
     public void update() {
@@ -49,7 +52,7 @@ public class Robot {
     private void updateSubsystems() {
         sensors.update();
         drivetrain.update();
-        turret.update();
+        autoAim.update();
 
         MotorPriority.updateMotors(motorPriorities);
     }

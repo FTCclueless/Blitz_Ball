@@ -20,24 +20,20 @@ public class Shooter {
 
     ArrayList<MotorPriority> motorPriorities;
 
-    double shooterGearRatio = 46/9;
+    double shooterGearRatio = 46.0/9.0;
+    double shooterTicksPerRadian = 145.090909091 / shooterGearRatio;
+    public double shooterMaxPower = 0;
 
-    double shooterTargetPower;
-    double shooterTargetAngle;
-
-    double shooterCurrentPower;
-    double shooterCurrentAngle;
-
-    double shooterErrorPower;
-    double shooterErrorAngle;
+    public double shooterTargetPower;
+    public double shooterCurrentPower;
+    public double shooterErrorPower;
 
     public static PID shooterPID = new PID(1,0,0);
 
 
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        leftShooterHood = new MyServo(hardwareMap.get(Servo.class, "leftShooterHood"),"axon", false);
-        rightShooterHood = new MyServo(hardwareMap.get(Servo.class, "rightShooterHood"), "axon", true);
+
         this.sensors = sensors;
 
         this.motorPriorities = motorPriorities;
@@ -45,25 +41,21 @@ public class Shooter {
         motorPriorities.add(new MotorPriority(shooter, 3, 5));
 
 
-        shooterCurrentAngle = 0;
         shooterCurrentPower = 0;
 
 
     }
 
-    public void setTargetValues(double power, double angle) {
+    public void setTargetVel(double power) {
         this.shooterTargetPower = power;
-        this.shooterTargetAngle = angle;
 
     }
 
+
+
     public void update() {
-        shooterErrorAngle = shooterTargetAngle-shooterCurrentAngle;
         shooterErrorPower = shooterTargetPower-shooterCurrentPower;
 
-        motorPriorities.get(5).setTargetPower(shooterPID.getOut(shooterErrorAngle));
-
-        leftShooterHood.setAngle(shooterTargetAngle);
-        rightShooterHood.setAngle(shooterTargetAngle);
+        motorPriorities.get(5).setTargetPower(shooterTargetPower);
     }
 }

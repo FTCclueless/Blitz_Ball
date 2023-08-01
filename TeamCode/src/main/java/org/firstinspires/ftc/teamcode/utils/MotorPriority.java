@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.GET_LOOP_TIME;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ public class MotorPriority {
 
     public static void updateMotors(ArrayList<MotorPriority> motorPriorities) {
         double bestMotorUpdate = 1;
-        double targetLoopLength = 0.010; // sets the target loop time in milli seconds
+        double targetLoopLength = 0.015; // sets the target loop time in seconds
         double loopTime = GET_LOOP_TIME(); // finds loopTime in seconds
 
         while (bestMotorUpdate > 0 && loopTime <= targetLoopLength) { // updates the motors while still time remaining in the loop
@@ -73,6 +75,7 @@ public class MotorPriority {
                 }
             }
             if (bestMotorUpdate != 0) { // priority # of motor needing update the most
+                Log.e("motorpriorities check", "e");
                 motorPriorities.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
             }
             loopTime = GET_LOOP_TIME();
