@@ -41,6 +41,10 @@ public class Intake {
         intakeOn = false;
     }
 
+    public void changeIntakeSpeed (double requestedSpeed) {
+        maxSpeed = requestedSpeed;
+    }
+
     public void IntakeTeleOp(Gamepad gamepad)
     {
         TelemetryUtil.packet.put("leftTrigger", gamepad.left_trigger);
