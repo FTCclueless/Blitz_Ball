@@ -31,11 +31,11 @@ public class Intake {
 
     }
 
-    public void turnOnIntake() {
+    public void turnOn() {
         motorPriorities.get(6).setTargetPower(maxSpeed);
         intakeOn = true;
     }
-    public void turnOffIntake()
+    public void turnOff()
     {
         motorPriorities.get(6).setTargetPower(0);
         intakeOn = false;
@@ -60,10 +60,10 @@ public class Intake {
             previousButton = true;
         }
         if(intakeOn == true){
-            turnOnIntake();
+            turnOn();
         }
         else{
-            turnOffIntake();
+            turnOff();
         }
     }
 }
