@@ -20,7 +20,7 @@ public class Aim {
     public AimState aimState = AimState.AUTO_AIM;
 
     public Turret turret;
-    Shooter shooter;
+    public Shooter shooter;
     Hood hood;
     Target target1;
     Target target2;

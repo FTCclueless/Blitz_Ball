@@ -41,6 +41,8 @@ public class Robot {
         sensors = new Sensors(hardwareMap, motorPriorities);
         drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
         aim = new Aim(hardwareMap, motorPriorities, sensors);
+        turret = aim.turret;
+        shooter = aim.shooter;
         intake = new Intake(hardwareMap, motorPriorities);
         aim.setTarget1(12,12);
         aim.setMainTarget(1);
@@ -89,4 +91,6 @@ public class Robot {
             update();
         }
     }
+
+
 }
