@@ -44,8 +44,6 @@ public class Robot {
         turret = aim.turret;
         shooter = aim.shooter;
         intake = new Intake(hardwareMap, motorPriorities);
-        aim.setTarget1(12,12);
-        aim.setMainTarget(1);
     }
 
     public void update() {
@@ -57,7 +55,7 @@ public class Robot {
     private void updateSubsystems() {
         sensors.update();
         drivetrain.update();
-        aim.turret.update();
+        aim.update();
 
         MotorPriority.updateMotors(motorPriorities);
     }

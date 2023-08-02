@@ -50,7 +50,7 @@ public class Turret {
     public static double accelMult = 1.2;
     public static double errorMargin = Math.toRadians(3);
 
-    public double offsetVel;
+    public double offsetVel = 0;
 
 
 
