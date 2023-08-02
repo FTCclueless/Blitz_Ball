@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
@@ -11,9 +12,11 @@ public class Intake {
     DcMotorEx intake;
     ArrayList<MotorPriority> motorPriorities;
 
-    boolean intakeState = true;
+    boolean previousButton = true;
 
-    double maxSpeed = 1.0;
+    boolean intakeOn = false;
+
+    double maxSpeed = .5;
 
     public Intake(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         this.motorPriorities = motorPriorities;
@@ -24,11 +27,30 @@ public class Intake {
     }
 
     public void turnOnIntake() {
-        intake.setPower(maxSpeed);
+        motorPriorities.get(6).setTargetPower(maxSpeed);
+        intakeOn = true;
     }
     public void turnOffIntake()
     {
-        intake.setPower(0);
+        motorPriorities.get(6).setTargetPower(maxSpeed);
+        intakeOn = false;
     }
 
+    public void IntakeTeleOp(Gamepad gamepad)
+    {
+
+        if((gamepad.left_trigger >.3) && previousButton == true) {
+            previousButton = false;
+            intakeOn = !intakeOn;
+        }
+        if(gamepad.left_trigger<.3){
+            previousButton = true;
+        }
+        if(intakeOn == true){
+            turnOnIntake();
+        }
+        else{
+            turnOffIntake();
+        }
+    }
 }
