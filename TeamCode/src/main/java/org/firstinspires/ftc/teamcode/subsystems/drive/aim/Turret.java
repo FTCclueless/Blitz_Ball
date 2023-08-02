@@ -118,6 +118,7 @@ public class Turret {
         targetSpeed = Math.max(Math.min(targetSpeed, maxVelocity), -maxVelocity);
         targetSpeed -= offsetVel;
         double targetPower = targetSpeed * velPerPow + (targetSpeed - turretVelocity)/maxVelocity * accelMult + minPowToOvercomeFriction * ((Math.abs(errorAngle) > errorMargin) ? Math.signum(targetSpeed): 0);
+        targetPower = Math.min(Math.max(targetPower,-1),1);
         return targetPower;
     }
 

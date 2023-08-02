@@ -20,7 +20,7 @@ public class MyServo {
 
     public void setAngle(double angle) {
         if (type == "axon") {
-            servo.setPosition(angle * axonPositionPerAngle + basePos);
+            servo.setPosition(angle * axonPositionPerAngle * (isReversed ? -1 : 1) + basePos);
             currentPos = angle;
         }
     }

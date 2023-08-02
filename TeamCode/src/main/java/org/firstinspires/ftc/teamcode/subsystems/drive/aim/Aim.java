@@ -16,15 +16,15 @@ import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 import java.util.ArrayList;
 
-public class AutoAim {
+public class Aim {
+    public AimState aimState = AimState.AUTO_AIM;
 
-    Turret turret;
+    public Turret turret;
     Shooter shooter;
+    Hood hood;
     Target target1;
     Target target2;
 
-    MyServo leftShooterHood;
-    MyServo rightShooterHood;
 
     Target mainTarget;
 
@@ -38,12 +38,11 @@ public class AutoAim {
 
 
 
-    public AutoAim(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
+    public Aim(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.turret = new Turret(hardwareMap, motorPriorities, sensors);
         turret.turretState = TurretState.AUTOAIM;
         this.shooter = new Shooter(hardwareMap, motorPriorities, sensors);
-        //leftShooterHood = new MyServo(hardwareMap.get(Servo.class, "leftShooterHood"),"axon", leftZero, false);
-        //rightShooterHood = new MyServo(hardwareMap.get(Servo.class, "rightShooterHood"), "axon", rightZero, true);
+        this.hood = new Hood(hardwareMap);
 
     }
 
@@ -84,18 +83,35 @@ public class AutoAim {
         }
     }
 
+    public void setTurret(double angle) {
+        turret.setTargetAngle(angle);
+    }
+
+    public void setShooter(double vel) {
+        shooter.setTargetVel(vel);
+    }
+
+    public void setHood(double angle) {
+        hood.setAngle(angle);
+    }
+
 
 
     public void update() {
-        mainTarget.update();
-        shooter.setTargetVel(mainTarget.targetShooterVel);
-        Log.e("targetAngle in autoaim", mainTarget.targetTurretAngle-ROBOT_POSITION.heading + "" );
-        turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
-        //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
-        //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
-        turret.update();
-        shooter.update();
+        switch (aimState) {
+            case AUTO_AIM:
+                mainTarget.update();
+                shooter.setTargetVel(mainTarget.targetShooterVel);
+                turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
+                //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
+                //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
+                turret.update();
+                shooter.update();
 
+            case MANUAL_AIM:
+                turret.update();
+                shooter.update();
+        }
     }
 
 }
