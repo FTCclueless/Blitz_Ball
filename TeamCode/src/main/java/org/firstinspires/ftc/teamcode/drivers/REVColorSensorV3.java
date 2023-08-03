@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 // High(ish) level drivers for APDS-9151
@@ -319,13 +318,16 @@ public class REVColorSensorV3 extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         float[] ret = new float[3];
 
         // Over here we are manually swapping endianness
-        ret[0] = ByteBuffer.wrap(new byte[] {data[8], data[7], data[6]}).getInt(); // Red
-        ret[1] = ByteBuffer.wrap(new byte[] {data[2], data[1], data[0]}).getInt(); // Green
-        ret[2] = ByteBuffer.wrap(new byte[] {data[5], data[4], data[3]}).getInt(); // Blue
+        ret[0] = TypeConversion.byteArrayToShort(new byte[] {data[8], data[7], data[6]}); // Red
+        ret[1] = TypeConversion.byteArrayToShort(new byte[] {data[2], data[1], data[0]}); // Green
+        ret[2] = TypeConversion.byteArrayToShort(new byte[] {data[5], data[4], data[3]}); // Blue
 
-        // Normalize to 0-1
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] /= (float) ((1 << lsDepth) - 1);
+        // Normalize to 0-1 (according to REV's official driver code)
+        double mag = ret[0] + ret[1] + ret[2];
+        if (mag != 0) {
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] /= mag;
+            }
         }
 
         return ret;

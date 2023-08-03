@@ -18,7 +18,7 @@ public class TurretTest extends LinearOpMode {
         waitForStart();
 
         Robot robot = new Robot(hardwareMap);
-        Turret turret = robot.aim.turret;
+        Turret turret = robot.turret;
         turret.turretState = TurretState.AUTOAIM;
 
         while (!isStopRequested()) {
