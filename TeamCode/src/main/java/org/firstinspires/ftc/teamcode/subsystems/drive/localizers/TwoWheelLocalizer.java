@@ -158,16 +158,18 @@ public class TwoWheelLocalizer {
 
         double averageHeadingVel = (poseHistory.get(0).getHeading() - poseHistory.get(lastIndex).getHeading()) / actualVelTime;
 
-        // global velocity
-        currentVel = new Pose2d(
-                (poseHistory.get(0).getX() - poseHistory.get(lastIndex).getX()) / actualVelTime,
-                (poseHistory.get(0).getY() - poseHistory.get(lastIndex).getY()) / actualVelTime,
-                averageHeadingVel
-        );
+
         // relative velocity (can't do final minus initial because relative has a heading component)
         relCurrentVel = new Pose2d(
                 (relDeltaXTotal) / actualVelTime,
                 (relDeltaYTotal) / actualVelTime,
+                averageHeadingVel
+        );
+
+        // global velocity
+        currentVel = new Pose2d(
+                relCurrentVel.x * Math.cos(heading) - relCurrentVel.y * Math.sin(heading),
+                relCurrentVel.x * Math.sin(heading) + relCurrentVel.y * Math.cos(heading),
                 averageHeadingVel
         );
 

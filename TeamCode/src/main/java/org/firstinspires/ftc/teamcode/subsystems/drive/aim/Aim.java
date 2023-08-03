@@ -21,7 +21,7 @@ public class Aim {
 
     public Turret turret;
     public Shooter shooter;
-    Hood hood;
+    public Hood hood;
     Target target1;
     Target target2;
 
