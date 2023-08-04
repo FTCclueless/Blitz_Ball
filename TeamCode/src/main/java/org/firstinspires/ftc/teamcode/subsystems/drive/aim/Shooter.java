@@ -33,24 +33,7 @@ public class Shooter {
 
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        leftShooterHood = new MyServo(
-            hardwareMap.get(Servo.class, "leftShooterHood"),
-            MyServo.ServoType.SPEED,
-            .75,
-            0,
-            1,
-            0,
-            false
-        );
-        rightShooterHood = new MyServo(
-            hardwareMap.get(Servo.class, "rightShooterHood"),
-            MyServo.ServoType.SPEED,
-            .75,
-            0,
-            1,
-            0,
-            false
-        );
+
 
         this.sensors = sensors;
         this.motorPriorities = motorPriorities;
@@ -58,11 +41,7 @@ public class Shooter {
         shooterCurrentPower = 0;
     }
 
-    public void setTiltAngle(double angle) {
-        // TODO i have no idea how this should be calculated
-        leftShooterHood.setAngle(angle);
-        rightShooterHood.setAngle(angle);
-    }
+
 
     public void setTargetVel(double power) {
         this.shooterTargetPower = power;
