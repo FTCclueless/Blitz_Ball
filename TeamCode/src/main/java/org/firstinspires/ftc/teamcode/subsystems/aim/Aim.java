@@ -1,17 +1,11 @@
-package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
+package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
-import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
 
-import android.util.Log;
-
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.MyServo;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 import java.util.ArrayList;

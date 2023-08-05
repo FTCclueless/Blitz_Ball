@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.drive.aim.AimState;
-import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.drive.aim.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 @Config

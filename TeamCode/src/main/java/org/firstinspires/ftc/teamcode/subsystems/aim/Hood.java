@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
+package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;

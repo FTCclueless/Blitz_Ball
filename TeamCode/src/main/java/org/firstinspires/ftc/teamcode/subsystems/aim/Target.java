@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems.drive.aim;
+package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
