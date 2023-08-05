@@ -15,14 +15,12 @@ import java.util.ArrayList;
 @Config
 public class Shooter {
     DcMotorEx shooter;
-    MyServo leftShooterHood;
-    MyServo rightShooterHood;
     Sensors sensors;
 
     ArrayList<MotorPriority> motorPriorities;
 
-    double shooterGearRatio = 46.0/9.0;
-    double shooterTicksPerRadian = 145.090909091 / shooterGearRatio;
+    private final double shooterGearRatio = 46.0/9.0;
+    private final double shooterTicksPerRadian = 145.090909091 / shooterGearRatio;
     public double shooterMaxPower = 0;
 
     public double shooterTargetPower;
@@ -34,14 +32,11 @@ public class Shooter {
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
 
-
         this.sensors = sensors;
         this.motorPriorities = motorPriorities;
         motorPriorities.add(new MotorPriority(shooter, 3, 5));
         shooterCurrentPower = 0;
     }
-
-
 
     public void setTargetVel(double power) {
         this.shooterTargetPower = power;
