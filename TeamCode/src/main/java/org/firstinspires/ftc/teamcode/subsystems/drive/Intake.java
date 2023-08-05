@@ -17,9 +17,8 @@ public class Intake {
     ArrayList<MotorPriority> motorPriorities;
 
     boolean previousButton = true;
-
     boolean intakeOn = false;
-
+    boolean reverseDir = false; // regular direction is reverse
     double maxSpeed = 1;
 
     public Intake(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
@@ -35,6 +34,18 @@ public class Intake {
         motorPriorities.get(6).setTargetPower(maxSpeed);
         intakeOn = true;
     }
+    public void reverseDirection(){
+
+        if(reverseDir == true) {
+            intake.setDirection(DcMotorSimple.Direction.REVERSE);
+            reverseDir = false;
+        }
+        else {
+            intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            reverseDir =  true;
+        }
+    }
+
     public void turnOff()
     {
         motorPriorities.get(6).setTargetPower(0);
