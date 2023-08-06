@@ -65,7 +65,7 @@ public class Target {
         Vector2 launchVector = new Vector2(target.x-turretPos.x, target.y-turretPos.y);
         launchVector.norm();
         launchVector.mul(targetVelMag);
-        //launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
+        launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
 
 
         Log.e("launchx", launchVector.x + "");

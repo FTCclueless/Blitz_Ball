@@ -27,8 +27,8 @@ public class Aim {
     double leftZero = 0; // need to find later
     double rightZero = 0;
 
-    double binHeight = 10; // TODO find this
-    double binRadius = 2; //TODO find this
+    double binHeight = 16;
+    double binRadius = 7.5;
     public static double shooterHeight = 15;
     public static double targetHeight = 2;
 

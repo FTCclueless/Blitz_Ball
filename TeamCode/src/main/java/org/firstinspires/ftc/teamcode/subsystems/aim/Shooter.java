@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.MyServo;
 import org.firstinspires.ftc.teamcode.utils.PID;
+import org.firstinspires.ftc.teamcode.utils.TrapezoidMotionProfile;
 
 import java.util.ArrayList;
 
@@ -21,13 +22,13 @@ public class Shooter {
 
     private final double shooterGearRatio = 46.0/9.0;
     private final double shooterTicksPerRadian = 145.090909091 / shooterGearRatio;
+    private final double powPerVel = 0; // TODO
+    private final double kStatic = 0; // TODO
     public double shooterMaxPower = 0;
 
     public double shooterTargetPower;
     public double shooterCurrentPower;
     public double shooterErrorPower;
-
-    public static PID shooterPID = new PID(1,0,0);
 
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
@@ -38,8 +39,8 @@ public class Shooter {
         shooterCurrentPower = 0;
     }
 
-    public void setTargetVel(double power) {
-        this.shooterTargetPower = power;
+    public void setTargetVel(double velocity) {
+        this.shooterTargetPower = velocity * powPerVel + kStatic;
     }
 
     public void update() {
