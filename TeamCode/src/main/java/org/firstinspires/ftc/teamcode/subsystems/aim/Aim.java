@@ -15,6 +15,8 @@ import java.util.ArrayList;
 public class Aim {
     public AimState aimState = AimState.AUTO_AIM;
 
+    Sensors sensors;
+
     public Turret turret;
     public Shooter shooter;
     public Hood hood;
@@ -27,18 +29,20 @@ public class Aim {
     double leftZero = 0; // need to find later
     double rightZero = 0;
 
-    double binHeight = 16;
-    double binRadius = 7.5;
-    public static double shooterHeight = 15;
-    public static double targetHeight = 2;
+    double binHeight = 16; //TODO figure out
+    double binRadius = 7.5; //TODO figure out
+    public static double shooterHeight = 15; //TODO figure out
+    public static double targetHeight = 2; //TODO figure out
 
-
+    public static double errorRadius = 3;
 
     public Aim(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.turret = new Turret(hardwareMap, motorPriorities, sensors);
         turret.turretState = TurretState.AUTOAIM;
         this.shooter = new Shooter(hardwareMap, motorPriorities, sensors);
         this.hood = new Hood(hardwareMap);
+
+        this.sensors = sensors;
 
     }
 
@@ -89,6 +93,23 @@ public class Aim {
 
     public void setHood(double angle) {
         hood.setAngle(angle);
+    }
+
+    public boolean shootCheck() {
+        double shooterVel = sensors.getShooterVelocity();
+        double hoodAngle = hood.getAngle();
+        double turretAngle = turret.currentAngle;
+
+        double verticalVel = shooterVel * Math.sin(hoodAngle);
+        double forwardVel = shooterVel * Math.cos(hoodAngle);
+
+        double time = (verticalVel + Math.sqrt(Math.pow(verticalVel,2)+4*shooterHeight*386.2205/2))/386.2205; // 9.81 m/s in inches
+
+        double velX = forwardVel * Math.cos(turretAngle + ROBOT_POSITION.heading);
+        double velY = forwardVel * Math.sin(turretAngle + ROBOT_POSITION.heading);
+
+
+        return (Math.sqrt(Math.pow(mainTarget.target.x - velX*time,2) + Math.pow(mainTarget.target.y - velY*time,2))) < errorRadius;
     }
 
 

@@ -24,6 +24,7 @@ public class DriveTest extends LinearOpMode {
             drivetrain.drive(gamepad1);
 
             TelemetryUtil.packet.put("turret", Math.toDegrees(aim.turret.currentAngle));
+            TelemetryUtil.packet.put("turretVel", robot.aim.turret.turretVelocity);
             robot.update();
         }
     }

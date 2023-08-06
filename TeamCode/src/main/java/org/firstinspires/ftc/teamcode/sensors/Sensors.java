@@ -26,6 +26,8 @@ public class Sensors {
     private static  double turretAngle;
     private static double turretVelocity;
 
+    private static double shooterVelocity;
+
     public Sensors (HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         this.motorPriorities = motorPriorities;
 
@@ -66,7 +68,9 @@ public class Sensors {
         try {
             odometry[0] = motorPriorities.get(2).motor[0].getCurrentPosition(); // left
             odometry[1] = motorPriorities.get(0).motor[0].getCurrentPosition(); // right
-
+            turretAngle = motorPriorities.get(3).motor[0].getCurrentPosition(); //turret encoder
+            turretVelocity = (double) motorPriorities.get(3).motor[0].getVelocity();
+            shooterVelocity = motorPriorities.get(1).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
@@ -77,8 +81,6 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
-            turretAngle = motorPriorities.get(4).motor[0].getCurrentPosition(); // turret motor
-            turretVelocity = (double) motorPriorities.get(4).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
@@ -128,6 +130,10 @@ public class Sensors {
     }
     public double getTurretVelocity() {
         return turretVelocity;
+    }
+
+    public double getShooterVelocity() {
+        return shooterVelocity;
     }
 }
 
