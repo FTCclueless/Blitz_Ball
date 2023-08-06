@@ -64,7 +64,7 @@ public class Sensors {
 
     private void updateControlHub() {
         try {
-            odometry[0] = motorPriorities.get(3).motor[0].getCurrentPosition(); // left
+            odometry[0] = motorPriorities.get(2).motor[0].getCurrentPosition(); // left
             odometry[1] = motorPriorities.get(0).motor[0].getCurrentPosition(); // right
 
         }

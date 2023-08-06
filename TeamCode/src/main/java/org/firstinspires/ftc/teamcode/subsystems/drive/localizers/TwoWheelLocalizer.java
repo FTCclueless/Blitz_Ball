@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -155,24 +157,33 @@ public class TwoWheelLocalizer {
                 break;
             }
         }
+        if (actualVelTime != 0) {
+            double averageHeadingVel = (poseHistory.get(0).getHeading() - poseHistory.get(lastIndex).getHeading()) / actualVelTime;
 
-        double averageHeadingVel = (poseHistory.get(0).getHeading() - poseHistory.get(lastIndex).getHeading()) / actualVelTime;
+            double x = 0.7 * (double) relCurrentVel.x + 0.3 * (relDeltaXTotal) / actualVelTime;
+            double y = 0.7 * (double) relCurrentVel.y + 0.3 * (relDeltaYTotal) / actualVelTime;
+            double heading = 0.7 * relCurrentVel.heading + averageHeadingVel;
+            Log.e("robotvelx", x + "");
+            Log.e("robotvely", y + "");
+            Log.e("relDelXTotal", "" + relDeltaXTotal);
+            Log.e("actualVelTime", actualVelTime + "");
+            Log.e("relDeltaYTotal", " " + relDeltaYTotal);
+            Log.e("relcurrentx", relCurrentVel.x + "");
+            Log.e("relcurrenty", relCurrentVel.y + "");
+            // relative velocity (can't do final minus initial because relative has a heading component)
+            relCurrentVel = new Pose2d(
+                    x,
+                    y,
+                    heading
+            );
 
-
-        // relative velocity (can't do final minus initial because relative has a heading component)
-        relCurrentVel = new Pose2d(
-                (relDeltaXTotal) / actualVelTime,
-                (relDeltaYTotal) / actualVelTime,
-                averageHeadingVel
-        );
-
-        // global velocity
-        currentVel = new Pose2d(
-                relCurrentVel.x * Math.cos(heading) - relCurrentVel.y * Math.sin(heading),
-                relCurrentVel.x * Math.sin(heading) + relCurrentVel.y * Math.cos(heading),
-                averageHeadingVel
-        );
-
+            // global velocity
+            currentVel = new Pose2d(
+                    relCurrentVel.x * Math.cos(heading) - relCurrentVel.y * Math.sin(heading),
+                    relCurrentVel.x * Math.sin(heading) + relCurrentVel.y * Math.cos(heading),
+                    averageHeadingVel
+            );
+        }
 
         // clearing arrays
         while (lastIndex + 1 < loopTimeHistory.size()) {

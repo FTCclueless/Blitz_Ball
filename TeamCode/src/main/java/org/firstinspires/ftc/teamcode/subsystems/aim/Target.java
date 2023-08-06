@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
@@ -47,10 +49,11 @@ public class Target {
         //y2 = bin height
         //y3 = target Height
         //c = shooter height
-        double turretOffsetX = 4.0;
+        double turretOffsetX = -4.0;
+        double turretOffsetY = 0;
         Pose2d turretPos = new Pose2d(
                 ROBOT_POSITION.x + Math.cos(ROBOT_POSITION.heading) * turretOffsetX,
-                ROBOT_POSITION.x + Math.sin(ROBOT_POSITION.heading) * turretOffsetX,
+                ROBOT_POSITION.y + Math.sin(ROBOT_POSITION.heading) * turretOffsetX,
                 ROBOT_POSITION.heading
         );
         time = System.nanoTime()/1000000000.0;
@@ -62,9 +65,14 @@ public class Target {
         Vector2 launchVector = new Vector2(target.x-turretPos.x, target.y-turretPos.y);
         launchVector.norm();
         launchVector.mul(targetVelMag);
-        launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
+        //launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
 
+
+        Log.e("launchx", launchVector.x + "");
+        Log.e("launchy", launchVector.y + "");
         targetTurretAngle = Math.atan2(launchVector.y, launchVector.x);
+        Log.e("target", targetTurretAngle + "");
+
         targetShooterAngle = Math.atan2(targetVelZ, launchVector.mag());
         targetShooterVel = Math.sqrt(Math.pow(launchVector.mag(),2) + Math.pow(targetVelZ,2));
 
@@ -77,7 +85,7 @@ public class Target {
         deltaTime /= 1.0e9;
 
         futureTurretOffset = deltaHeading/deltaTime + ROBOT_VELOCITY.heading;
-
+        futureTurretOffset = 0;
         lastTime = time;
         counter ++;
     }
