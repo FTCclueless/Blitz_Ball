@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.aim.TurretState;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -20,6 +21,7 @@ public class TurretTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Turret turret = robot.turret;
         turret.turretState = TurretState.AUTOAIM;
+        robot.aim.aimState = AimState.MANUAL_AIM;
 
         while (!isStopRequested()) {
             turret.setTargetAngle(target);

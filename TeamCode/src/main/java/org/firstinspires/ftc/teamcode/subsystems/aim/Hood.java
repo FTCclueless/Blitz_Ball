@@ -58,6 +58,10 @@ public class Hood {
     }
 
     public double getAngle() {
-        return angle;
+        return shooterHood.getAngle();
+    }
+
+    public double getTarget() {
+        return this.angle;
     }
 }
