@@ -21,7 +21,7 @@ public class Shooter {
     ArrayList<MotorPriority> motorPriorities;
 
     private final double shooterGearRatio = 46.0/9.0;
-    private final double shooterTicksPerRadian = 145.090909091 / shooterGearRatio;
+    private final double shooterTicksPerRadian = 145.090909091 / shooterGearRatio / 2/Math.PI;
     private final double powPerVel = 0; // TODO
     private final double kStatic = 0; // TODO
     public double shooterMaxPower = 0;
@@ -48,6 +48,6 @@ public class Shooter {
         /*shooterPID.getOut(shooterTargetVelocity - shooterCurrentVelocity);
         shooterErrorPower = shooterTargetPower-shooterCurrentPower;*/
 
-        motorPriorities.get(5).setTargetPower(shooterTargetPower);
+       // motorPriorities.get(5).setTargetPower(shooterTargetPower);
     }
 }
