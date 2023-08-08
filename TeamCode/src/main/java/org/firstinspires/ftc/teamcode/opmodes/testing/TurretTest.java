@@ -24,7 +24,7 @@ public class TurretTest extends LinearOpMode {
         robot.aim.aimState = AimState.MANUAL_AIM;
 
         while (!isStopRequested()) {
-            turret.setTargetAngle(target);
+            turret.setTargetAngle(Math.toRadians(target));
             TelemetryUtil.packet.put("error", turret.errorAngle);
             TelemetryUtil.packet.put("velocity", turret.turretVelocity);
             TelemetryUtil.packet.put("current", turret.currentAngle);

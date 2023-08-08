@@ -75,7 +75,6 @@ public class MotorPriority {
                 }
             }
             if (bestMotorUpdate != 0) { // priority # of motor needing update the most
-                Log.e("motorpriorities check", "e");
                 motorPriorities.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
             }
             loopTime = GET_LOOP_TIME();

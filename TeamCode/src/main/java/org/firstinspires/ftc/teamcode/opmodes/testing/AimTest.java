@@ -19,7 +19,7 @@ public class AimTest extends LinearOpMode {
         robot.aim.aimState = AimState.AUTO_AIM;
         Turret turret = robot.turret;
         Shooter shooter = robot.shooter;
-        robot.aim.setTarget1(72,72);
+        robot.aim.setTarget1(48,48);
         robot.aim.setMainTarget(1);
 
         waitForStart();

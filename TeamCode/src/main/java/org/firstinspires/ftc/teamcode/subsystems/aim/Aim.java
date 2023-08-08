@@ -112,6 +112,10 @@ public class Aim {
         return (Math.sqrt(Math.pow(mainTarget.target.x - velX*time,2) + Math.pow(mainTarget.target.y - velY*time,2))) < errorRadius;
     }
 
+    public void setState(AimState state) {
+        aimState = state;
+    }
+
 
 
     public void update() {
@@ -124,10 +128,12 @@ public class Aim {
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
                 turret.update();
                 shooter.update();
+                break;
 
             case MANUAL_AIM:
                 turret.update();
                 shooter.update();
+                break;
         }
     }
 

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
 
@@ -16,12 +17,14 @@ public class Shooter {
 
     ArrayList<MotorPriority> motorPriorities;
 
+
+
     private final double gearRatio = 46.0/9.0;
     private final double radius = 3.25;
     private final double ticksPerRadian = 145.090909091 / gearRatio / (2.0*Math.PI);
-    private final double powPerVel = 0.002355662527748475; // TODO
-    private final double kStatic = 0.2194966041039161; // TODO
-    public static double kAccel = 0.2;
+    private final double powPerVel = 0.00050180086; //0.002355662527748475; // TODO
+    private final double kStatic = 0.12353905285769784; //0.2194966041039161; // TODO
+    public static double kAccel = 4;
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
     private double speed = 0;
@@ -34,7 +37,7 @@ public class Shooter {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(DcMotorEx.Direction.REVERSE);
 
-        speed = sensors.getShooterVelocity() / radius;
+        speed = sensors.getShooterVelocity() / ticksPerRadian * radius;
         this.sensors = sensors;
         this.motorPriorities = motorPriorities;
         motorPriorities.add(new MotorPriority(shooter, 3, 5));
@@ -42,7 +45,7 @@ public class Shooter {
     }
 
     public void setTargetVel(double velocity) {
-        targetVelocity = velocity / radius;
+        targetVelocity = velocity;
     }
 
     public double getTargetVel() {
@@ -53,17 +56,13 @@ public class Shooter {
         return speed;
     }
 
-    public double feedForward() {
-        return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 0.2) ? Math.signum(targetVelocity): 0) * kStatic;
+    private double feedForward() {
+        return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 30) ? Math.signum(targetVelocity): 0) * kStatic;
     }
 
     public void update() {
-        speed = sensors.getShooterVelocity() / ticksPerRadian;
+        speed = sensors.getShooterVelocity() / ticksPerRadian * radius;
+        TelemetryUtil.packet.put("shootPow", feedForward());
         motorPriorities.get(5).setTargetPower(feedForward());
-        // TODO fixme
-        /*shooterPID.getOut(shooterTargetVelocity - shooterCurrentVelocity);
-        shooterErrorPower = shooterTargetPower-shooterCurrentPower;*/
-
-       // motorPriorities.get(5).setTargetPower(shooterTargetPower);
     }
 }

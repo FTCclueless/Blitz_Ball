@@ -35,49 +35,41 @@ public class ShooterValueYoinker extends LinearOpMode {
         double avgYint = 0;
         double avgSlope = 0;
 
-        for (int i = 0; i < tests; i++) {
-            double counter = 0;
-            double sumPow = 0;
-            double sumPow2 = 0;
-            double sumVel = 0;
-            double sumVel2 = 0;
-            double sumProduct = 0;
+        double counter = 0;
+        double sumPow = 0;
+        double sumPow2 = 0;
+        double sumVel = 0;
+        double sumVel2 = 0;
+        double sumProduct = 0;
 
-            for (int j = 0; j < samples; j++) {
-                robot.update();
-                double vel = shooter.getSpeed();
-                double pow = (double) j / samples;
+        for (int j = 0; j <= samples; j++) {
+            robot.update();
+            double vel = shooter.getSpeed();
+            double pow = (double) j / samples;
 
-                TelemetryUtil.packet.put("power", pow);
+            TelemetryUtil.packet.put("power", pow);
 
-                if (vel > 1) {
-                    sumPow += pow;
-                    sumPow2 += pow * pow;
-                    sumVel += vel;
-                    sumVel2 += vel * vel;
-                    sumProduct += vel * pow;
-                    counter ++;
-                }
-                robot.motorPriorities.get(5).setTargetPower((double) j / samples);
-
+            if (vel > 1) {
+                sumPow += pow;
+                sumPow2 += pow * pow;
+                sumVel += vel;
+                sumVel2 += vel * vel;
+                sumProduct += vel * pow;
+                counter ++;
             }
+            robot.motorPriorities.get(5).setTargetPower((double) j / samples);
 
-            double yIntercept = (sumPow * sumVel2 - sumVel * sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
-            double slope = (counter * sumProduct - sumVel * sumPow) / (counter * sumVel2 - Math.pow(sumVel, 2));
-            avgYint += yIntercept;
-            avgSlope += slope;
-            Log.e("yIntercept", "" + yIntercept);
-            Log.e("slope", "" + slope);
-
-            // Stop it
-            robot.motorPriorities.get(5).setTargetPower(0);
-            double startTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() < startTime + 15000) {
-                robot.update();
-            }
         }
 
-        Log.d("Avg yIntercept", "" + avgYint / tests);
-        Log.d("Avg slope", "" + avgSlope / tests);
-    }
+        double yIntercept = (sumPow * sumVel2 - sumVel * sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
+        double slope = (counter * sumProduct - sumVel * sumPow) / (counter * sumVel2 - Math.pow(sumVel, 2));
+        avgYint += yIntercept;
+        avgSlope += slope;
+        Log.e("yIntercept", "" + yIntercept);
+        Log.e("slope", "" + slope);
+
+        // Stop it
+        robot.motorPriorities.get(5).setTargetPower(0);
+
+        }
 }
