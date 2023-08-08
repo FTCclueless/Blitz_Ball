@@ -58,14 +58,14 @@ public class Target {
         );
         time = System.nanoTime()/1000000000.0;
         double binDistance = Math.sqrt(Math.pow(target.x-turretPos.x,2) + Math.pow(target.y-turretPos.y,2));
-        double math = Math.sqrt((binDistance-binRadius)/((binHeight-targetHeight/binRadius - (targetHeight - shooterHeight)/binDistance)));
+        double math = Math.sqrt((binDistance-binRadius)/((binHeight-targetHeight)/binRadius - (targetHeight - shooterHeight)/binDistance));
         double targetVelMag = Math.sqrt(386.2205/2)*math; // 9.81 m/s in inches
         double targetVelZ = Math.sqrt(386.2205/2)*((targetHeight-shooterHeight)/binDistance * math + binDistance/math);
 
         Vector2 launchVector = new Vector2(target.x-turretPos.x, target.y-turretPos.y);
         launchVector.norm();
         launchVector.mul(targetVelMag);
-        launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
+        //launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
 
 
         Log.e("launchx", launchVector.x + "");
