@@ -20,7 +20,9 @@ import java.util.ArrayList;
 @TeleOp
 @Config
 public class ShooterValueYoinker extends LinearOpMode {
-    public static double target = 0;
+    public static int tests = 1;
+    public static int samples = 10000;
+
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
@@ -28,35 +30,54 @@ public class ShooterValueYoinker extends LinearOpMode {
         Shooter shooter = robot.shooter;
         Sensors sensors = new Sensors(hardwareMap, robot.motorPriorities);
         robot.aim.aimState = AimState.MANUAL_AIM;
-        double counter = 0;
-        double sumPow = 0;
-        double sumPow2 = 0;
-        double sumVel = 0;
-        double sumVel2 = 0;
-        double sumProduct = 0;
 
-        while (!isStopRequested() && counter < 10000) {
-            counter ++;
-            robot.update();
-            double vel = sensors.getShooterVelocity() / 4.51798735686;
-            double pow = counter/10000;
+        waitForStart();
+        double avgYint = 0;
+        double avgSlope = 0;
 
-            robot.motorPriorities.get(5).setTargetPower(counter/10000);
+        for (int i = 0; i < tests; i++) {
+            double counter = 0;
+            double sumPow = 0;
+            double sumPow2 = 0;
+            double sumVel = 0;
+            double sumVel2 = 0;
+            double sumProduct = 0;
 
-            TelemetryUtil.packet.put("power", pow);
+            for (int j = 0; j < samples; j++) {
+                robot.update();
+                double vel = shooter.getSpeed();
+                double pow = (double) j / samples;
 
-            sumPow += pow;
-            sumPow2 += pow*pow;
-            sumVel += vel;
-            sumVel2 += vel*vel;
-            sumProduct += vel*pow;
+                TelemetryUtil.packet.put("power", pow);
 
+                if (vel > 1) {
+                    sumPow += pow;
+                    sumPow2 += pow * pow;
+                    sumVel += vel;
+                    sumVel2 += vel * vel;
+                    sumProduct += vel * pow;
+                    counter ++;
+                }
+                robot.motorPriorities.get(5).setTargetPower((double) j / samples);
 
+            }
+
+            double yIntercept = (sumPow * sumVel2 - sumVel * sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
+            double slope = (counter * sumProduct - sumVel * sumPow) / (counter * sumVel2 - Math.pow(sumVel, 2));
+            avgYint += yIntercept;
+            avgSlope += slope;
+            Log.e("yIntercept", "" + yIntercept);
+            Log.e("slope", "" + slope);
+
+            // Stop it
+            robot.motorPriorities.get(5).setTargetPower(0);
+            double startTime = System.currentTimeMillis();
+            while (System.currentTimeMillis() < startTime + 15000) {
+                robot.update();
+            }
         }
 
-        double yIntercept = (sumPow*sumVel2 - sumVel*sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
-        double slope = (counter * sumProduct - sumVel*sumPow) / (counter*sumVel2 - Math.pow(sumVel,2));
-        Log.e("yIntercept", "" + yIntercept);
-        Log.e("slope", "" + slope);
+        Log.d("Avg yIntercept", "" + avgYint / tests);
+        Log.d("Avg slope", "" + avgSlope / tests);
     }
 }

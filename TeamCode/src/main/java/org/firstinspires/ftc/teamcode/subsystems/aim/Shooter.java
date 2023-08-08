@@ -3,13 +3,9 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
-import org.firstinspires.ftc.teamcode.utils.MyServo;
-import org.firstinspires.ftc.teamcode.utils.PID;
-import org.firstinspires.ftc.teamcode.utils.TrapezoidMotionProfile;
 
 import java.util.ArrayList;
 
@@ -20,19 +16,25 @@ public class Shooter {
 
     ArrayList<MotorPriority> motorPriorities;
 
-    private final double shooterGearRatio = 46.0/9.0;
-    private final double shooterTicksPerRadian = 145.090909091 / shooterGearRatio / 2/Math.PI;
-    private final double powPerVel = 0; // TODO
-    private final double kStatic = 0; // TODO
+    private final double gearRatio = 46.0/9.0;
+    private final double radius = 3.25;
+    private final double ticksPerRadian = 145.090909091 / gearRatio / (2.0*Math.PI);
+    private final double powPerVel = 0.002355662527748475; // TODO
+    private final double kStatic = 0.2194966041039161; // TODO
+    public static double kAccel = 0.2;
+    public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
+    private double speed = 0;
 
-    public double shooterTargetPower;
+    public double targetVelocity;
     public double shooterCurrentPower;
     public double shooterErrorPower;
 
     public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooter.setDirection(DcMotorEx.Direction.REVERSE);
 
+        speed = sensors.getShooterVelocity() / radius;
         this.sensors = sensors;
         this.motorPriorities = motorPriorities;
         motorPriorities.add(new MotorPriority(shooter, 3, 5));
@@ -40,10 +42,24 @@ public class Shooter {
     }
 
     public void setTargetVel(double velocity) {
-        this.shooterTargetPower = velocity * powPerVel + kStatic;
+        targetVelocity = velocity / radius;
+    }
+
+    public double getTargetVel() {
+        return targetVelocity;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public double feedForward() {
+        return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 0.2) ? Math.signum(targetVelocity): 0) * kStatic;
     }
 
     public void update() {
+        speed = sensors.getShooterVelocity() / ticksPerRadian;
+        motorPriorities.get(5).setTargetPower(feedForward());
         // TODO fixme
         /*shooterPID.getOut(shooterTargetVelocity - shooterCurrentVelocity);
         shooterErrorPower = shooterTargetPower-shooterCurrentPower;*/
