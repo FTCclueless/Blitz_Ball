@@ -8,16 +8,12 @@ public class PriorityMotor extends PriorityDevice{
     public DcMotorEx[] motor; // if the subsystem has multiple motors (i.e. slides)
 
     public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale) {
-        super(basePriority, priorityScale, name);
-        this.motor = new DcMotorEx[] {motor};
-
-        callLengthMillis = 1.6;
+        this(new DcMotorEx[] {motor}, name, basePriority, priorityScale);
     }
 
     public PriorityMotor(DcMotorEx[] motor, String name, double basePriority, double priorityScale) {
         super(basePriority, priorityScale, name);
         this.motor = motor;
-
 
         callLengthMillis = 1.6;
     }
