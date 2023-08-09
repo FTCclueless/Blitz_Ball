@@ -27,7 +27,7 @@ public class PriorityServo extends PriorityDevice{
     private final double minPos, minAng, maxPos, maxAng, basePos;
     private double currentAngle = 0, targetAngle = 0, power = 0;
     private boolean reachedIntermediate = false;
-    private double lastUpdatedTargetAngle = 0, currentIntermediateTargetAngle = 0;
+    private double currentIntermediateTargetAngle = 0;
     private long lastLoopTime = System.nanoTime();
 
     public PriorityServo(Servo servo, String name, MyServo.ServoType type, double loadMultiplier, double min, double max, double basePos, boolean reversed, double basePriority, double priorityScale) {
@@ -107,8 +107,7 @@ public class PriorityServo extends PriorityDevice{
         //Finds the amount of time since the intermediate target variable has been updated
         long currentTime = System.nanoTime();
         double timeSinceLastUpdate = ((double) currentTime - lastUpdateTime)/1.0E9;
-        //update the lastUpdatedTargetAngle so it is inline with its current target
-        lastUpdatedTargetAngle = targetAngle;
+
         double error = targetAngle - currentAngle;
         //find the amount of movement the servo theoretically should have done in the time it took to update the servo
         double deltaAngle = timeSinceLastUpdate * type.speed * power * Math.signum(error);
