@@ -28,7 +28,6 @@ public class Shooter {
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
     private double speed = 0;
-    public static double ballin = 0;
     public static double lowpassWeight = 0;
 
     public double targetVelocity;
@@ -59,12 +58,12 @@ public class Shooter {
     }
 
     private double feedForward() {
-        return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 30) ? Math.signum(targetVelocity): 0) * kStatic;
+        return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 20) ? Math.signum(targetVelocity): 0) * kStatic;
     }
 
     public void update() {
         speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         TelemetryUtil.packet.put("shootPow", feedForward());
-        //motorPriorities.get(5).setTargetPower(feedForward() + ballin);
+        //motorPriorities.get(5).setTargetPower(feedForward());
     }
 }

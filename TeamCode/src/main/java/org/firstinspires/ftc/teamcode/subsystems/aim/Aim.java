@@ -31,12 +31,14 @@ public class Aim {
     double leftZero = 0; // need to find later
     double rightZero = 0;
 
-    double binHeight = 16; //TODO figure out
+    double binHeight = 20; //TODO figure out
     double binRadius = 7.5; //TODO figure out
     public static double shooterHeight = 15; //TODO figure out
     public static double targetHeight = 2; //TODO figure out
 
     public static double errorRadius = 3;
+
+    public static double shooterComp = 0;
 
     public Aim(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
         this.turret = new Turret(hardwareMap, motorPriorities, sensors);
@@ -90,7 +92,7 @@ public class Aim {
     }
 
     public void setShooter(double vel) {
-        shooter.setTargetVel(vel);
+        shooter.setTargetVel(vel + shooterComp);
     }
 
     public void setHood(double angle) {
@@ -152,7 +154,7 @@ public class Aim {
         switch (aimState) {
             case AUTO_AIM:
                 mainTarget.update();
-                shooter.setTargetVel(mainTarget.targetShooterVel);
+                shooter.setTargetVel(mainTarget.targetShooterVel + shooterComp);
                 turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
