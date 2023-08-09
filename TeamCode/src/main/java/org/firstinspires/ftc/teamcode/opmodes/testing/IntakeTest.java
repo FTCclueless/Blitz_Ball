@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.drive.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 @TeleOp
 public class IntakeTest extends LinearOpMode {
