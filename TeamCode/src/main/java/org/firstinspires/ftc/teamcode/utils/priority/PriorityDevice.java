@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.utils.priority;
 
 public abstract class PriorityDevice {
     protected final double basePriority, priorityScale;
-    protected double lastUpdateTime;
+    protected final String name;
+    protected double lastUpdateTime, callLengthMillis;
 
-    public PriorityDevice(double basePriority, double priorityScale) {
+    public PriorityDevice(double basePriority, double priorityScale, String name) {
         this.basePriority = basePriority;
         this.priorityScale = priorityScale;
+        this.name = name;
         lastUpdateTime = System.nanoTime() / 1000.0;
     }
 

@@ -7,14 +7,19 @@ public class PriorityMotor extends PriorityDevice{
     public double power = 0;
     public DcMotorEx[] motor; // if the subsystem has multiple motors (i.e. slides)
 
-    public PriorityMotor(DcMotorEx motor, double basePriority, double priorityScale) {
-        super(basePriority, priorityScale);
+    public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale) {
+        super(basePriority, priorityScale, name);
         this.motor = new DcMotorEx[] {motor};
+
+        callLengthMillis = 1.6;
     }
 
-    public PriorityMotor(DcMotorEx[] motor, double basePriority, double priorityScale) {
-        super(basePriority, priorityScale);
+    public PriorityMotor(DcMotorEx[] motor, String name, double basePriority, double priorityScale) {
+        super(basePriority, priorityScale, name);
         this.motor = motor;
+
+
+        callLengthMillis = 1.6;
     }
 
     public void setTargetPower(double power) {
@@ -24,15 +29,15 @@ public class PriorityMotor extends PriorityDevice{
     @Override
     protected double getPriority(double timeRemaining) {
         if (power-lastPower == 0) {
-            lastUpdateTime = System.nanoTime() / 1000.0;
+            lastUpdateTime = System.nanoTime();
             return 0;
         }
 
-        if (timeRemaining * 1000.0 <= 1.6 * (motor.length-1) + 0.8) {
+        if (timeRemaining * 1000.0 <= callLengthMillis * (motor.length-1) + callLengthMillis/2.0) {
             return 0;
         }
 
-        return basePriority + Math.abs(power-lastPower) + (System.nanoTime() / 1000.0 - lastUpdateTime) * priorityScale;
+        return basePriority + Math.abs(power-lastPower) + (System.nanoTime() - lastUpdateTime)/1000.0 * priorityScale;
     }
 
     @Override
@@ -40,7 +45,7 @@ public class PriorityMotor extends PriorityDevice{
         for (int i = 0; i < motor.length; i ++) {
             motor[i].setPower(power);
         }
-        lastUpdateTime = System.currentTimeMillis();
+        lastUpdateTime = System.nanoTime();
         lastPower = power;
     }
 }
