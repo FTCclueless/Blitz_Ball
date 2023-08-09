@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -121,8 +122,6 @@ public class Turret {
         targetPower = Math.min(Math.max(targetPower,-1),1);
         return targetPower;
     }
-
-
 
     public void update() {
         currentAngle = -1 * sensors.getTurretAngle() / ticksPerRadian;

@@ -4,11 +4,13 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
 
@@ -95,7 +97,29 @@ public class Aim {
         hood.setAngle(angle);
     }
 
-    public boolean shootCheck() {
+    public void updateTelemetry() {
+        Canvas canvas = TelemetryUtil.packet.fieldOverlay();
+        if (target1 != null) {
+            canvas.setFill("#ff5445"); // Red
+            canvas.fillCircle(target1.target.x, target1.target.y, target1.binRadius);
+        }
+        if (target2 != null) {
+            canvas.setFill("#4248fc"); // Blue
+            canvas.fillCircle(target2.target.x, target2.target.y, target2.binRadius);
+        }
+        canvas.setStroke("#f8ff73");
+        canvas.strokeLine(
+            ROBOT_POSITION.x, ROBOT_POSITION.y,
+            ROBOT_POSITION.x + Math.cos(turret.currentAngle + ROBOT_POSITION.heading) * 24,
+            ROBOT_POSITION.y + Math.sin(turret.currentAngle + ROBOT_POSITION.heading) * 24
+        );
+
+        Pose2d check = shootPose();
+        canvas.setFill("#7fff69");
+        canvas.fillCircle(check.x, check.y, 3);
+    }
+
+    public Pose2d shootPose() {
         double shooterVel = sensors.getShooterVelocity();
         double hoodAngle = hood.getAngle();
         double turretAngle = turret.currentAngle;
@@ -109,7 +133,11 @@ public class Aim {
         double velY = forwardVel * Math.sin(turretAngle + ROBOT_POSITION.heading);
 
 
-        return (Math.sqrt(Math.pow(mainTarget.target.x - velX*time,2) + Math.pow(mainTarget.target.y - velY*time,2))) < errorRadius;
+        return new Pose2d(
+            velX * time + ROBOT_POSITION.x,
+            velY * time + ROBOT_POSITION.y
+        );
+        // return (Math.sqrt(Math.pow(mainTarget.target.x - velX*time,2) + Math.pow(mainTarget.target.y - velY*time,2))) < errorRadius;
     }
 
     public void setState(AimState state) {
@@ -119,6 +147,8 @@ public class Aim {
 
 
     public void update() {
+        updateTelemetry();
+
         switch (aimState) {
             case AUTO_AIM:
                 mainTarget.update();

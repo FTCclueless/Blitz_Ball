@@ -71,5 +71,22 @@ public class ShooterValueYoinker extends LinearOpMode {
         // Stop it
         robot.motorPriorities.get(5).setTargetPower(0);
 
+        while (Math.abs(shooter.getSpeed()) > 0.05) {
+            robot.update();
+        }
+        // Try getting k static by doing a less cool method
+
+        /*for (int i = 0; i < samples && opModeIsActive(); i++) {
+            double pow = (double) i  / samples;
+            robot.motorPriorities.get(5).setTargetPower(pow);
+            TelemetryUtil.packet.put("pow", pow);
+
+            if (Math.abs(shooter.getSpeed()) > 100) {
+                Log.e("kStatic", pow + "");
+                break;
+            }
+            robot.update();
+        }*/
+
         }
 }

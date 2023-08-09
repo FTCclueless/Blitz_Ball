@@ -23,11 +23,13 @@ public class Shooter {
     private final double radius = 3.25;
     private final double ticksPerRadian = 145.090909091 / gearRatio / (2.0*Math.PI);
     private final double powPerVel = 0.00050180086; //0.002355662527748475; // TODO
-    private final double kStatic = 0.12353905285769784; //0.2194966041039161; // TODO
+    private final double kStatic = 0.176; //0.2194966041039161; // TODO
     public static double kAccel = 4;
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
     private double speed = 0;
+    public static double ballin = 0;
+    public static double lowpassWeight = 0;
 
     public double targetVelocity;
     public double shooterCurrentPower;
@@ -61,8 +63,8 @@ public class Shooter {
     }
 
     public void update() {
-        speed = sensors.getShooterVelocity() / ticksPerRadian * radius;
+        speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         TelemetryUtil.packet.put("shootPow", feedForward());
-        motorPriorities.get(5).setTargetPower(feedForward());
+        //motorPriorities.get(5).setTargetPower(feedForward() + ballin);
     }
 }
