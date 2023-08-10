@@ -14,10 +14,17 @@ import java.util.ArrayList;
 
 @Config
 public class Shooter {
+    public enum State {
+        AUTO_AIM,
+        OFF
+    }
     PriorityMotor shooter;
     Sensors sensors;
 
     HardwareQueue hardwareQueue;
+
+    public State state = State.AUTO_AIM;
+
 
 
 
@@ -68,8 +75,14 @@ public class Shooter {
     }
 
     public void update() {
-        speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
-        TelemetryUtil.packet.put("shootPow", feedForward());
-        //shooter.setTargetPower(feedForward());
+        switch (state) {
+            case AUTO_AIM:
+                speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
+                TelemetryUtil.packet.put("shootPow", feedForward());
+                //shooter.setTargetPower(feedForward());
+                break;
+            case OFF:
+                break;
+        }
     }
 }

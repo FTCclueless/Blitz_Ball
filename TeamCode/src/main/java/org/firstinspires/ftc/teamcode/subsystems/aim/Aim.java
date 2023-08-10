@@ -13,7 +13,8 @@ import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 public class Aim {
     public enum State {
         AUTO_AIM,
-        MANUAL_AIM
+        MANUAL_AIM,
+        OFF
     }
 
     public State state = State.AUTO_AIM;
@@ -145,6 +146,17 @@ public class Aim {
 
     public void setState(State state) {
         this.state = state;
+        switch (state) {
+            case AUTO_AIM:
+                turret.state = Turret.State.AUTOAIM;
+                shooter.state = Shooter.State.AUTO_AIM;
+            case MANUAL_AIM:
+                turret.state = Turret.State.AUTOAIM;
+                shooter.state = Shooter.State.AUTO_AIM;
+            case OFF:
+                turret.state = Turret.State.OFF;
+                shooter.state = Shooter.State.OFF;
+        }
     }
 
 
@@ -164,6 +176,8 @@ public class Aim {
                 break;
 
             case MANUAL_AIM:
+
+            case OFF:
                 turret.update();
                 shooter.update();
                 break;

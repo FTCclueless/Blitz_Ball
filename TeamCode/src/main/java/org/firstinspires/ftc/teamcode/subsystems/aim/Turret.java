@@ -20,7 +20,7 @@ public class Turret {
     public enum State {
         PID_ENABLED,
         AUTOAIM,
-        MANUAL_CONTROL
+        OFF
     }
 
     private Sensors sensors;
@@ -30,7 +30,7 @@ public class Turret {
 
     public static final double maxRotation = Math.toRadians(180);
     public static double maxAccel = 8.98786378884; // 1000 / 111.261143192
-    public State state = State.MANUAL_CONTROL;
+    public State state = State.OFF;
     public static boolean pidEnabled = false;
     public static PID turretPid = new PID(0.1,0,0);
 
@@ -123,12 +123,12 @@ public class Turret {
     }
 
     public void update() {
-        currentAngle = -1 * sensors.getTurretAngle() / ticksPerRadian;
+        currentAngle = sensors.getTurretAngle() / ticksPerRadian;
         errorAngle = targetAngle - currentAngle;
         turretVelocity = sensors.getTurretVelocity() / ticksPerRadian;
 
         switch (state) {
-            case MANUAL_CONTROL:
+            case OFF:
                 // FIXME: ask later if we should pass gamepad to all updates
                 break;
             case AUTOAIM:

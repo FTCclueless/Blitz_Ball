@@ -70,8 +70,6 @@ public class Sensors {
         try {
             odometry[0] = ((PriorityMotor) hardwareQueue.getDevice("rightRear")).motor[0].getCurrentPosition();
             odometry[1] = ((PriorityMotor) hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition();
-            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getCurrentPosition();
-            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getVelocity();
             shooterVelocity = ((PriorityMotor) hardwareQueue.getDevice("shooter")).motor[0].getVelocity();
         }
         catch (Exception e) {
@@ -83,6 +81,8 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
+            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getCurrentPosition();
+            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
