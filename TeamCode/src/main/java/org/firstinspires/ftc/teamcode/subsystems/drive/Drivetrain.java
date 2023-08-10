@@ -22,6 +22,8 @@ import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,10 +45,10 @@ public class Drivetrain {
     double maxSpeed = 54;
     double maxTurn = maxSpeed / (TRACK_WIDTH);
 
-    public DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    private List<DcMotorEx> motors;
+    public PriorityMotor leftFront, leftRear, rightRear, rightFront;
+    private List<PriorityMotor> motors;
 
-    private ArrayList<MotorPriority> motorPriorities;
+    private HardwareQueue hardwareQueue;
     private Sensors sensors;
 
     public TwoWheelLocalizer localizer;
@@ -54,34 +56,49 @@ public class Drivetrain {
     private Spline currentPath = null;
     private int pathIndex = 0;
 
-    public Drivetrain(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
-        this.motorPriorities = motorPriorities;
+    public Drivetrain(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
+        this.hardwareQueue = hardwareQueue;
         this.sensors = sensors;
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "leftFront"),
+            "leftFront",
+            3, 5
+        );
+        leftRear = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "leftRear"),
+            "leftRear",
+            3, 5
+        );
+        rightRear = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "rightRear"),
+            "rightRear",
+            3, 5
+        );
+        rightFront = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "rightFront"),
+            "rightFront",
+            3, 5
+        );
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
-        for (int i = 0; i < motors.size(); i++) {
+        for (PriorityMotor motor : motors) {
             //motors.get(i).getMotorType().setAchieveableMaxRPMFraction(1.0);
 
 
-            MotorConfigurationType motorConfigurationType = motors.get(i).getMotorType().clone();
+            // Boopy coding brr
+            MotorConfigurationType motorConfigurationType = motor.motor[0].getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-            motors.get(i).setMotorType(motorConfigurationType);
-
-            motorPriorities.add(new MotorPriority(motors.get(i), 3, 5));
+            motor.motor[0].setMotorType(motorConfigurationType);
         }
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftRear.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.motor[0].setDirection(DcMotor.Direction.REVERSE);
+        leftRear.motor[0].setDirection(DcMotor.Direction.REVERSE);
 
         localizer = new TwoWheelLocalizer(hardwareMap);
     }
@@ -191,8 +208,8 @@ public class Drivetrain {
 
             if (pathIndex >= currentPath.poses.size() - 1 && Math.abs(error.heading) < Math.toRadians(headingError)) {
                 currentPath = null;
-                for (int i = 0; i < 4; i++) {
-                    motorPriorities.get(i).setTargetPower(0);
+                for (PriorityMotor motor : motors) {
+                    motor.setTargetPower(0);
                 }
                 return;
             }
@@ -217,7 +234,7 @@ public class Drivetrain {
                 max = Math.max(max, power);
             }
 
-            for (int i = 0; i < motorPowers.length; i++) {
+            for (int i = 0; i < motors.size(); i++) {
                 motorPowers[i] /= max;
                 motorPowers[i] *= 1.0 - MIN_MOTOR_POWER_TO_OVERCOME_FRICTION; // we do this so that we keep proportions when we add MIN_MOTOR_POWER_TO_OVERCOME_FRICTION in the next line below. If we had just added MIN_MOTOR_POWER_TO_OVERCOME_FRICTION without doing this 0.9 and 1.0 become the same motor power
                 motorPowers[i] += MIN_MOTOR_POWER_TO_OVERCOME_FRICTION * Math.signum(motorPowers[i]);
@@ -225,7 +242,7 @@ public class Drivetrain {
                 TelemetryUtil.packet.put("Motor power", motorPowers[0] + " " + motorPowers[1] + " " + motorPowers[2] + " " + motorPowers[3]);
 
                 //motors.get(i).setPower(motorPowers[i]);
-                motorPriorities.get(i).setTargetPower(motorPowers[i]);
+                motors.get(i).setTargetPower(motorPowers[i]);
             }
         }
 
@@ -296,22 +313,22 @@ public class Drivetrain {
     }
 
     public void setMode(DcMotor.RunMode runMode) {
-        for (DcMotorEx motor : motors) {
-            motor.setMode(runMode);
+        for (PriorityMotor motor : motors) {
+            motor.motor[0].setMode(runMode);
         }
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        for (DcMotorEx motor : motors) {
-            motor.setZeroPowerBehavior(zeroPowerBehavior);
+        for (PriorityMotor motor : motors) {
+            motor.motor[0].setZeroPowerBehavior(zeroPowerBehavior);
         }
     }
 
     public void setMotorPowers(double lf, double lr, double rr, double rf) {
-        motorPriorities.get(0).setTargetPower(lf);
-        motorPriorities.get(1).setTargetPower(lr);
-        motorPriorities.get(2).setTargetPower(rr);
-        motorPriorities.get(3).setTargetPower(rf);
+        leftFront.setTargetPower(lf);
+        leftRear.setTargetPower(lr);
+        rightRear.setTargetPower(rr);
+        rightRear.setTargetPower(rf);
     }
 
     public void drive(Gamepad gamepad) {

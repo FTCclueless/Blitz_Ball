@@ -12,12 +12,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.util.ArrayList;
 
 public class Sensors {
     LynxModule controlHub, expansionHub;
-    private ArrayList<MotorPriority> motorPriorities;
+    private HardwareQueue hardwareQueue;
 
     //private IMU imu;
     private int[] odometry = new int[2];
@@ -28,8 +30,8 @@ public class Sensors {
 
     private static double shooterVelocity;
 
-    public Sensors (HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
-        this.motorPriorities = motorPriorities;
+    public Sensors (HardwareMap hardwareMap, HardwareQueue hardwareQueue) {
+        this.hardwareQueue = hardwareQueue;
 
         initHubs(hardwareMap);
 
@@ -66,11 +68,11 @@ public class Sensors {
 
     private void updateControlHub() {
         try {
-            odometry[0] = motorPriorities.get(2).motor[0].getCurrentPosition(); // left
-            odometry[1] = motorPriorities.get(0).motor[0].getCurrentPosition(); // right
-            turretAngle = motorPriorities.get(3).motor[0].getCurrentPosition(); //turret encoder
-            turretVelocity = (double) motorPriorities.get(3).motor[0].getVelocity();
-            shooterVelocity = motorPriorities.get(1).motor[0].getVelocity();
+            odometry[0] = ((PriorityMotor) hardwareQueue.getDevice("rightRear")).motor[0].getCurrentPosition();
+            odometry[1] = ((PriorityMotor) hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition();
+            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getCurrentPosition();
+            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getVelocity();
+            shooterVelocity = ((PriorityMotor) hardwareQueue.getDevice("shooter")).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());

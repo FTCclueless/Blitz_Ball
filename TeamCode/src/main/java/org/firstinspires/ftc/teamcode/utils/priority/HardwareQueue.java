@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import java.util.ArrayList;
 
 public class HardwareQueue {
-    ArrayList<PriorityDevice> devices = new ArrayList<>();
+    private ArrayList<PriorityDevice> devices = new ArrayList<>();
     public double targetLoopLength = 0.015; // sets the target loop time in seconds
 
     public PriorityDevice getDevice(String name){
@@ -17,6 +17,10 @@ public class HardwareQueue {
             }
         }
         return null;
+    }
+
+    public void addDevice(PriorityDevice device) {
+        devices.add(device);
     }
 
     public void update() {

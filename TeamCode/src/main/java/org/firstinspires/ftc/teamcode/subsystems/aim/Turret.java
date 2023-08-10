@@ -16,6 +16,8 @@ import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.util.ArrayList;
 
@@ -37,12 +39,12 @@ public class Turret {
     public double targetAngle = 0;
     public double currentAngle = 0;
 
-    DcMotorEx turretMotor;
     public double errorAngle;
 
     public double turretVelocity;
     double turretPower;
-    ArrayList<MotorPriority> motorPriorities;
+    HardwareQueue hardwareQueue;
+    private PriorityMotor turretMotor;
 
     public static double AngleToSlowDown = 2; //in radians
     public double powPerVel = 0.04257493408921866; //velocity per power
@@ -55,23 +57,21 @@ public class Turret {
 
 
 
-    public Turret(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
+    public Turret(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
 
 
-        turretMotor = hardwareMap.get(DcMotorEx.class, "turret");
-        turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        DcMotorEx tempMotor = hardwareMap.get(DcMotorEx.class, "turret");
+        tempMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        tempMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        tempMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.sensors = sensors;
 
         targetAngle = currentAngle;
         turretVelocity = 0;
 
-        this.motorPriorities = motorPriorities;
-        motorPriorities.add(new MotorPriority(turretMotor, 3, 5));
-
-
-
+        this.hardwareQueue = hardwareQueue;
+        turretMotor = new PriorityMotor(tempMotor, "turret", 3, 5);
+        hardwareQueue.addDevice(turretMotor);
     }
 
     public void setTargetAngle(double angle){
@@ -111,7 +111,7 @@ public class Turret {
     }
 
     public void move(Gamepad gamepad) {
-        motorPriorities.get(4).setTargetPower(gamepad.right_stick_x);
+        turretMotor.setTargetPower(gamepad.right_stick_x);
     }
 
     private double feedForward() {
@@ -137,7 +137,7 @@ public class Turret {
                 turretPower = feedForward();
                 TelemetryUtil.packet.put("turretPow", turretPower);
 
-                motorPriorities.get(4).setTargetPower(turretPower);
+                turretMotor.setTargetPower(turretPower);
                 /*if (isComplete(errorMargin)) {
                     turretState = TurretState.AUTOAIM;
                 }*/
@@ -146,7 +146,7 @@ public class Turret {
                 turretPower = turretPid.getOut(errorAngle);
 
 
-                motorPriorities.get(4).setTargetPower(turretPower);
+                turretMotor.setTargetPower(turretPower);
                 break;
         }
     }

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 
 import java.util.ArrayList;
 
@@ -40,10 +41,10 @@ public class Aim {
 
     public static double shooterComp = 0;
 
-    public Aim(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
-        this.turret = new Turret(hardwareMap, motorPriorities, sensors);
+    public Aim(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
+        this.turret = new Turret(hardwareMap, hardwareQueue, sensors);
         turret.turretState = TurretState.AUTOAIM;
-        this.shooter = new Shooter(hardwareMap, motorPriorities, sensors);
+        this.shooter = new Shooter(hardwareMap, hardwareQueue, sensors);
         this.hood = new Hood(hardwareMap);
 
         this.sensors = sensors;

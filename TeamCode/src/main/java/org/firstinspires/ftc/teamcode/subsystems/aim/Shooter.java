@@ -7,15 +7,17 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.util.ArrayList;
 
 @Config
 public class Shooter {
-    DcMotorEx shooter;
+    PriorityMotor shooter;
     Sensors sensors;
 
-    ArrayList<MotorPriority> motorPriorities;
+    HardwareQueue hardwareQueue;
 
 
 
@@ -34,14 +36,18 @@ public class Shooter {
     public double shooterCurrentPower;
     public double shooterErrorPower;
 
-    public Shooter(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities, Sensors sensors) {
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        shooter.setDirection(DcMotorEx.Direction.REVERSE);
+    public Shooter(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
+        shooter = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "shooter"),
+            "shooter",
+            3, 5
+        );
+        shooter.motor[0].setDirection(DcMotorEx.Direction.REVERSE);
 
         speed = sensors.getShooterVelocity() / ticksPerRadian * radius;
         this.sensors = sensors;
-        this.motorPriorities = motorPriorities;
-        motorPriorities.add(new MotorPriority(shooter, 3, 5));
+        this.hardwareQueue = hardwareQueue;
+        hardwareQueue.addDevice(shooter);
         shooterCurrentPower = 0;
     }
 
@@ -64,6 +70,6 @@ public class Shooter {
     public void update() {
         speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         TelemetryUtil.packet.put("shootPow", feedForward());
-        //motorPriorities.get(5).setTargetPower(feedForward());
+        //shooter.setTargetPower(feedForward());
     }
 }

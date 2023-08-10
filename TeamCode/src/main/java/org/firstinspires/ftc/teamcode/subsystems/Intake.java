@@ -9,46 +9,52 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.util.ArrayList;
 
 public class Intake {
-    DcMotorEx intake;
-    ArrayList<MotorPriority> motorPriorities;
+    PriorityMotor intake;
+    HardwareQueue hardwareQueue;
 
     boolean previousButton = true;
     boolean intakeOn = false;
     boolean reverseDir = false; // regular direction is reverse
     double speed = 1;
 
-    public Intake(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
-        this.motorPriorities = motorPriorities;
-        intake = hardwareMap.get(DcMotorEx.class, "intake");
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+    public Intake(HardwareMap hardwareMap, HardwareQueue hardwareQueue) {
+        this.hardwareQueue = hardwareQueue;
+        intake = new PriorityMotor(
+            hardwareMap.get(DcMotorEx.class, "intake"),
+            "intake",
+            3, 5
+        );
+        intake.motor[0].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        motorPriorities.add((new MotorPriority (intake, 3, 5)));
+        hardwareQueue.addDevice(intake);
 
     }
 
     public void turnOn() {
-        motorPriorities.get(6).setTargetPower(speed);
+        intake.setTargetPower(speed);
         intakeOn = true;
     }
     public void reverseDirection(){
 
-        if(reverseDir == false) {
-            intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        if(!reverseDir) {
+            intake.motor[0].setDirection(DcMotorSimple.Direction.REVERSE);
             reverseDir = true;
         }
         else {
-            intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            intake.motor[0].setDirection(DcMotorSimple.Direction.FORWARD);
             reverseDir =  false;
         }
     }
 
     public void turnOff()
     {
-        motorPriorities.get(6).setTargetPower(0);
+        intake.setTargetPower(0);
         intakeOn = false;
     }
 
@@ -63,14 +69,14 @@ public class Intake {
         TelemetryUtil.packet.put("intakeon", intakeOn);
         Log.e("intakeOn", intakeOn + "");
 
-        if((gamepad.left_trigger >= .3) && previousButton == true) {
+        if((gamepad.left_trigger >= .3) && previousButton) {
             previousButton = false;
             intakeOn = !intakeOn;
         }
         if(gamepad.left_trigger <= .3){
             previousButton = true;
         }
-        if(intakeOn == true){
+        if(intakeOn){
             turnOn();
         }
         else{

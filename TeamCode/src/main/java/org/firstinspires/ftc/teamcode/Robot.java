@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 
 import java.util.ArrayList;
 
@@ -31,19 +32,19 @@ public class Robot {
     public Aim aim;
     public Intake intake;
 
-    public ArrayList<MotorPriority> motorPriorities = new ArrayList<>();
+    HardwareQueue hardwareQueue = new HardwareQueue();
 
     public Robot (HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
 
         TelemetryUtil.setup();
 
-        sensors = new Sensors(hardwareMap, motorPriorities);
-        drivetrain = new Drivetrain(hardwareMap, motorPriorities, sensors);
-        aim = new Aim(hardwareMap, motorPriorities, sensors);
+        sensors = new Sensors(hardwareMap, hardwareQueue);
+        drivetrain = new Drivetrain(hardwareMap, hardwareQueue, sensors);
+        aim = new Aim(hardwareMap, hardwareQueue, sensors);
         turret = aim.turret;
         shooter = aim.shooter;
-        intake = new Intake(hardwareMap, motorPriorities);
+        intake = new Intake(hardwareMap, hardwareQueue);
     }
 
     public void update() {
@@ -57,7 +58,7 @@ public class Robot {
         drivetrain.update();
         aim.update();
 
-        MotorPriority.updateMotors(motorPriorities);
+        hardwareQueue.update();
     }
 
     public void updateTelemetry() {
