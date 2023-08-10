@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
@@ -31,8 +32,9 @@ public class Robot {
     public Shooter shooter;
     public Aim aim;
     public Intake intake;
+    public Transfer transfer;
 
-    HardwareQueue hardwareQueue = new HardwareQueue();
+    public HardwareQueue hardwareQueue = new HardwareQueue();
 
     public Robot (HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
@@ -45,6 +47,7 @@ public class Robot {
         turret = aim.turret;
         shooter = aim.shooter;
         intake = new Intake(hardwareMap, hardwareQueue);
+        transfer = new Transfer(hardwareMap, hardwareQueue, sensors);
     }
 
     public void update() {
