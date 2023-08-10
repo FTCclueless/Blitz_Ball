@@ -15,12 +15,9 @@ public class HardwareQueue {
     public PriorityDevice getDevice(String name){
         for (PriorityDevice device : devices){
             if (device.name.equals(name)){
-                Log.e("sizeBalls", devices.size() + "");
                 return device;
             }
         }
-        Log.e("size", devices.size() + "");
-        Log.e("getDevice", "null");
         return null;
     }
 

@@ -24,6 +24,10 @@ public class PriorityMotor extends PriorityDevice{
         this.power = power;
     }
 
+    public double getPower() {
+        return power;
+    }
+
     @Override
     protected double getPriority(double timeRemaining) {
         if (power-lastPower == 0) {
