@@ -1,21 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes.testing;
 
-import android.hardware.Sensor;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
-import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
-
-import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 @TeleOp
 @Config
@@ -28,8 +24,8 @@ public class ShooterValueYoinker extends LinearOpMode {
         waitForStart();
         Robot robot = new Robot(hardwareMap);
         Shooter shooter = robot.shooter;
-        Sensors sensors = new Sensors(hardwareMap, robot.motorPriorities);
-        robot.aim.aimState = AimState.MANUAL_AIM;
+        Sensors sensors = new Sensors(hardwareMap, robot.hardwareQueue);
+        robot.aim.state = Aim.State.MANUAL_AIM;
 
         waitForStart();
         double avgYint = 0;
@@ -57,8 +53,7 @@ public class ShooterValueYoinker extends LinearOpMode {
                 sumProduct += vel * pow;
                 counter ++;
             }
-            robot.motorPriorities.get(5).setTargetPower((double) j / samples);
-
+            ((PriorityMotor) robot.hardwareQueue.getDevice("shooter")).setTargetPower((double) j / samples);
         }
 
         double yIntercept = (sumPow * sumVel2 - sumVel * sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
@@ -69,7 +64,7 @@ public class ShooterValueYoinker extends LinearOpMode {
         Log.e("slope", "" + slope);
 
         // Stop it
-        robot.motorPriorities.get(5).setTargetPower(0);
+        ((PriorityMotor) robot.hardwareQueue.getDevice("shooter")).setTargetPower(0);
 
         while (Math.abs(shooter.getSpeed()) > 0.05) {
             robot.update();

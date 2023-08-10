@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -16,7 +16,7 @@ public class AimTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
-        robot.aim.aimState = AimState.AUTO_AIM;
+        robot.aim.state = Aim.State.AUTO_AIM;
         Turret turret = robot.turret;
         Shooter shooter = robot.shooter;
         robot.aim.setTarget1(48,48);

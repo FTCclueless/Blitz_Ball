@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
@@ -20,7 +20,7 @@ public class Teleop extends LinearOpMode {
         Hood hood = robot.aim.hood;
         Shooter shooter = robot.aim.shooter;
         Turret turret = robot.turret;
-        robot.aim.aimState = AimState.AUTO_AIM; // aim in auto-aim
+        robot.aim.state = Aim.State.AUTO_AIM; // aim in auto-aim
         // add transfer code here if needed
 
 

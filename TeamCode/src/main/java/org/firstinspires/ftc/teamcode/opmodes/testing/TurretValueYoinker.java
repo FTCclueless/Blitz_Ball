@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 @TeleOp
 public class TurretValueYoinker extends LinearOpMode {
@@ -48,7 +49,7 @@ public class TurretValueYoinker extends LinearOpMode {
             sumVel2 += vel*vel;
             sumProduct += (vel*power);
 
-            robot.motorPriorities.get(4).setTargetPower(power);
+            ((PriorityMotor) robot.hardwareQueue.getDevice("turret")).setTargetPower(power);
             robot.update();
 
 

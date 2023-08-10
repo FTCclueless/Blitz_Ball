@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
@@ -16,7 +15,7 @@ public class DriveTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Drivetrain drivetrain = robot.drivetrain;
         Aim aim = robot.aim;
-        aim.aimState = AimState.MANUAL_AIM;
+        aim.state = Aim.State.MANUAL_AIM;
 
         waitForStart();
 

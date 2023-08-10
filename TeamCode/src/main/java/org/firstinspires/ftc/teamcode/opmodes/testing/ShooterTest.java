@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
@@ -18,7 +18,7 @@ public class ShooterTest extends LinearOpMode {
     public void runOpMode() {
         Robot robot = new Robot(hardwareMap);
         Shooter shooter = robot.shooter;
-        robot.aim.aimState = AimState.MANUAL_AIM;
+        robot.aim.state = Aim.State.MANUAL_AIM;
 
         waitForStart();
 

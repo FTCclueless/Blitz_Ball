@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
-import org.firstinspires.ftc.teamcode.subsystems.aim.AimState;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Hood;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
@@ -19,7 +18,7 @@ public class HoodTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Hood hood = robot.aim.hood;
         Aim aim = robot.aim;
-        aim.aimState = AimState.MANUAL_AIM;
+        aim.state = Aim.State.MANUAL_AIM;
         while (!isStopRequested()) {
             hood.setAngle(target);
             TelemetryUtil.packet.put("right", hood.getAngle());

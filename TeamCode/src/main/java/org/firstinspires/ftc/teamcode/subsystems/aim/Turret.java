@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 
 
-import android.util.Log;
-
-import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -13,16 +10,18 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
-import java.util.ArrayList;
-
 @Config
 public class Turret {
+    public enum State {
+        PID_ENABLED,
+        AUTOAIM,
+        MANUAL_CONTROL
+    }
 
     private Sensors sensors;
 
@@ -31,7 +30,7 @@ public class Turret {
 
     public static final double maxRotation = Math.toRadians(180);
     public static double maxAccel = 8.98786378884; // 1000 / 111.261143192
-    public TurretState turretState = TurretState.MANUAL_CONTROL;
+    public State state = State.MANUAL_CONTROL;
     public static boolean pidEnabled = false;
     public static PID turretPid = new PID(0.1,0,0);
 
@@ -128,7 +127,7 @@ public class Turret {
         errorAngle = targetAngle - currentAngle;
         turretVelocity = sensors.getTurretVelocity() / ticksPerRadian;
 
-        switch (turretState) {
+        switch (state) {
             case MANUAL_CONTROL:
                 // FIXME: ask later if we should pass gamepad to all updates
                 break;

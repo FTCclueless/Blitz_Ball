@@ -2,21 +2,21 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 
-import java.util.ArrayList;
-
 public class Aim {
-    public AimState aimState = AimState.AUTO_AIM;
+    public enum State {
+        AUTO_AIM,
+        MANUAL_AIM
+    }
+
+    public State state = State.AUTO_AIM;
 
     Sensors sensors;
 
@@ -43,7 +43,7 @@ public class Aim {
 
     public Aim(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
         this.turret = new Turret(hardwareMap, hardwareQueue, sensors);
-        turret.turretState = TurretState.AUTOAIM;
+        turret.state = Turret.State.AUTOAIM;
         this.shooter = new Shooter(hardwareMap, hardwareQueue, sensors);
         this.hood = new Hood(hardwareMap);
 
@@ -143,8 +143,8 @@ public class Aim {
         // return (Math.sqrt(Math.pow(mainTarget.target.x - velX*time,2) + Math.pow(mainTarget.target.y - velY*time,2))) < errorRadius;
     }
 
-    public void setState(AimState state) {
-        aimState = state;
+    public void setState(State state) {
+        this.state = state;
     }
 
 
@@ -152,7 +152,7 @@ public class Aim {
     public void update() {
         updateTelemetry();
 
-        switch (aimState) {
+        switch (state) {
             case AUTO_AIM:
                 mainTarget.update();
                 shooter.setTargetVel(mainTarget.targetShooterVel + shooterComp);
