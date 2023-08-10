@@ -19,7 +19,7 @@ public class Intake {
     boolean previousButton = true;
     boolean intakeOn = false;
     boolean reverseDir = false; // regular direction is reverse
-    double maxSpeed = 1;
+    double speed = 1;
 
     public Intake(HardwareMap hardwareMap, ArrayList<MotorPriority> motorPriorities) {
         this.motorPriorities = motorPriorities;
@@ -31,18 +31,18 @@ public class Intake {
     }
 
     public void turnOn() {
-        motorPriorities.get(6).setTargetPower(maxSpeed);
+        motorPriorities.get(6).setTargetPower(speed);
         intakeOn = true;
     }
     public void reverseDirection(){
 
-        if(reverseDir == true) {
+        if(reverseDir == false) {
             intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            reverseDir = false;
+            reverseDir = true;
         }
         else {
             intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            reverseDir =  true;
+            reverseDir =  false;
         }
     }
 
@@ -53,7 +53,7 @@ public class Intake {
     }
 
     public void changeIntakeSpeed (double requestedSpeed) {
-        maxSpeed = requestedSpeed;
+        speed = requestedSpeed;
     }
 
     public void IntakeTeleOp(Gamepad gamepad)
