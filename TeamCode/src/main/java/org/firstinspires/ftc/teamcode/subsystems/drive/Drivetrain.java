@@ -91,6 +91,8 @@ public class Drivetrain {
             MotorConfigurationType motorConfigurationType = motor.motor[0].getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
             motor.motor[0].setMotorType(motorConfigurationType);
+
+            hardwareQueue.addDevice(motor);
         }
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

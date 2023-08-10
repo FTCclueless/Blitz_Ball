@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -31,6 +32,7 @@ public class Intake {
             3, 5
         );
         intake.motor[0].setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         hardwareQueue.addDevice(intake);
 

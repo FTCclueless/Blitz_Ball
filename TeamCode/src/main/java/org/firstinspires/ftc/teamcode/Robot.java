@@ -32,7 +32,7 @@ public class Robot {
     public Shooter shooter;
     public Aim aim;
     public Intake intake;
-    public Transfer transfer;
+    //public Transfer transfer;
 
     public HardwareQueue hardwareQueue = new HardwareQueue();
 
@@ -47,7 +47,7 @@ public class Robot {
         turret = aim.turret;
         shooter = aim.shooter;
         intake = new Intake(hardwareMap, hardwareQueue);
-        transfer = new Transfer(hardwareMap, hardwareQueue, sensors);
+        //transfer = new Transfer(hardwareMap, hardwareQueue, sensors);
     }
 
     public void update() {

@@ -9,7 +9,7 @@ public abstract class PriorityDevice {
         this.basePriority = basePriority;
         this.priorityScale = priorityScale;
         this.name = name;
-        lastUpdateTime = System.nanoTime() / 1000.0;
+        lastUpdateTime = System.nanoTime();
     }
 
     protected abstract double getPriority(double timeRemaining);

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.priority;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class PriorityMotor extends PriorityDevice{
@@ -39,6 +41,7 @@ public class PriorityMotor extends PriorityDevice{
     @Override
     protected void update() {
         for (int i = 0; i < motor.length; i ++) {
+            Log.e("BIG BALLS", "e");
             motor[i].setPower(power);
         }
         lastUpdateTime = System.nanoTime();

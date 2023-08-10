@@ -5,9 +5,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.utils.MyServo;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityCRServo;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityServo;
 
 public class Hood {
-    public final MyServo shooterHood;
+    public final PriorityServo shooterHood;
 
     private final double linkageLength = 0; // TODO find r3
     private final double leverLength = 0; // TODO find r2
@@ -21,14 +23,17 @@ public class Hood {
     public Hood(HardwareMap hardwareMap) {
         // FIXME: min and max have not been calculated yet please write a test program someone
         // TODO also uhh do motorpriorities
-        shooterHood = new MyServo(
+        shooterHood = new PriorityServo(
                 hardwareMap.get(Servo.class, "leftHood"),
+                "shooterHood",
                 MyServo.ServoType.SPEED,
                 .75,
                 0,
                 1,
                 0,
-                false
+                false,
+                2,
+                4
         );
         this.angle = minAngle;
     }
@@ -52,13 +57,13 @@ public class Hood {
         double x3 = (-b2 + l * Math.sqrt(Math.pow(b2, 2) - 4 * c2)) / 2;
         double t2 = Math.atan2(y3 - sY, x3 - sX);
 
-        shooterHood.setAngle(t2);
+        shooterHood.setTargetAngle(t2, .75);
 
         this.angle = t2;
     }
 
     public double getAngle() {
-        return shooterHood.getAngle();
+        return shooterHood.getCurrentAngle();
     }
 
     public double getTarget() {

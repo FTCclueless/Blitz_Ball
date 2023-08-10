@@ -67,6 +67,10 @@ public class PriorityServo extends PriorityDevice{
         setTargetAngle(convertPosToAngle(targetPose),power);
     }
 
+    public double getCurrentAngle() {
+        return currentAngle;
+    }
+
     public void setTargetAngle(double targetAngle, double power){
         this.power = power;
         this.targetAngle = Math.max(Math.min(targetAngle,maxAng),minAng);
