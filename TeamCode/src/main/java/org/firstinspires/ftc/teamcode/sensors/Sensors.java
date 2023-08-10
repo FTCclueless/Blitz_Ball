@@ -62,7 +62,7 @@ public class Sensors {
 
     public void update() {
         updateControlHub();
-        updateExpansionHub();
+        // updateExpansionHub();
         updateTelemetry();
     }
 

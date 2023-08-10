@@ -70,6 +70,6 @@ public class Shooter {
     public void update() {
         speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         TelemetryUtil.packet.put("shootPow", feedForward());
-        //shooter.setTargetPower(feedForward());
+        shooter.setTargetPower(feedForward());
     }
 }

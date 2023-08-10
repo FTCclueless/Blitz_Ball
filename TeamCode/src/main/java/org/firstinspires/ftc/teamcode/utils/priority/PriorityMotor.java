@@ -40,8 +40,8 @@ public class PriorityMotor extends PriorityDevice{
 
     @Override
     protected void update() {
+        Log.i("thats crazy", "DAMN BRO");
         for (int i = 0; i < motor.length; i ++) {
-            Log.e("BIG BALLS", "e");
             motor[i].setPower(power);
         }
         lastUpdateTime = System.nanoTime();
