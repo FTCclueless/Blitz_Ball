@@ -26,6 +26,7 @@ public class ShooterValueYoinker extends LinearOpMode {
         Shooter shooter = robot.shooter;
         Sensors sensors = new Sensors(hardwareMap, robot.hardwareQueue);
         robot.aim.state = Aim.State.MANUAL_AIM;
+        robot.shooter.state = Shooter.State.OFF;
 
         waitForStart();
         double avgYint = 0;

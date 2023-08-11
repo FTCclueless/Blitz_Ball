@@ -70,7 +70,9 @@ public class Sensors {
         try {
             odometry[0] = ((PriorityMotor) hardwareQueue.getDevice("rightRear")).motor[0].getCurrentPosition();
             odometry[1] = ((PriorityMotor) hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition();
-            shooterVelocity = ((PriorityMotor) hardwareQueue.getDevice("shooter")).motor[0].getVelocity();
+            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("rightFront")).motor[0].getVelocity();
+            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("rightFront")).motor[0].getCurrentPosition();
+            shooterVelocity = ((PriorityMotor) hardwareQueue.getDevice("leftRear")).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());

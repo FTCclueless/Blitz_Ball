@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.aim;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -30,14 +32,14 @@ public class Shooter {
 
     private final double gearRatio = 46.0/9.0;
     private final double radius = 3.25;
-    private final double ticksPerRadian = 145.090909091 / gearRatio / (2.0*Math.PI);
-    private final double powPerVel = 0.00050180086; //0.002355662527748475; // TODO
-    private final double kStatic = 0.176; //0.2194966041039161; // TODO
-    public static double kAccel = 4;
+    private final double ticksPerRadian = 537.689839572 / gearRatio / (2.0*Math.PI);
+    private final double powPerVel = 0.001690202297300495; //0.002355662527748475; // TODO
+    private final double kStatic = 0.07788994285139923; //0.2194966041039161; // TODO
+    public static double kAccel = 2;
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
     private double speed = 0;
-    public static double lowpassWeight = 0;
+    public static double lowpassWeight = 0.98;
 
     public double targetVelocity;
     public double shooterCurrentPower;
@@ -75,11 +77,11 @@ public class Shooter {
     }
 
     public void update() {
+        speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         switch (state) {
             case AUTO_AIM:
-                speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
                 TelemetryUtil.packet.put("shootPow", feedForward());
-                //shooter.setTargetPower(feedForward());
+                shooter.setTargetPower(feedForward());
                 break;
             case OFF:
                 break;

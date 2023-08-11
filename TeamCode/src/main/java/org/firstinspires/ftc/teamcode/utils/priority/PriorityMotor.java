@@ -44,7 +44,6 @@ public class PriorityMotor extends PriorityDevice{
 
     @Override
     protected void update() {
-        Log.i("thats crazy", "DAMN BRO");
         for (int i = 0; i < motor.length; i ++) {
             motor[i].setPower(power);
         }
