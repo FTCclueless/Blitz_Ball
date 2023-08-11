@@ -330,12 +330,14 @@ public class Drivetrain {
         leftFront.setTargetPower(lf);
         leftRear.setTargetPower(lr);
         rightRear.setTargetPower(rr);
-        rightRear.setTargetPower(rf);
+        rightFront.setTargetPower(rf);
     }
 
     public void drive(Gamepad gamepad) {
         double forward = 0.45 * Math.tan(((gamepad.left_stick_y * -1) / 0.85));
+        TelemetryUtil.packet.put("forward", forward);
         double turn = gamepad.right_stick_x;
+        TelemetryUtil.packet.put("turn", turn);
 
         double p1 = forward + turn;
         double p2 = forward + turn;
