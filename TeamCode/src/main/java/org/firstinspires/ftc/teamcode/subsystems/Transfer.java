@@ -6,29 +6,27 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drivers.REVColorSensorV3;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityCRServo;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
-import org.firstinspires.ftc.teamcode.utils.priority.PriorityServo;
 
 import java.util.ArrayList;
 
 public class Transfer {
     public enum State {
-        EJECT_COLOR,
-        AUTO_AIM
+        EJECT,
+        SHOOT,
+        READ
     }
 
     private final HardwareQueue hardwareQueue;
     private PriorityMotor liftMotor;
     private PriorityCRServo transferServo;
     private final Sensors sensors;
-    public State state = Transfer.State.AUTO_AIM;
+    public State state = Transfer.State.READ;
     private final REVColorSensorV3 colorSensorV3;
     private final DigitalChannel beamBreak;
     private boolean beamBreakState = false;
@@ -90,17 +88,55 @@ public class Transfer {
 
     public void ejectBall() {
         pistonTargetPos = pistonExtend;
-        if (balls.size() > 0)
-            balls.remove(0);
     }
 
-    public boolean isBallReady() {
-        // This code will not work because ball needs to roll into piston slot. god damnit
-        // return Math.abs(pistonTargetPos - pistonRetract) > pistonThresh)
-        return false;
-    }
 
     public void update() {
+
+
+
+        switch (state) {
+            case READ:
+                boolean oldState = beamBreakState;
+                beamBreakState = beamBreak.getState();
+                if (beamBreakState && !oldState) {
+                    /*if (System.currentTimeMillis() > colorSensorLastUpdate + 200 && newBall) {
+                    colorSensorLastUpdate = System.currentTimeMillis();
+
+                    // Not my best work...
+                    int[] rgb = colorSensorV3.readLSRGBRAW();
+                    boolean breaken = false;
+                    for (int i = 0; i < rgb.length; i++) {
+                        if (rgb[i] < yellowRGBLow[i] || rgb[i] > yellowRGBHigh[i]) {
+                            breaken = true;
+                            break;
+                        }
+                    }*/
+                }
+
+
+
+
+
+                /*if (breaken) {
+                    balls.add(Ball.YELLOW);
+                    newBall = false;
+                    return;
+                }
+
+                for (int i = 0; i < rgb.length; i++) {
+                    if (rgb[i] < whiteRGBLow[i] && rgb[i] > whiteRGBHigh[i]) {
+                        breaken = true;
+                        break;
+                    }
+                }
+
+                if (breaken) {
+                    balls.add(Ball.WHITE);
+                    newBall = false;
+                    return;
+                }*/
+
         // TODO piston pid (not ready yet mechanically)
 
         /*
@@ -108,43 +144,11 @@ public class Transfer {
             pistonTargetPos = pistonRetract;
          */
 
-        boolean newState = beamBreak.getState();
-        if (newState && !beamBreakState) {
-            newBall = true;
-        }
 
         // Color sensor adding new balls
-        if (System.currentTimeMillis() > colorSensorLastUpdate + 300 && newBall) {
-            colorSensorLastUpdate = System.currentTimeMillis();
 
-            // Not my best work...
-            int[] rgb = colorSensorV3.readLSRGBRAW();
-            boolean breaken = false;
-            for (int i = 0; i < rgb.length; i++) {
-                if (rgb[i] < yellowRGBLow[i] || rgb[i] > yellowRGBHigh[i]) {
-                    breaken = true;
-                    break;
-                }
-            }
 
-            if (breaken) {
-                balls.add(Ball.YELLOW);
-                newBall = false;
-                return;
-            }
 
-            for (int i = 0; i < rgb.length; i++) {
-                if (rgb[i] < whiteRGBLow[i] && rgb[i] > whiteRGBHigh[i]) {
-                    breaken = true;
-                    break;
-                }
-            }
 
-            if (breaken) {
-                balls.add(Ball.WHITE);
-                newBall = false;
-                return;
-            }
-        }
     }
 }
