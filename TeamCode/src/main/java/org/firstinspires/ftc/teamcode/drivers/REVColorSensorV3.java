@@ -306,21 +306,27 @@ public class REVColorSensorV3 extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         return readLSValue(Register.LS_DATA_RED_0);
     }
 
-    /**
-     * Synchronous read I2C device for 9 registers
-     * @return int array of [red, green, blue]
-     */
-    public float[] readLSRGB() {
+    public int[] readLSRGBRAW() {
         // It's practically the same to read 16 bits, stop, and read another 16 bits than to just bulk read the same
         byte[] data = deviceClient.read(Register.LS_DATA_GREEN_0.value, 3 * 3);
 
         // Adjust for small readings
-        float[] ret = new float[3];
+        int[] ret = new int[3];
 
         // Over here we are manually swapping endianness
         ret[0] = TypeConversion.byteArrayToShort(new byte[] {data[8], data[7], data[6]}); // Red
         ret[1] = TypeConversion.byteArrayToShort(new byte[] {data[2], data[1], data[0]}); // Green
         ret[2] = TypeConversion.byteArrayToShort(new byte[] {data[5], data[4], data[3]}); // Blue
+        return ret;
+    }
+
+    /**
+     * Synchronous read I2C device for 9 registers
+     * @return int array of [red, green, blue]
+     */
+    public float[] readLSRGB() {
+        int[] rgb = readLSRGBRAW();
+        float[] ret = new float[] {rgb[0], rgb[1], rgb[2]};
 
         // Normalize to 0-1 (according to REV's official driver code)
         double mag = ret[0] + ret[1] + ret[2];
