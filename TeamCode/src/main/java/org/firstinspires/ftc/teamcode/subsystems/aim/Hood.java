@@ -26,7 +26,7 @@ public class Hood {
         shooterHood = new PriorityServo(
                 hardwareMap.get(Servo.class, "leftHood"),
                 "shooterHood",
-                MyServo.ServoType.SPEED,
+                PriorityServo.ServoType.SPEED,
                 .75,
                 0,
                 1,

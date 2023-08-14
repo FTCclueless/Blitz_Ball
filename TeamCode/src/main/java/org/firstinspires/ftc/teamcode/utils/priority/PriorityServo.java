@@ -11,7 +11,8 @@ public class PriorityServo extends PriorityDevice{
         SUPER_SPEED(0.2162104887, Math.toRadians(60) / 0.055),
         AMAZON(0.2122065908, Math.toRadians(60) / 0.13),
         PRO_MODELER(0.32698, Math.toRadians(60) / 0.139),
-        JX(0.3183098862, Math.toRadians(60) / 0.12);
+        JX(0.3183098862, Math.toRadians(60) / 0.12),
+        AXON_MINI(0.1, Math.toRadians(60)/1); //todo
 
         public double positionPerRadian;
         public double speed;
@@ -23,14 +24,14 @@ public class PriorityServo extends PriorityDevice{
     }
 
     public final Servo servo;
-    public MyServo.ServoType type;
+    public PriorityServo.ServoType type;
     private final double minPos, minAng, maxPos, maxAng, basePos;
     private double currentAngle = 0, targetAngle = 0, power = 0;
     private boolean reachedIntermediate = false;
     private double currentIntermediateTargetAngle = 0;
     private long lastLoopTime = System.nanoTime();
 
-    public PriorityServo(Servo servo, String name, MyServo.ServoType type, double loadMultiplier, double min, double max, double basePos, boolean reversed, double basePriority, double priorityScale) {
+    public PriorityServo(Servo servo, String name, PriorityServo.ServoType type, double loadMultiplier, double min, double max, double basePos, boolean reversed, double basePriority, double priorityScale) {
         super(basePriority,priorityScale, name);
         this.servo = servo;
         this.type = type;
