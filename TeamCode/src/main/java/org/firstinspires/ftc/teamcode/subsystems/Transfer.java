@@ -37,6 +37,7 @@ public class Transfer {
     private long colorSensorLastUpdate = System.currentTimeMillis();
     private ArrayList<Ball> balls = new ArrayList<>();
 
+    private final double pistonTickPerRadian = 1; //todo
     private final double pistonExtend = 0; // TODO
     private final double pistonHalf = 0; //todo
     private final double pistonRetract = 0; // TOOD
@@ -47,7 +48,7 @@ public class Transfer {
     public static double pistonStatic = 0;
     private double pistonMaxVel = 0;
     public static double pistonSlowDown = 0;
-    public static double pistonMargin = 10;
+    public static double pistonMargin = 1.5;
 
     private Ball currentBall = Ball.EMPTY;
     private final PriorityServo ejectServo;
@@ -89,7 +90,7 @@ public class Transfer {
 
         liftMotor = new PriorityMotor(
             transferElevator,
-            "liftMotor",
+            "piston",
             2,
             4
         );
@@ -137,8 +138,7 @@ public class Transfer {
 
 
     public void update() {
-
-
+        pistonCurrent = sensors.getPistonPos() / pistonTickPerRadian;
 
         switch (state) {
             case READ:
@@ -173,9 +173,11 @@ public class Transfer {
                 }
                 else {
                     ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
-                    // if (Math.abs()) LEFT OFF HERE
+                    if (Math.abs(pistonRetract - pistonCurrent) < pistonMargin) {
+                        shooting = false;
+                        state = State.READ;
+                    }
                 }
-
                 break;
         }
     }
