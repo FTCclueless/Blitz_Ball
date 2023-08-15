@@ -52,7 +52,7 @@ public class Transfer {
     public static double pistonMargin = 1.5;
     private long colorTime = 210;
 
-    private Ball currentBall = Ball.EMPTY;
+    public Ball currentBall = Ball.EMPTY;
     private final PriorityServo ejectServo;
 
     // I SUCK AT VARIABLE NAMING
@@ -167,9 +167,9 @@ public class Transfer {
                         int[] rgb = colorSensorV3.readLSRGBRAW();
 
                         if (rgbCompare(rgb, yellowRGBLow, yellowRGBHigh)) {
-                            // Do thing here
+                            currentBall = Ball.YELLOW;
                         } else if (rgbCompare(rgb, whiteRGBLow, whiteRGBHigh)) {
-                            // Do thing here
+                            currentBall = Ball.WHITE;
                         }
                         colorTime = 210;
                     } else {
