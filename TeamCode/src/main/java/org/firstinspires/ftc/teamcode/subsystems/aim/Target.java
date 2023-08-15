@@ -18,6 +18,9 @@ public class Target {
     double shooterHeight;
     Ball color = Ball.EMPTY;
 
+    double minShooter = Math.toRadians(16);
+    double maxShooter = Math.toRadians(40);
+
 
     public double targetShooterAngle = 0;
     public double targetTurretAngle = 0;
@@ -62,23 +65,30 @@ public class Target {
         time = System.nanoTime()/1000000000.0;
         double binDistance = Math.sqrt(Math.pow(target.x-turretPos.x,2) + Math.pow(target.y-turretPos.y,2));
         double math = Math.sqrt((binDistance-binRadius)/((binHeight-targetHeight)/binRadius - (targetHeight - shooterHeight)/binDistance));
-        double targetVelHor = Math.sqrt(386.2205/2)*math; // 9.81 m/s in inches
+        double targetVelH = Math.sqrt(386.2205/2)*math; // 9.81 m/s in inches
         double targetVelZ = Math.sqrt(386.2205/2)*((targetHeight-shooterHeight)/binDistance * math + binDistance/math);
-        double targetVelMag = Math.sqrt(Math.pow(targetVelHor,2) + Math.pow(targetVelZ,2));
+
+        targetShooterAngle = Math.atan2(targetVelZ, targetVelH);
+        targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
+
+        if (targetShooterAngle < minShooter || targetShooterAngle > maxShooter) {
+            targetShooterAngle = Math.min(Math.max(targetShooterAngle, minShooter), maxShooter);
+            targetVelH = 7*binDistance / (Math.sqrt(10) * Math.sqrt(binDistance * Math.tan(targetShooterAngle) + shooterHeight));
+            targetVelZ = Math.tan(targetShooterAngle) * targetVelH;
+
+            targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
+        }
 
         Vector2 launchVector = new Vector2(target.x-turretPos.x, target.y-turretPos.y);
         launchVector.norm();
-        launchVector.mul(targetVelMag);
+        launchVector.mul(targetVelH);
         //launchVector.add(new Vector2(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y));
-
 
         Log.e("launchx", launchVector.x + "");
         Log.e("launchy", launchVector.y + "");
         targetTurretAngle = Math.atan2(launchVector.y, launchVector.x);
         Log.e("target", targetTurretAngle + "");
 
-        targetShooterAngle = Math.atan2(targetVelZ, launchVector.mag());
-        targetShooterVel = Math.sqrt(Math.pow(launchVector.mag(),2) + Math.pow(targetVelZ,2));
 
         pastHeadings[counter%5] = targetTurretAngle;
         double deltaHeading = targetTurretAngle - pastHeadings[(counter+4)%5];
