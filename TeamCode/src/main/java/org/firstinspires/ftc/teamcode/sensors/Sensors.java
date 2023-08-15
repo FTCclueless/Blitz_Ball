@@ -85,8 +85,6 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
-            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getCurrentPosition();
-            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getVelocity();
             pistonPos = ((PriorityMotor) hardwareQueue.getDevice("piston")).motor[0].getCurrentPosition();
         }
         catch (Exception e) {
