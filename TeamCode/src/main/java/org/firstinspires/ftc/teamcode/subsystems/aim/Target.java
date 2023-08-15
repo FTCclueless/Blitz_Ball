@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
 
 import android.util.Log;
 
+import org.firstinspires.ftc.teamcode.subsystems.Ball;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
@@ -15,6 +16,7 @@ public class Target {
     double binRadius;
     double targetHeight;
     double shooterHeight;
+    Ball color = Ball.EMPTY;
 
 
     public double targetShooterAngle = 0;
@@ -32,12 +34,13 @@ public class Target {
     double lastTime = 0;
 
 
-    public Target(Pose2d target, double binHeight, double binRadius, double shooterHeight, double targetHeight) {
+    public Target(Pose2d target, double binHeight, double binRadius, double shooterHeight, double targetHeight, Ball color) {
         this.target = target;
         this.binHeight = binHeight;
         this.binRadius = binRadius;
         this.shooterHeight = shooterHeight;
         this.targetHeight = targetHeight;
+        this.color = color;
 
         for (int i = 0; i < 5; i ++){
             pastLoopTimes[i] = (double)System.nanoTime();
