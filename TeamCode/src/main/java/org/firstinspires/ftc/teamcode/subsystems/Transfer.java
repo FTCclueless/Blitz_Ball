@@ -39,9 +39,10 @@ public class Transfer {
     private ArrayList<Ball> balls = new ArrayList<>();
 
     private final double pistonTickPerRadian = 1; //todo
-    private final double pistonExtend = 0; // TODO
-    private final double pistonHalf = 0; //todo
-    private final double pistonRetract = 0; // TOOD
+    private final double pistonRevolution = 0; // TODO
+    private double pistonShoot = 0;
+    private double pistonHalf = 0; //todo
+    private double pistonRetract = 0; // TOOD
     private final double pistonThresh = 0.1;
     private double pistonTargetPos = 0;
     public double pistonCurrent = 0;
@@ -62,7 +63,8 @@ public class Transfer {
     private boolean ejecting = false;
     private double ballRollTime = 0; // ms TODO
 
-    private boolean shooting = false;
+
+    private boolean shoot = false;
 
     // Bit confused on this part but whatever
     private final int[] whiteRGBLow = new int[]{0, 0, 0}; // TODO
@@ -127,8 +129,9 @@ public class Transfer {
         transferServo.setTargetPower(0);
     }
 
-    public void ejectBall() {
-        pistonTargetPos = pistonExtend;
+
+    public void shootBall() {
+        shoot = true;
     }
 
     public double pistonFeedForward(double target) {
@@ -180,33 +183,37 @@ public class Transfer {
                 break;
 
             case EJECT:
+                currentBall = Ball.EMPTY;
                 if (!ejecting) {
                     ejectServo.setTargetAngle(ejectAngle, 0.75);
                     ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonHalf));
                     lastEjectTime = System.currentTimeMillis();
-                    ejecting = true;
+                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh) {
+                        ejecting = true;
+                    }
                 } else {
                     if (System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
-                        ejecting = false;
-                        state = State.READ_BEAMBREAK;
+                        ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
+                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh) {
+                            ejecting = false;
+                            state = State.READ_BEAMBREAK;
+                        }
                     }
                 }
 
                 break;
             case SHOOT:
-                if (!shooting) {
-                    ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonExtend));
-                    if (Math.abs(pistonExtend - pistonCurrent) <  pistonMargin) {
-                        shooting = true;
+                currentBall = Ball.EMPTY;
+                if (shoot) {
+                    ((PriorityMotor) hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonShoot));
+                        if (Math.abs(pistonRevolution - pistonCurrent) < pistonMargin) {
+                            shoot = false;
+                            pistonShoot += pistonRevolution;
+                            pistonHalf += pistonRevolution;
+                            pistonRetract += pistonRevolution;
+                            state = State.READ_BEAMBREAK;
+                        }
                     }
-                }
-                else {
-                    ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
-                    if (Math.abs(pistonRetract - pistonCurrent) < pistonMargin) {
-                        shooting = false;
-                        state = State.READ_BEAMBREAK;
-                    }
-                }
                 break;
         }
     }

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.subsystems.Ball;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
@@ -24,7 +25,7 @@ public class Teleop extends LinearOpMode {
         // add transfer code here if needed
 
 
-        robot.aim.setTarget1(30,30);
+        robot.aim.setTarget(1,30,30, Ball.YELLOW);
         robot.aim.setMainTarget(1);// change later when auto aim is working fully
 
         //Is it a finite state machine? Can't find state in the robot class :-(

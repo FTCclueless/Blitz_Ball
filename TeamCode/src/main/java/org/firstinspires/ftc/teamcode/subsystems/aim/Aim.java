@@ -46,6 +46,8 @@ public class Aim {
 
     public static double shooterComp = 0;
 
+    public boolean shoot = false;
+
     public Aim(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
         this.turret = new Turret(hardwareMap, hardwareQueue, sensors);
         turret.state = Turret.State.AUTOAIM;
@@ -166,11 +168,26 @@ public class Aim {
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
 
-                for (Target t : getAvailableTargets()) {
-                    if (t.color == transfer.currentBall) {
-                        setMainTarget(t);
+                if (transfer.currentBall != Ball.EMPTY) {
+                    for (Target t : getAvailableTargets()) {
+                        if (t.color == transfer.currentBall) {
+                            setMainTarget(t);
+                            shoot = true;
+                            transfer.state = Transfer.State.SHOOT;
+                        }
+                    }
+                    if (!shoot) {
+                        transfer.state = Transfer.State.EJECT;
                     }
                 }
+
+                if (transfer.state == Transfer.State.SHOOT) {
+                    if (Math.sqrt(Math.pow(mainTarget.target.x - shootPose().x,2) + Math.pow(mainTarget.target.y - shootPose().y, 2)) < errorRadius) {
+                        transfer.shootBall();
+                    }
+                }
+
+
 
                 turret.update();
                 shooter.update();
