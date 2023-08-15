@@ -21,7 +21,8 @@ public class Transfer {
     public enum State {
         EJECT,
         SHOOT,
-        READ,
+        READ_BEAMBREAK,
+        READ_COLOR,
         MANUAL
     }
 
@@ -29,7 +30,7 @@ public class Transfer {
     private PriorityMotor liftMotor;
     private PriorityCRServo transferServo;
     private final Sensors sensors;
-    public State state = Transfer.State.READ;
+    public State state = State.READ_BEAMBREAK;
     private final REVColorSensorV3 colorSensorV3;
     private final DigitalChannel beamBreak;
     private boolean beamBreakState = false;
@@ -49,6 +50,7 @@ public class Transfer {
     private double pistonMaxVel = 0;
     public static double pistonSlowDown = 0;
     public static double pistonMargin = 1.5;
+    private long colorTime = 210;
 
     private Ball currentBall = Ball.EMPTY;
     private final PriorityServo ejectServo;
@@ -136,20 +138,47 @@ public class Transfer {
         return pow;
     }
 
+    private boolean rgbCompare(int[] rgb, int[] low, int[] high) {
+        for (int i = 0; i < rgb.length; i++) {
+            if (rgb[i] < low[i] || rgb[i] > high[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public void update() {
         pistonCurrent = sensors.getPistonPos() / pistonTickPerRadian;
 
         switch (state) {
-            case READ:
+            case READ_BEAMBREAK:
                 ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
                 boolean oldState = beamBreakState;
                 beamBreakState = beamBreak.getState();
                 if (beamBreakState && !oldState) {
-                    // TODO
+                    state = State.READ_COLOR;
                 }
-
                 break;
+
+            case READ_COLOR:
+                if (System.currentTimeMillis() >= colorSensorLastUpdate + colorTime) {
+                    if (colorSensorV3.lsNewData()) {
+                        int[] rgb = colorSensorV3.readLSRGBRAW();
+
+                        if (rgbCompare(rgb, yellowRGBLow, yellowRGBHigh)) {
+                            // Do thing here
+                        } else if (rgbCompare(rgb, whiteRGBLow, whiteRGBHigh)) {
+                            // Do thing here
+                        }
+                        colorTime = 210;
+                    } else {
+                        colorTime = 50;
+                    }
+                    colorSensorLastUpdate = System.currentTimeMillis();
+                }
+                break;
+
             case EJECT:
                 if (!ejecting) {
                     ejectServo.setTargetAngle(ejectAngle, 0.75);
@@ -159,7 +188,7 @@ public class Transfer {
                 } else {
                     if (System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
                         ejecting = false;
-                        state = State.READ;
+                        state = State.READ_BEAMBREAK;
                     }
                 }
 
@@ -175,7 +204,7 @@ public class Transfer {
                     ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
                     if (Math.abs(pistonRetract - pistonCurrent) < pistonMargin) {
                         shooting = false;
-                        state = State.READ;
+                        state = State.READ_BEAMBREAK;
                     }
                 }
                 break;
