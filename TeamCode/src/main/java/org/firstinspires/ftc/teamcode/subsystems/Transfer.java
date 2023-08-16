@@ -50,7 +50,7 @@ public class Transfer {
     public static double pistonStatic = 0;
     private double pistonMaxVel = 0;
     public static double pistonSlowDown = 0;
-    public static double pistonMargin = 1.5;
+    public static double pistonMargin = 0.5;
     private long colorTime = 210;
 
     public Ball currentBall = Ball.EMPTY;
@@ -61,6 +61,9 @@ public class Transfer {
     private final double unejectAngle = 0; // TODO
     private double lastEjectTime = 0;
     private boolean ejecting = false;
+
+    private final double ejectThresh = 0.2;
+
     private double ballRollTime = 0; // ms TODO
 
 
@@ -110,7 +113,7 @@ public class Transfer {
         ejectServo = new PriorityServo(
             hardwareMap.get(Servo.class, "eject"),
             "ejectServo",
-            PriorityServo.ServoType.AXON_MINI,
+            PriorityServo.ServoType.TORQUE,
             0.75,
             0, 1,
             0,
@@ -187,14 +190,18 @@ public class Transfer {
                 if (!ejecting) {
                     ejectServo.setTargetAngle(ejectAngle, 0.75);
                     ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonHalf));
+                    ((PriorityServo)hardwareQueue.getDevice("ejectServo")).setTargetAngle(ejectAngle, 0.75);
                     lastEjectTime = System.currentTimeMillis();
-                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh) {
+                    boolean servo = ((PriorityServo) hardwareQueue.getDevice("ejectServo")).getCurrentAngle() == ejectAngle;
+                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && servo) {
                         ejecting = true;
                     }
                 } else {
                     if (System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
                         ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
-                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh) {
+                        ((PriorityServo)hardwareQueue.getDevice("ejectServo")).setTargetAngle(unejectAngle, 0.75);
+                        boolean servo = ((PriorityServo) hardwareQueue.getDevice("ejectServo")).getCurrentAngle() == unejectAngle;
+                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && servo) {
                             ejecting = false;
                             state = State.READ_BEAMBREAK;
                         }

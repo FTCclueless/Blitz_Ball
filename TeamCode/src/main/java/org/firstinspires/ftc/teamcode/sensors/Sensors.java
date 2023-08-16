@@ -85,7 +85,7 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
-            pistonPos = ((PriorityMotor) hardwareQueue.getDevice("piston")).motor[0].getCurrentPosition();
+            pistonPos = ((PriorityMotor) hardwareQueue.getDevice("intake")).motor[0].getCurrentPosition();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
