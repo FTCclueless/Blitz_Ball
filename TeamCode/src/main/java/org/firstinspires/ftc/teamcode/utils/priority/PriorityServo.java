@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.priority;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.utils.MyServo;
@@ -61,6 +63,7 @@ public class PriorityServo extends PriorityDevice{
     public double convertAngleToPos(double ang){
         ang *= type.positionPerRadian;
         ang += basePos;
+        Log.e("BALLS", ang + "");
         return ang;
     }
 

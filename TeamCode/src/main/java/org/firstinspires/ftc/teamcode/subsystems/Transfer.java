@@ -109,6 +109,7 @@ public class Transfer {
             2,
             4
         );
+        hardwareQueue.addDevice(transferServo);
 
         ejectServo = new PriorityServo(
             hardwareMap.get(Servo.class, "eject"),
@@ -116,11 +117,12 @@ public class Transfer {
             PriorityServo.ServoType.TORQUE,
             0.75,
             0, 1,
-            0,
-            false,
+            0.95,
+            true,
             2,
             4
         );
+        hardwareQueue.addDevice(ejectServo);
     }
 
 

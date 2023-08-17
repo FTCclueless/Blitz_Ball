@@ -29,7 +29,7 @@ public class Aim {
     public Shooter shooter;
     public Hood hood;
     public Transfer transfer;
-    private ArrayList<Target> targets;
+    private ArrayList<Target> targets = new ArrayList<>();
 
 
     Target mainTarget;
