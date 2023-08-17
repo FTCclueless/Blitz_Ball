@@ -78,7 +78,7 @@ public class Intake {
         if(gamepad.left_trigger <= .3){
             previousButton = true;
         }
-        if(intakeOn){
+        if(intakeOn == true){
             turnOn();
         }
         else{
