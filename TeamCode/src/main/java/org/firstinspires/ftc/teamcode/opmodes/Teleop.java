@@ -35,23 +35,21 @@ public class Teleop extends LinearOpMode {
 
         // TODO: a init statement to start the robot and hood at position 0.
 
-        while(!isStopRequested()){
+        while(!isStopRequested()) {
             // driver a
             drivetrain.drive(gamepad1);
 
-            if(gamepad1.cross && lastButton != 1)
-            {
+            if (gamepad1.cross && lastButton != 1) {
                 lastButton = Double.valueOf(1);
                 intakeOn = !intakeOn;
-                if(intakeOn == true){
+                if (intakeOn == true) {
                     intake.turnOn();
-                }
-                else{
+                } else {
                     intake.turnOff();
                 }
             }
 
-            if(gamepad1.circle && lastButton != 2){
+            if (gamepad1.circle && lastButton != 2) {
                 lastButton = Double.valueOf(2);
                 intake.reverseDirection();
             }
@@ -59,7 +57,6 @@ public class Teleop extends LinearOpMode {
             robot.update();
 
 
-
-
+        }
     }
 }
