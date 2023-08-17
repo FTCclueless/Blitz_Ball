@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.subsystems.Ball;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
@@ -19,7 +20,7 @@ public class AimTest extends LinearOpMode {
         robot.aim.state = Aim.State.AUTO_AIM;
         Turret turret = robot.turret;
         Shooter shooter = robot.shooter;
-        robot.aim.setTarget1(48,48);
+        robot.aim.setTarget(0,48,48, Ball.YELLOW);
         robot.aim.setMainTarget(1);
 
         waitForStart();

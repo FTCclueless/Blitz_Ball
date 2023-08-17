@@ -6,9 +6,13 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.Ball;
+import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
+
+import java.util.ArrayList;
 
 public class Aim {
     public enum State {
@@ -24,8 +28,8 @@ public class Aim {
     public Turret turret;
     public Shooter shooter;
     public Hood hood;
-    Target target1;
-    Target target2;
+    public Transfer transfer;
+    private ArrayList<Target> targets;
 
 
     Target mainTarget;
@@ -42,51 +46,44 @@ public class Aim {
 
     public static double shooterComp = 0;
 
+    public boolean shoot = false;
+
     public Aim(HardwareMap hardwareMap, HardwareQueue hardwareQueue, Sensors sensors) {
         this.turret = new Turret(hardwareMap, hardwareQueue, sensors);
         turret.state = Turret.State.AUTOAIM;
         this.shooter = new Shooter(hardwareMap, hardwareQueue, sensors);
+        transfer = new Transfer(hardwareMap, hardwareQueue, sensors);
         this.hood = new Hood(hardwareMap);
 
         this.sensors = sensors;
 
     }
 
-    public void setTarget1(double x, double y) {
-        target1 = new Target(new Pose2d(x,y,0), binHeight, binRadius, shooterHeight, targetHeight);
+    public void setTarget(int index, double x, double y, Ball color) {
+        this.setTarget(index, new Pose2d(x, y, 0), color);
     }
 
-    public void setTarget1(Pose2d target) {
-        target1 = new Target(target, binHeight, binRadius, shooterHeight, targetHeight);
+    public void setTarget(int index, Pose2d target, Ball color) {
+        targets.set(index, new Target(target, binHeight, binRadius, shooterHeight, targetHeight, color));
     }
 
-    public void setTarget2(double x, double y) {
-        target2 = new Target(new Pose2d(x,y,0),binHeight,binRadius,shooterHeight,targetHeight);
+    public ArrayList<Target> getAvailableTargets() {
+        ArrayList<Target> ret = new ArrayList<>();
+        for (Target target : targets) {
+            double t = Math.atan2(target.target.y, target.target.x);
+            if (ROBOT_POSITION.heading - Turret.maxRotation > t && ROBOT_POSITION.heading + Turret.maxRotation < t) {
+                ret.add(target);
+            }
+        }
+        return ret;
     }
 
-    public void setTarget2(Pose2d target) {
-        target2 = new Target(target, binHeight,binRadius,shooterHeight,targetHeight);
+    public void setMainTarget(int index) {
+        mainTarget = targets.get(index);
     }
 
-    public void switchTarget() {
-        if (mainTarget == target1) {
-            mainTarget = target2;
-        }
-        else {
-            mainTarget = target1;
-        }
-    }
-
-    public void setMainTarget(int target) {
-        if (target == 1) {
-            mainTarget = target1;
-        }
-        else if (target == 2) {
-            mainTarget = target2;
-        }
-        else {
-            System.out.println("bad bin target");
-        }
+    public void setMainTarget(Target t) {
+        mainTarget = t;
     }
 
     public void setTurret(double angle) {
@@ -103,13 +100,9 @@ public class Aim {
 
     public void updateTelemetry() {
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
-        if (target1 != null) {
-            canvas.setFill("#ff5445"); // Red
-            canvas.fillCircle(target1.target.x, target1.target.y, target1.binRadius);
-        }
-        if (target2 != null) {
-            canvas.setFill("#4248fc"); // Blue
-            canvas.fillCircle(target2.target.x, target2.target.y, target2.binRadius);
+        for (Target t : targets) {
+            canvas.setFill("#ff5445");
+            canvas.fillCircle(t.target.x, t.target.y, t.binRadius);
         }
         canvas.setStroke("#f8ff73");
         canvas.strokeLine(
@@ -150,12 +143,15 @@ public class Aim {
             case AUTO_AIM:
                 turret.state = Turret.State.AUTOAIM;
                 shooter.state = Shooter.State.AUTO_AIM;
+                transfer.state = Transfer.State.READ_BEAMBREAK;
             case MANUAL_AIM:
                 turret.state = Turret.State.AUTOAIM;
                 shooter.state = Shooter.State.AUTO_AIM;
+                transfer.state = Transfer.State.MANUAL;
             case OFF:
                 turret.state = Turret.State.OFF;
                 shooter.state = Shooter.State.OFF;
+                transfer.state = Transfer.State.MANUAL;
         }
     }
 
@@ -171,8 +167,31 @@ public class Aim {
                 turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
+
+                if (transfer.currentBall != Ball.EMPTY) {
+                    for (Target t : getAvailableTargets()) {
+                        if (t.color == transfer.currentBall) {
+                            setMainTarget(t);
+                            shoot = true;
+                            transfer.state = Transfer.State.SHOOT;
+                        }
+                    }
+                    if (!shoot) {
+                        transfer.state = Transfer.State.EJECT;
+                    }
+                }
+
+                if (transfer.state == Transfer.State.SHOOT) {
+                    if (Math.sqrt(Math.pow(mainTarget.target.x - shootPose().x,2) + Math.pow(mainTarget.target.y - shootPose().y, 2)) < errorRadius) {
+                        transfer.shootBall();
+                    }
+                }
+
+
+
                 turret.update();
                 shooter.update();
+                transfer.update();
                 break;
 
             case MANUAL_AIM:

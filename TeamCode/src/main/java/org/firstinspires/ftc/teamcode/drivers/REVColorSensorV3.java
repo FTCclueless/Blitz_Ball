@@ -246,6 +246,15 @@ public class REVColorSensorV3 extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         deviceClient.write(Register.PS_LED.value, new byte[] {(byte) (freq.mask | current.mask), pulses});
     }
 
+    /**
+     * Check if the LS has new data to poll
+     * <b>After a data read this will return false</b>
+     * @return true for new data is ready
+     */
+    public boolean lsNewData() {
+        return (0b00001000 & deviceClient.read8(Register.MAIN_STATUS.value)) > 0;
+    }
+
     public void configurePS(PSResolution resolution, PSMeasureRate rate) {
         deviceClient.write8(Register.PS_MEAS_RATE.value, resolution.mask | rate.mask);
         psDepth = resolution.depth;

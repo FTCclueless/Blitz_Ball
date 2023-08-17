@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Ball;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
@@ -27,7 +28,7 @@ public class Teleop extends LinearOpMode {
         Double lastButton = Double.valueOf(0);
 
 
-        robot.aim.setTarget1(30,30);
+        robot.aim.setTarget(1,30,30, Ball.YELLOW);
         robot.aim.setMainTarget(1);// change later when auto aim is working fully
 
         Boolean intakeOn = false;
@@ -60,6 +61,5 @@ public class Teleop extends LinearOpMode {
 
 
 
-        }
     }
 }

@@ -30,6 +30,8 @@ public class Sensors {
 
     private static double shooterVelocity;
 
+    private static double pistonPos;
+
     public Sensors (HardwareMap hardwareMap, HardwareQueue hardwareQueue) {
         this.hardwareQueue = hardwareQueue;
 
@@ -83,8 +85,7 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
-            turretAngle = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getCurrentPosition();
-            turretVelocity = ((PriorityMotor) hardwareQueue.getDevice("turret")).motor[0].getVelocity();
+            pistonPos = ((PriorityMotor) hardwareQueue.getDevice("intake")).motor[0].getCurrentPosition();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
@@ -138,6 +139,10 @@ public class Sensors {
 
     public double getShooterVelocity() {
         return shooterVelocity;
+    }
+
+    public double getPistonPos() {
+        return pistonPos;
     }
 }
 
