@@ -71,7 +71,7 @@ public class Aim {
         ArrayList<Target> ret = new ArrayList<>();
         for (Target target : targets) {
             double t = Math.atan2(target.target.y, target.target.x);
-            if (ROBOT_POSITION.heading - Turret.maxRotation > t && ROBOT_POSITION.heading + Turret.maxRotation < t) {
+            if (ROBOT_POSITION.heading + Turret.maxRotation > t && ROBOT_POSITION.heading - Turret.maxRotation < t) {
                 ret.add(target);
             }
         }
@@ -184,6 +184,7 @@ public class Aim {
                 if (transfer.state == Transfer.State.SHOOT) {
                     if (Math.sqrt(Math.pow(mainTarget.target.x - shootPose().x,2) + Math.pow(mainTarget.target.y - shootPose().y, 2)) < errorRadius) {
                         transfer.shootBall();
+                        shoot = false;
                     }
                 }
 

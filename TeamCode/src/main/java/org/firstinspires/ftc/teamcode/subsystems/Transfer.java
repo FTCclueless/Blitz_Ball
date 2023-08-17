@@ -192,18 +192,15 @@ public class Transfer {
                 if (!ejecting) {
                     ejectServo.setTargetAngle(ejectAngle, 0.75);
                     ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonHalf));
-                    ((PriorityServo)hardwareQueue.getDevice("ejectServo")).setTargetAngle(ejectAngle, 0.75);
                     lastEjectTime = System.currentTimeMillis();
-                    boolean servo = ((PriorityServo) hardwareQueue.getDevice("ejectServo")).getCurrentAngle() == ejectAngle;
-                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && servo) {
+                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle) {
                         ejecting = true;
                     }
                 } else {
                     if (System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
+                        ejectServo.setTargetAngle(unejectAngle, 0.75);
                         ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
-                        ((PriorityServo)hardwareQueue.getDevice("ejectServo")).setTargetAngle(unejectAngle, 0.75);
-                        boolean servo = ((PriorityServo) hardwareQueue.getDevice("ejectServo")).getCurrentAngle() == unejectAngle;
-                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && servo) {
+                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle) {
                             ejecting = false;
                             state = State.READ_BEAMBREAK;
                         }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.aim;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -31,10 +33,13 @@ public class Hood {
     }
 
     public void setAngle(double angle) {
+        if (angle < minAngle || angle > maxAngle) {
+            Log.e("shooterAngle out of range", "e");
+        }
+        angle = Math.min(Math.max(minAngle, angle), maxAngle);
         this.angle = angle;
 
         angle = Math.PI / 2 - angle;
-        angle = Math.min(Math.max(minAngle, angle), maxAngle);
 
         shooterHood.setTargetAngle(angle, 0.75);
     }
