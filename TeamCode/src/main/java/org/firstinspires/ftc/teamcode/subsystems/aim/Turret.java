@@ -105,6 +105,17 @@ public class Turret {
 
     }
 
+    public void setPower(double power) {
+        if (currentAngle > maxRotation && power > 0) {
+            power = 0;
+        }
+        else if (currentAngle < -maxRotation && power < 0) {
+            power = 0;
+        }
+        turretMotor.setTargetPower(power);
+
+    }
+
     public boolean isComplete(double errorMargin) {
         return Math.abs(targetAngle - currentAngle) <= errorMargin;
     }

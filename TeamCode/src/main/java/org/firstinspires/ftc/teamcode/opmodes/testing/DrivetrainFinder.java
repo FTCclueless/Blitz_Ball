@@ -6,6 +6,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Robot;
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 @Config
 @TeleOp
 public class DrivetrainFinder extends LinearOpMode {
-    public static double target = 0;
+    public static double target = 0.5;
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
@@ -32,7 +33,7 @@ public class DrivetrainFinder extends LinearOpMode {
 
         while (!isStopRequested()) {
             robot.update();
-            ((PriorityMotor)robot.hardwareQueue.getDevice("leftRear")).setTargetPower(target);
+            ((PriorityMotor)robot.hardwareQueue.getDevice("leftFront")).setTargetPower(target);
             Log.e("targetPow", "" + ((PriorityMotor)robot.hardwareQueue.getDevice("leftRear")).getPower());
 
             TelemetryUtil.packet.put("pow", ((PriorityMotor)robot.hardwareQueue.getDevice("leftRear")).motor[0].getPower());

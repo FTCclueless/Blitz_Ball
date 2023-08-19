@@ -5,23 +5,20 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.START_LOOP;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Spline;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
-import org.firstinspires.ftc.teamcode.utils.MotorPriority;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
-
-import java.util.ArrayList;
 
 public class Robot {
     HardwareMap hardwareMap;
@@ -46,12 +43,23 @@ public class Robot {
         turret = aim.turret;
         shooter = aim.shooter;
         intake = new Intake(hardwareMap, hardwareQueue);
+
+        aim.transfer.turnOn();
     }
 
     public void update() {
         START_LOOP();
         updateSubsystems();
         updateTelemetry();
+    }
+
+    public void teleop(Gamepad gamepad1, Gamepad gamepad2) {
+        START_LOOP();
+        drivetrain.drive(gamepad1);
+        intake.intakeTeleOp(gamepad1);
+        aim.manual(gamepad2);
+
+        hardwareQueue.update();
     }
 
     private void updateSubsystems() {

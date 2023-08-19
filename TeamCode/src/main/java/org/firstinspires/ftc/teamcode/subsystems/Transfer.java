@@ -68,6 +68,7 @@ public class Transfer {
 
 
     private boolean shoot = false;
+    private boolean eject = false;
 
     // Bit confused on this part but whatever
     private final int[] whiteRGBLow = new int[]{0, 0, 0}; // TODO
@@ -91,6 +92,7 @@ public class Transfer {
         transferElevator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         CRServo transferWheel = hardwareMap.get(CRServo.class, "transferWheel");
+        transferWheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.hardwareQueue = hardwareQueue;
         this.sensors = sensors;
@@ -136,8 +138,14 @@ public class Transfer {
 
 
     public void shootBall() {
-        if (state == State.SHOOT) {
+        if ((state == State.SHOOT || state == State.MANUAL) && !eject) {
             shoot = true;
+        }
+    }
+
+    public void ejectBall() {
+        if ((state == State.EJECT || state == State.MANUAL) && !shoot) {
+            eject = true;
         }
     }
 
@@ -222,6 +230,37 @@ public class Transfer {
                             state = State.READ_BEAMBREAK;
                         }
                     }
+                break;
+            case MANUAL:
+                if (shoot) {
+                    ((PriorityMotor) hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonShoot));
+                    if (Math.abs(pistonRevolution - pistonCurrent) < pistonMargin) {
+                        shoot = false;
+                        pistonShoot += pistonRevolution;
+                        pistonHalf += pistonRevolution;
+                        pistonRetract += pistonRevolution;
+                        state = State.READ_BEAMBREAK;
+                    }
+                }
+                else if (eject) {
+                    if (!ejecting) {
+                        ejectServo.setTargetAngle(ejectAngle, 0.75);
+                        ((PriorityMotor) hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonHalf));
+                        lastEjectTime = System.currentTimeMillis();
+                        if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle) {
+                            ejecting = true;
+                        }
+                    } else {
+                        if (System.currentTimeMillis() > lastEjectTime + ballRollTime) {
+                            ejectServo.setTargetAngle(unejectAngle, 0.75);
+                            ((PriorityMotor) hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
+                            if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle) {
+                                ejecting = false;
+                                state = State.READ_BEAMBREAK;
+                            }
+                        }
+                    }
+                }
                 break;
         }
     }

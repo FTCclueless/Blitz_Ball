@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
@@ -65,6 +66,10 @@ public class Aim {
 
     public void setTarget(int index, Pose2d target, Ball color) {
         targets.set(index, new Target(target, binHeight, binRadius, shooterHeight, targetHeight, color));
+    }
+
+    public void addTarget(double x, double y, Ball color) {
+        targets.add(new Target(new Pose2d(x,y,0), binHeight, binRadius, shooterHeight, targetHeight, color));
     }
 
     public ArrayList<Target> getAvailableTargets() {
@@ -202,6 +207,36 @@ public class Aim {
                 shooter.update();
                 break;
         }
+    }
+
+
+    boolean pastRight = false;
+    boolean pastLeft = false;
+    public void manual(Gamepad gamepad2) {
+        turret.setPower(0.4 * gamepad2.left_stick_x);
+        hood.setAngle(0.05 * gamepad2.left_stick_y + hood.getAngle());
+        shooter.setTargetVel(shooter.getSpeed() + gamepad2.right_stick_y * 0.5);
+
+        if (gamepad2.right_trigger > 0.3 && !pastRight) {
+            pastRight = true;
+            transfer.shootBall();
+        }
+        else {
+            pastRight = false;
+            if (gamepad2.left_trigger > 0.3 && !pastLeft) {
+                transfer.ejectBall();
+                pastLeft = true;
+            }
+            else {
+                pastLeft = false;
+            }
+        }
+
+
+
+        turret.update();
+        shooter.update();
+        transfer.update();
     }
 
 }

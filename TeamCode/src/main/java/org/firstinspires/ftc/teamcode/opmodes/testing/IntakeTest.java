@@ -17,7 +17,7 @@ public class IntakeTest extends LinearOpMode {
         waitForStart();
 
         while (!isStopRequested()) {
-            intake.IntakeTeleOp(gamepad1);
+            intake.intakeTeleOp(gamepad1);
             robot.update();
         }
     }

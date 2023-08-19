@@ -64,7 +64,7 @@ public class Intake {
         speed = requestedSpeed;
     }
 
-    public void IntakeTeleOp(Gamepad gamepad)
+    public void intakeTeleOp(Gamepad gamepad)
     {
         TelemetryUtil.packet.put("leftTrigger", gamepad.left_trigger);
         TelemetryUtil.packet.put("previous", previousButton);
@@ -78,7 +78,7 @@ public class Intake {
         if(gamepad.left_trigger <= .3){
             previousButton = true;
         }
-        if(intakeOn == true){
+        if(intakeOn){
             turnOn();
         }
         else{
