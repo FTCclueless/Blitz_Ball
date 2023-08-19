@@ -136,7 +136,9 @@ public class Transfer {
 
 
     public void shootBall() {
-        shoot = true;
+        if (state == State.SHOOT) {
+            shoot = true;
+        }
     }
 
     public double pistonFeedForward(double target) {
