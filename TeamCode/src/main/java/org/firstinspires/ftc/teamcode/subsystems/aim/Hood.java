@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.utils.priority.PriorityServo;
 public class Hood {
     public final PriorityServo shooterHood;
     private double angle;
-    public final double minAngle = Math.toRadians(16);
-    public final double maxAngle = Math.toRadians(40);
+    public final double minAngle = Math.toRadians(50);
+    public final double maxAngle = Math.toRadians(74);
 
     public Hood(HardwareMap hardwareMap) {
         shooterHood = new PriorityServo(

@@ -43,8 +43,6 @@ public class Robot {
         turret = aim.turret;
         shooter = aim.shooter;
         intake = new Intake(hardwareMap, hardwareQueue);
-
-        aim.transfer.turnOn();
     }
 
     public void update() {
@@ -57,7 +55,7 @@ public class Robot {
         START_LOOP();
         drivetrain.drive(gamepad1);
         intake.intakeTeleOp(gamepad1);
-        aim.manual(gamepad2);
+        aim.update();
 
         hardwareQueue.update();
     }

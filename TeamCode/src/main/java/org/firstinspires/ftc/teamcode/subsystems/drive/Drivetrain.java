@@ -336,7 +336,7 @@ public class Drivetrain {
     public void drive(Gamepad gamepad) {
         double forward = 0.45 * Math.tan(((gamepad.left_stick_y * -1) / 0.85));
         TelemetryUtil.packet.put("forward", forward);
-        double turn = gamepad.right_stick_x;
+        double turn = 0.8 * gamepad.right_stick_x;
         TelemetryUtil.packet.put("turn", turn);
 
         double p1 = forward + turn;

@@ -215,7 +215,7 @@ public class Aim {
     public void manual(Gamepad gamepad2) {
         turret.setPower(0.4 * gamepad2.left_stick_x);
         hood.setAngle(0.05 * gamepad2.left_stick_y + hood.getAngle());
-        shooter.setTargetVel(shooter.getSpeed() + gamepad2.right_stick_y * 0.5);
+        //shooter.setTargetVel(shooter.getSpeed() + gamepad2.right_stick_y * 0.5);
 
         if (gamepad2.right_trigger > 0.3 && !pastRight) {
             pastRight = true;
