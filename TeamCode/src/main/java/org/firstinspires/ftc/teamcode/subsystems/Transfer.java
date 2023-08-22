@@ -40,8 +40,8 @@ public class Transfer {
 
     private final double pistonTickPerRadian = 1; //todo
     private final double pistonRevolution = 0; // TODO
-    private double pistonShoot = 0;
-    private double pistonHalf = 0; //todo
+    private double pistonShoot = pistonRevolution;
+    private double pistonHalf = pistonRevolution/4.0; //todo
     private double pistonRetract = 0; // TOOD
     private final double pistonThresh = 0.1;
     private double pistonTargetPos = 0;
