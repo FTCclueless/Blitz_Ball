@@ -30,10 +30,10 @@ public class Transfer {
     private final Sensors sensors;
 
     private PriorityMotor liftMotor;
-    private final double pistonTickPerRadian = 1; //todo
-    private final double pistonRevolution = 0; // TODO
+    private final double pistonTickPerRadian = 85.5759958182;
+    private final double pistonRevolution = 2*Math.PI * pistonTickPerRadian;
     private double pistonShoot = pistonRevolution;
-    private double pistonHalf = pistonRevolution/4.0; //todo
+    private double pistonHalf = pistonRevolution/4.0;
     private double pistonRetract = 0; // TOOD
     private final double pistonThresh = 0.1;
     public double pistonCurrent = 0;
@@ -106,7 +106,7 @@ public class Transfer {
         ejectServo = new PriorityServo(
             hardwareMap.get(Servo.class, "eject"),
             "ejectServo",
-            PriorityServo.ServoType.TORQUE,
+            PriorityServo.ServoType.AXON_MINI,
             0.75,
             0, 1,
             0.95,
