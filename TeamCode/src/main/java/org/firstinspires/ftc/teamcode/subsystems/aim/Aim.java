@@ -152,11 +152,11 @@ public class Aim {
             case MANUAL_AIM:
                 turret.state = Turret.State.AUTOAIM;
                 shooter.state = Shooter.State.AUTO_AIM;
-                transfer.state = Transfer.State.MANUAL;
+                transfer.state = Transfer.State.HOLD;
             case OFF:
                 turret.state = Turret.State.OFF;
                 shooter.state = Shooter.State.OFF;
-                transfer.state = Transfer.State.MANUAL;
+                transfer.state = Transfer.State.HOLD;
         }
     }
 
@@ -178,7 +178,7 @@ public class Aim {
                         if (t.color == transfer.currentBall) {
                             setMainTarget(t);
                             shoot = true;
-                            transfer.state = Transfer.State.SHOOT;
+                            transfer.state = Transfer.State.HOLD;
                         }
                     }
                     if (!shoot) {
@@ -188,7 +188,7 @@ public class Aim {
 
                 if (transfer.state == Transfer.State.SHOOT) {
                     if (Math.sqrt(Math.pow(mainTarget.target.x - shootPose().x,2) + Math.pow(mainTarget.target.y - shootPose().y, 2)) < errorRadius) {
-                        transfer.shootBall();
+                        transfer.state = Transfer.State.SHOOT;
                         shoot = false;
                     }
                 }
