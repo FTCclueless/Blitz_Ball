@@ -4,7 +4,9 @@ import android.util.Log;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.MyServo;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 public class PriorityServo extends PriorityDevice{
     public enum ServoType {
@@ -14,7 +16,7 @@ public class PriorityServo extends PriorityDevice{
         AMAZON(0.2122065908, Math.toRadians(60) / 0.13),
         PRO_MODELER(0.32698, Math.toRadians(60) / 0.139),
         JX(0.3183098862, Math.toRadians(60) / 0.12),
-        AXON_MINI(0.161396562, Math.toRadians(60)/1); //todo
+        AXON_MINI(0.173623, Math.toRadians(230)/1.05); //todo
 
         public double positionPerRadian;
         public double speed;
@@ -63,7 +65,6 @@ public class PriorityServo extends PriorityDevice{
     public double convertAngleToPos(double ang){
         ang *= type.positionPerRadian;
         ang += basePos;
-        Log.e("BALLS", ang + "");
         return ang;
     }
 
@@ -78,6 +79,7 @@ public class PriorityServo extends PriorityDevice{
     public void setTargetAngle(double targetAngle, double power){
         this.power = power;
         this.targetAngle = Math.max(Math.min(targetAngle,maxAng),minAng);
+        TelemetryUtil.packet.put("target", targetAngle);
     }
 
     public void updateServoValues(){
@@ -119,6 +121,10 @@ public class PriorityServo extends PriorityDevice{
         double error = targetAngle - currentAngle;
         //find the amount of movement the servo theoretically should have done in the time it took to update the servo
         double deltaAngle = timeSinceLastUpdate * type.speed * power * Math.signum(error);
+
+        Log.e("targetAng", targetAngle + "");
+        Log.e("error", "" + error);
+        Log.e("delta", "" + deltaAngle);
         if (Math.abs(deltaAngle) > Math.abs(error)){ //make sure that the servo doesn't ossilate over target
             deltaAngle = error;
         }
