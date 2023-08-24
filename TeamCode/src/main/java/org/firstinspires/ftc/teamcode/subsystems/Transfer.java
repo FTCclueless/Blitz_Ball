@@ -59,8 +59,8 @@ public class Transfer {
     private boolean beamBreakState = false;
 
     private final PriorityServo ejectServo;
-    private final double ejectAngle = 0; // TODO
-    private final double unejectAngle = 0; // TODO
+    private final double ejectAngle = 220; // TODO
+    private final double unejectAngle = 330; // TODO
     private double lastEjectTime = 0;
     private boolean ejecting = false;
 
@@ -109,8 +109,8 @@ public class Transfer {
             PriorityServo.ServoType.AXON_MINI,
             0.75,
             0, 1,
-            0.95,
-            true,
+            0,
+            false,
             2,
             4
         );

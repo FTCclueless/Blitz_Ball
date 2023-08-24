@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.utils.priority.PriorityServo;
 @TeleOp
 @Config
 public class TransferServoAngle extends LinearOpMode {
-    public static double angle = 0;
+    public static double angle = 45;
     public static double power = 1;
 
     @Override
@@ -26,7 +26,7 @@ public class TransferServoAngle extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            servo.servo.setPosition(0.173623 * angle);
+            servo.setTargetAngle(Math.toRadians(angle), 0.75);
             TelemetryUtil.packet.put("TranServos", servo.getCurrentAngle());
             robot.update();
         }

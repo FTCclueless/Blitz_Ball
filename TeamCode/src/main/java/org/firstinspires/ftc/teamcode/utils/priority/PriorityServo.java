@@ -16,7 +16,7 @@ public class PriorityServo extends PriorityDevice{
         AMAZON(0.2122065908, Math.toRadians(60) / 0.13),
         PRO_MODELER(0.32698, Math.toRadians(60) / 0.139),
         JX(0.3183098862, Math.toRadians(60) / 0.12),
-        AXON_MINI(0.173623, Math.toRadians(230)/1.05); //todo
+        AXON_MINI(0.173623, Math.toRadians(330) / 1.05); //todo
 
         public double positionPerRadian;
         public double speed;
@@ -100,6 +100,8 @@ public class PriorityServo extends PriorityDevice{
     public double getPriority(double timeRemaining) {
         updateServoValues();
 
+        System.out.printf("%f %f %f %f\n", targetAngle, currentAngle, minAng, maxAng);
+
         if (targetAngle-currentAngle == 0) {
             lastUpdateTime = System.nanoTime();
             return 0;
@@ -122,9 +124,6 @@ public class PriorityServo extends PriorityDevice{
         //find the amount of movement the servo theoretically should have done in the time it took to update the servo
         double deltaAngle = timeSinceLastUpdate * type.speed * power * Math.signum(error);
 
-        Log.e("targetAng", targetAngle + "");
-        Log.e("error", "" + error);
-        Log.e("delta", "" + deltaAngle);
         if (Math.abs(deltaAngle) > Math.abs(error)){ //make sure that the servo doesn't ossilate over target
             deltaAngle = error;
         }
