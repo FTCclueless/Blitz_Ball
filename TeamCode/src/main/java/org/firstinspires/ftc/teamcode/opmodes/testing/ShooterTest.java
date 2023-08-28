@@ -19,6 +19,7 @@ public class ShooterTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Shooter shooter = robot.shooter;
         robot.aim.state = Aim.State.MANUAL_AIM;
+        robot.aim.transfer.turnOn();
 
         waitForStart();
 
