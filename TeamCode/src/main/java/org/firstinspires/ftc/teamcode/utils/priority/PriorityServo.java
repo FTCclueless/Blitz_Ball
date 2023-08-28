@@ -100,8 +100,6 @@ public class PriorityServo extends PriorityDevice{
     public double getPriority(double timeRemaining) {
         updateServoValues();
 
-        System.out.printf("%f %f %f %f\n", targetAngle, currentAngle, minAng, maxAng);
-
         if (targetAngle-currentAngle == 0) {
             lastUpdateTime = System.nanoTime();
             return 0;

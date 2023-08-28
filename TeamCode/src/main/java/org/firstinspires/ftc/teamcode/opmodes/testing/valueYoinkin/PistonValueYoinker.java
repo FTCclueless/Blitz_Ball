@@ -34,7 +34,7 @@ public class PistonValueYoinker extends LinearOpMode {
         waitForStart();
 
         Robot robot = new Robot(hardwareMap);
-        robot.aim.state = Aim.State.OFF;
+        robot.aim.setState(Aim.State.OFF);
         Transfer transfer = robot.aim.transfer;
 
 
@@ -45,13 +45,14 @@ public class PistonValueYoinker extends LinearOpMode {
             counter += 1;
             robot.update();
             time = System.currentTimeMillis();
-            vel = ((double)robot.sensors.getPistonPos()) / 85.5759958182;
+            vel = ((double)robot.sensors.getPistonVelocity()) / 85.5759958182;
             double power = counter/10000.0;
             sumPow += power;
             sumPow2 += power*power;
             sumVel += vel;
             sumVel2 += vel*vel;
             sumProduct += (vel*power);
+            System.out.println(vel);
 
             ((PriorityMotor) robot.hardwareQueue.getDevice("piston")).setTargetPower(power);
             robot.update();
@@ -67,6 +68,7 @@ public class PistonValueYoinker extends LinearOpMode {
 
 
         }
+        System.out.printf("%f %f\n", counter, sumVel2);
         double yIntercept = (sumPow*sumVel2 - sumVel*sumProduct) / (counter * sumVel2 - Math.pow(sumVel, 2));
         double slope = (counter * sumProduct - sumVel*sumPow) / (counter*sumVel2 - Math.pow(sumVel,2));
 

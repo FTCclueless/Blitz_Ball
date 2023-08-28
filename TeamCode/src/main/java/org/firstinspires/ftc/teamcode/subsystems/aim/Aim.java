@@ -186,7 +186,7 @@ public class Aim {
                     }
                 }
 
-                if (transfer.state == Transfer.State.SHOOT) {
+                if (shoot) {
                     if (Math.sqrt(Math.pow(mainTarget.target.x - shootPose().x,2) + Math.pow(mainTarget.target.y - shootPose().y, 2)) < errorRadius) {
                         transfer.state = Transfer.State.SHOOT;
                         shoot = false;
@@ -205,6 +205,7 @@ public class Aim {
             case OFF:
                 turret.update();
                 shooter.update();
+                transfer.update();
                 break;
         }
     }

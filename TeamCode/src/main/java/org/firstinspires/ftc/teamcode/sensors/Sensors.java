@@ -31,6 +31,7 @@ public class Sensors {
     private static double shooterVelocity;
 
     private static double pistonPos;
+    private static double pistonVelocity;
 
     public Sensors (HardwareMap hardwareMap, HardwareQueue hardwareQueue) {
         this.hardwareQueue = hardwareQueue;
@@ -64,7 +65,8 @@ public class Sensors {
 
     public void update() {
         updateControlHub();
-        // updateExpansionHub();
+        // TODO: if loop times are actually trash limit this
+        updateExpansionHub();
         updateTelemetry();
     }
 
@@ -85,7 +87,8 @@ public class Sensors {
 
     private void updateExpansionHub() {
         try {
-            pistonPos = ((PriorityMotor) hardwareQueue.getDevice("intake")).motor[0].getCurrentPosition();
+            pistonPos = ((PriorityMotor) hardwareQueue.getDevice("piston")).motor[0].getCurrentPosition();
+            // pistonVelocity = ((PriorityMotor) hardwareQueue.getDevice("piston")).motor[0].getVelocity();
         }
         catch (Exception e) {
             Log.e("******* Error due to ", e.getClass().getName());
@@ -143,6 +146,10 @@ public class Sensors {
 
     public double getPistonPos() {
         return pistonPos;
+    }
+
+    public double getPistonVelocity() {
+        return pistonVelocity;
     }
 }
 
