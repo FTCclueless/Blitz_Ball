@@ -20,21 +20,24 @@ public class ColorYoink extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         REVColorSensorV3 colorSensorV3 = hardwareMap.get(REVColorSensorV3.class, "colorSensor");
         REVColorSensorV3.ControlRequest controlRequest = new REVColorSensorV3.ControlRequest()
-                .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED);
+                .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED)
+                .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED);
         colorSensorV3.sendControlRequest(controlRequest);
         colorSensorV3.configureLSRecording(REVColorSensorV3.LSResolution.TWENTY, REVColorSensorV3.LSMeasureRate.m200s);
 
         waitForStart();
+        TelemetryUtil.setup();
 
         while (opModeIsActive()) {
             if (recording) {
                 int[] color = colorSensorV3.readLSRGBRAW();
+                System.out.println(Arrays.toString(color));
 
                 boolean min = false;
                 boolean max = false;
 
                 for (int i = 0; i < color.length; i++) {
-                    if (color[i] > minColor[i]) {
+                    if (color[i] < minColor[i]) {
                         min = true;
                     }
                     if (color[i] > maxColor[i]) {
@@ -47,10 +50,10 @@ public class ColorYoink extends LinearOpMode {
                 } else if (max) {
                     maxColor = color;
                 }
+                TelemetryUtil.packet.put("min", Arrays.toString(minColor));
+                TelemetryUtil.packet.put("max", Arrays.toString(maxColor));
+                TelemetryUtil.sendTelemetry();
             }
         }
-        TelemetryUtil.packet.put("min", Arrays.toString(minColor));
-        TelemetryUtil.packet.put("max", Arrays.toString(maxColor));
-        TelemetryUtil.sendTelemetry();
     }
 }

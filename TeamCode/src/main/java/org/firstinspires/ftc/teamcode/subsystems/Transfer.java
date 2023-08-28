@@ -75,7 +75,8 @@ public class Transfer {
 
         colorSensorV3 = hardwareMap.get(REVColorSensorV3.class, "colorSensor");
         REVColorSensorV3.ControlRequest controlRequest = new REVColorSensorV3.ControlRequest()
-            .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED);
+            .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED)
+            .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED);
         colorSensorV3.sendControlRequest(controlRequest);
         colorSensorV3.configureLSRecording(REVColorSensorV3.LSResolution.TWENTY, REVColorSensorV3.LSMeasureRate.m200s);
 
