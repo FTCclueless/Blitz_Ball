@@ -135,6 +135,11 @@ public class Transfer {
         state = State.EJECT;
     }
 
+    public void setPistonValue(double angle) {
+        pistonCurrent = sensors.getPistonPos()/pistonTickPerRadian;
+        ((PriorityMotor)hardwareQueue.getDevice("piston")).setTargetPower(angle-pistonCurrent);
+    }
+
     public double pistonFeedForward(double target) {
         double error = target - pistonCurrent;
         double vel = error*(pistonMaxVel/pistonSlowDown);

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
@@ -33,6 +34,7 @@ public class PistonValueYoinker extends LinearOpMode {
         waitForStart();
 
         Robot robot = new Robot(hardwareMap);
+        robot.aim.state = Aim.State.OFF;
         Transfer transfer = robot.aim.transfer;
 
 
