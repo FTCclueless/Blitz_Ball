@@ -53,10 +53,13 @@ public class Robot {
 
     public void teleop(Gamepad gamepad1, Gamepad gamepad2) {
         START_LOOP();
+        sensors.update();
+        drivetrain.update();
         drivetrain.drive(gamepad1);
         intake.intakeTeleOp(gamepad1);
         aim.update();
 
+        updateTelemetry();
         hardwareQueue.update();
     }
 

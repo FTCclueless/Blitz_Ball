@@ -172,10 +172,8 @@ public class Transfer {
                 // ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
                 boolean oldState = beamBreakState;
                 beamBreakState = !beamBreak.getState();
-                System.out.println(beamBreakState + " " + oldState);
                 if (beamBreakState && !oldState) {
-                    System.out.println("BALLS IN MY JAWS");
-                    //state = State.READ_COLOR;
+                    state = State.SHOOT;
                 }
                 break;
 

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 @TeleOp
 public class ShooterTest extends LinearOpMode {
     public static double velocity;
+    public static boolean shoot = false;
 
     @Override
     public void runOpMode() {
@@ -25,6 +27,12 @@ public class ShooterTest extends LinearOpMode {
 
         while (!isStopRequested()) {
             shooter.setTargetVel(velocity);
+
+            if (shoot) {
+                robot.aim.transfer.state = Transfer.State.SHOOT;
+                shoot = false;
+            }
+
             TelemetryUtil.packet.put("Shooter Velocity", shooter.getSpeed());
             TelemetryUtil.packet.put("Target Velocity", shooter.getTargetVel());
             robot.update();

@@ -149,14 +149,17 @@ public class Aim {
                 turret.state = Turret.State.AUTOAIM;
                 shooter.state = Shooter.State.AUTO_AIM;
                 transfer.state = Transfer.State.READ_BEAMBREAK;
+                break;
             case MANUAL_AIM:
                 turret.state = Turret.State.AUTOAIM;
                 shooter.state = Shooter.State.AUTO_AIM;
                 transfer.state = Transfer.State.HOLD;
+                break;
             case OFF:
                 turret.state = Turret.State.OFF;
                 shooter.state = Shooter.State.OFF;
                 transfer.state = Transfer.State.HOLD;
+                break;
         }
     }
 
@@ -169,6 +172,7 @@ public class Aim {
             case AUTO_AIM:
                 mainTarget.update();
                 shooter.setTargetVel(mainTarget.targetShooterVel + shooterComp);
+                TelemetryUtil.packet.put("aimVel", mainTarget.targetShooterVel);
                 turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);

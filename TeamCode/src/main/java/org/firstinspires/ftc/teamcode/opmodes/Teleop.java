@@ -23,10 +23,9 @@ public class Teleop extends LinearOpMode {
         //initialization
         Robot robot = new Robot(hardwareMap);
         robot.aim.setState(Aim.State.AUTO_AIM);
+        robot.aim.transfer.turnOn();
 
-
-        robot.aim.addTarget(30,0, Ball.YELLOW);
-        Pose2d target = new Pose2d(30,0,0);
+        robot.aim.addTarget(400,400, Ball.YELLOW);
         robot.aim.setMainTarget(0);// change later when auto aim is working fully
 
         waitForStart();
@@ -38,9 +37,6 @@ public class Teleop extends LinearOpMode {
             robot.teleop(gamepad1, gamepad2);
             shootSpeed += 0.1*gamepad2.right_stick_x;
             ((PriorityMotor)robot.hardwareQueue.getDevice("shooter")).setTargetPower(shootSpeed);
-            target.x += gamepad2.left_stick_x;
-            target.y += gamepad2.right_stick_y;
-            robot.aim.setTarget(0,target,Ball.YELLOW);
         }
     }
 }

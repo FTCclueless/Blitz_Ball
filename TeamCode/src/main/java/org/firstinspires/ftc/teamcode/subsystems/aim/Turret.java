@@ -28,7 +28,7 @@ public class Turret {
 
     public final double ticksPerRadian = 111.261143192; //145.090909091 / 0.20754716981 (22/106) / 2pi
 
-    public static final double maxRotation = Math.toRadians(180);
+    public static final double maxRotation = Math.toRadians(90);
     public static double maxAccel = 8.98786378884; // 1000 / 111.261143192
     public State state = State.OFF;
     public static boolean pidEnabled = false;

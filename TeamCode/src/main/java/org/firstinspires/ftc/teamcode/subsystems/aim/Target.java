@@ -8,6 +8,7 @@ import android.util.Log;
 import org.firstinspires.ftc.teamcode.subsystems.Ball;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
 
 public class Target {
@@ -77,7 +78,10 @@ public class Target {
             targetVelZ = Math.tan(targetShooterAngle) * targetVelH;
 
             targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
+
         }
+        TelemetryUtil.packet.put("binDist", binDistance);
+        TelemetryUtil.packet.put("aimShooterAng", targetShooterAngle);
 
         Vector2 launchVector = new Vector2(target.x-turretPos.x, target.y-turretPos.y);
         launchVector.norm();

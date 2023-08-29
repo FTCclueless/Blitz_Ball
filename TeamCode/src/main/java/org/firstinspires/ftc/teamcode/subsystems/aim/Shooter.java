@@ -30,11 +30,11 @@ public class Shooter {
 
 
 
-    private final double gearRatio = 46.0/9.0;
+    private final double gearRatio = 46.0/16.0;
     private final double radius = 3.25;
     private final double ticksPerRadian = 537.689839572 / gearRatio / (2.0*Math.PI);
-    private final double powPerVel = 0.001690202297300495; //0.002355662527748475; // TODO
-    private final double kStatic = 0.07788994285139923; //0.2194966041039161; // TODO
+    private final double kStatic = 0.07806370549956637; //0.2194966041039161; // TODO
+    private final double powPerVel = 0.0030768805766372164; //0.002355662527748475; // TODO
     public static double kAccel = 2;
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
