@@ -23,7 +23,9 @@ import java.util.ArrayList;
 public class Transfer {
     public enum State {
         EJECT,
+        EJECT_CLEAN,
         SHOOT,
+        SHOOT_CLEAN,
         READ_BEAMBREAK,
         READ_COLOR,
         HOLD // Hold all values for other subystems
@@ -65,7 +67,6 @@ public class Transfer {
     private final double ejectAngle = Math.toRadians(220); // TODO
     private final double unejectAngle = Math.toRadians(300); // TODO
     private double lastEjectTime = 0;
-    private boolean ejecting = false;
 
     public Ball currentBall = Ball.EMPTY;
     private double ballRollTime = 400; // ms TODO
@@ -133,12 +134,20 @@ public class Transfer {
 
 
     public void shootBall() {
+        currentBall = Ball.EMPTY;
+        setPistonValue(pistonShoot);
         state = State.SHOOT;
     }
 
     public void ejectBall() {
+        ejectServo.setTargetAngle(ejectAngle, 0.75);
+        setPistonValue(pistonHalf);
+        lastEjectTime = System.currentTimeMillis();
+        currentBall = Ball.EMPTY;
         state = State.EJECT;
     }
+
+    // TODO: add setState function if you really hate yourself
 
     public void setPistonValue(double angle) {
         liftMotor.motor[0].setPower(1);
@@ -173,7 +182,7 @@ public class Transfer {
                 boolean oldState = beamBreakState;
                 beamBreakState = !beamBreak.getState();
                 if (beamBreakState && !oldState) {
-                    state = State.SHOOT;
+                    shootBall();
                 }
                 break;
 
@@ -196,37 +205,32 @@ public class Transfer {
                 break;
 
             case EJECT:
-                currentBall = Ball.EMPTY;
-                if (!ejecting) {
-                    ejectServo.setTargetAngle(ejectAngle, 0.75);
-                    setPistonValue(pistonHalf);
-                    // ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistolHalf));
-                    lastEjectTime = System.currentTimeMillis();
-                    TelemetryUtil.packet.put("ServoAngle", ejectServo.getCurrentAngle());
-                    if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle) {
-                        ejecting = true;
-                    }
-                } else {
-                    if (System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
-                        ejectServo.setTargetAngle(unejectAngle, 0.75);
-                        setPistonValue(pistonRetract);
-                        // ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
-                        if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == unejectAngle) {
-                            ejecting = false;
-                            state = State.READ_BEAMBREAK;
-                            setPistonValue(pistonRetract);
-                        }
-                    }
-                }
-
-                break;
-            case SHOOT:
-                currentBall = Ball.EMPTY;
-                // ((PriorityMotor) hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonShoot));
-                setPistonValue(pistonShoot);
-                if (Math.abs(pistonShoot - pistonCurrent) < pistonThresh) {
-                    state = State.READ_BEAMBREAK;
+                // ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistolHalf));
+                TelemetryUtil.packet.put("ServoAngle", ejectServo.getCurrentAngle());
+                if (Math.abs(pistonHalf - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == ejectAngle && System.currentTimeMillis() > lastEjectTime + ballRollTime ) {
+                    ejectServo.setTargetAngle(unejectAngle, 0.75);
                     setPistonValue(pistonRetract);
+                    state = State.EJECT_CLEAN;
+                }
+                break;
+
+            case EJECT_CLEAN:
+                // ((PriorityMotor)hardwareQueue.getDevice("liftMotor")).setTargetPower(pistonFeedForward(pistonRetract));
+                if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh && ejectServo.getCurrentAngle() == unejectAngle) {
+                    state = State.READ_BEAMBREAK;
+                }
+                break;
+
+            case SHOOT:
+                if (Math.abs(pistonShoot - pistonCurrent) < pistonThresh) {
+                    state = State.SHOOT_CLEAN;
+                    setPistonValue(pistonRetract);
+                }
+                break;
+
+            case SHOOT_CLEAN:
+                if (Math.abs(pistonRetract - pistonCurrent) < pistonThresh) {
+                    state = State.READ_BEAMBREAK;
                 }
                 break;
 
