@@ -19,14 +19,20 @@ import java.util.ArrayList;
 @Config
 @TeleOp
 public class ShooterKinematicYoink extends LinearOpMode {
+    public static double hoodAngle = 0;
+
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
+        robot.aim.hood.setAngle(Math.toRadians(hoodAngle));
+        robot.intake.turnOn();
+        robot.aim.transfer.turnOn();
         robot.aim.state = Aim.State.MANUAL_AIM;
         Shooter shooter = robot.shooter;
         double sum = 0;
         int count = 0;
         ArrayList<Double> vels = new ArrayList<Double>();
+        String CSVBuf = "Target Velocity,Velocity,Battery Voltage,Hood Angle\n";
 
         ArrayList<Double> coolPow = new ArrayList<>();
         ArrayList<Double> coolVel = new ArrayList<>();
@@ -43,6 +49,11 @@ public class ShooterKinematicYoink extends LinearOpMode {
         waitForStart();
 
         while (!isStopRequested() && count < 21) {
+            if (vels.size() >= 100) {
+                sum -= vels.get(0);
+                vels.remove(0);
+            }
+
             if (!pastRight && gamepad1.right_trigger > 0.3) {
                 pastRight = true;
                 count ++;
@@ -62,7 +73,7 @@ public class ShooterKinematicYoink extends LinearOpMode {
 
             double pow = shooter.maxVelocity / 20.0 * count;
             shooter.setTargetVel(pow);
-            double vel = robot.sensors.getShooterVelocity() / shooter.ticksPerRadian / shooter.gearRatio / shooter.maxVelocity;
+            double vel = robot.sensors.getShooterVelocity() / shooter.ticksPerRadian * shooter.radius;
             TelemetryUtil.packet.put("shooterVel", vel);
 
 
@@ -72,23 +83,27 @@ public class ShooterKinematicYoink extends LinearOpMode {
                     shotted = true;
                     coolPow.add(pow);
                     coolVel.add(vel);
+                    Log.e("pow: " + pow, "vel: " + vel);
                 }
-                if (shotted && avg - vel < 5) {
-                    shooting = false;
-                }
+              if (gamepad1.a) {
+                  shooting = false;
+              }
             }
+            TelemetryUtil.packet.put("shooting", shooting);
             if (!shooting) {
                 vels.add(vel);
                 sum += vel;
-                TelemetryUtil.packet.put("average", avg);
+
             }
 
+            TelemetryUtil.packet.put("average", avg);
             if (count == 20) {
                 for (int i = 0; i < coolPow.size(); i++) {
                     Log.e(coolAvg.get(i) + "", "pow: " + coolPow.get(i) + "vel: " + coolVel.get(i));
                 }
                 count++;
             }
+            robot.update();
         }
     }
 }

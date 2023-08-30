@@ -54,7 +54,7 @@ public class Aim {
         turret.state = Turret.State.AUTOAIM;
         this.shooter = new Shooter(hardwareMap, hardwareQueue, sensors);
         transfer = new Transfer(hardwareMap, hardwareQueue, sensors);
-        this.hood = new Hood(hardwareMap);
+        this.hood = new Hood(hardwareMap, hardwareQueue);
 
         this.sensors = sensors;
 

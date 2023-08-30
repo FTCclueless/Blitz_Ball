@@ -182,7 +182,8 @@ public class Transfer {
                 boolean oldState = beamBreakState;
                 beamBreakState = !beamBreak.getState();
                 if (beamBreakState && !oldState) {
-                    shootBall();
+                    // shootBall();
+                    // state should be READ_COLOR
                 }
                 break;
 
