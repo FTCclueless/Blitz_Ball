@@ -83,10 +83,11 @@ public class ShooterKinematicYoink extends LinearOpMode {
                 TelemetryUtil.packet.put("average", avg);
             }
 
-            if (count >= 20) {
+            if (count == 20) {
                 for (int i = 0; i < coolPow.size(); i++) {
                     Log.e(coolAvg.get(i) + "", "pow: " + coolPow.get(i) + "vel: " + coolVel.get(i));
                 }
+                count++;
             }
         }
     }
