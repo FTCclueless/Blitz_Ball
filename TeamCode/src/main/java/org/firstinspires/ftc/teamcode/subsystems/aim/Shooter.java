@@ -20,7 +20,7 @@ public class Shooter {
         AUTO_AIM,
         OFF
     }
-    PriorityMotor shooter;
+    public PriorityMotor shooter;
     Sensors sensors;
 
     HardwareQueue hardwareQueue;

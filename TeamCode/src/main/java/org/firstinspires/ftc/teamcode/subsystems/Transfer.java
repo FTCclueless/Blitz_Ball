@@ -65,7 +65,7 @@ public class Transfer {
 
     private final PriorityServo ejectServo;
     private final double ejectAngle = Math.toRadians(220); // TODO
-    private final double unejectAngle = Math.toRadians(300); // TODO
+    private final double unejectAngle = Math.toRadians(320); // TODO
     private double lastEjectTime = 0;
 
     public Ball currentBall = Ball.EMPTY;

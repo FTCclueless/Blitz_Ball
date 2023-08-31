@@ -31,7 +31,7 @@ public class ShooterTest extends LinearOpMode {
             shooter.setTargetVel(velocity);
 
             if (shoot) {
-                robot.aim.transfer.state = Transfer.State.SHOOT;
+                robot.aim.transfer.shootBall();
                 shoot = false;
             }
 

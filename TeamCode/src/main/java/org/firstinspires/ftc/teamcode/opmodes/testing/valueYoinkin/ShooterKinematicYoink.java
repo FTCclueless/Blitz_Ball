@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.teamcode.Robot;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityServo;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -20,39 +22,32 @@ import java.util.ArrayList;
 @TeleOp
 public class ShooterKinematicYoink extends LinearOpMode {
     public static double hoodAngle = 0;
+    public static double samples = 50;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        Log.e("CSVID", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Robot robot = new Robot(hardwareMap);
-        robot.aim.hood.setAngle(Math.toRadians(hoodAngle));
+        ((PriorityServo) robot.hardwareQueue.getDevice("ejectServo")).setTargetAngle(Math.toRadians(320), 0.75);
         robot.intake.turnOn();
         robot.aim.transfer.turnOn();
         robot.aim.state = Aim.State.MANUAL_AIM;
+        robot.aim.shooter.state = Shooter.State.OFF;
         Shooter shooter = robot.shooter;
-        double sum = 0;
         int count = 0;
-        ArrayList<Double> vels = new ArrayList<Double>();
-        String CSVBuf = "Target Velocity,Velocity,Battery Voltage,Hood Angle\n";
-
-        ArrayList<Double> coolPow = new ArrayList<>();
-        ArrayList<Double> coolVel = new ArrayList<>();
-        ArrayList<Double> coolAvg = new ArrayList<>();
+        Log.e("CSVID", "Power,Velocity,Battery Voltage,Hood Angle");
 
         boolean pastRight = false;
         boolean pastLeft = false;
 
-        boolean shooting = false;
-
-        boolean shotted = true;
-
+        boolean recovering = true; // Need to go back to normal speed
+        double minimum = Double.POSITIVE_INFINITY;
+        long recoveryStart = System.currentTimeMillis();
 
         waitForStart();
 
-        while (!isStopRequested() && count < 21) {
-            if (vels.size() >= 100) {
-                sum -= vels.get(0);
-                vels.remove(0);
-            }
+        while (!isStopRequested() && count <= samples) {
+            robot.aim.hood.setAngle(Math.toRadians(hoodAngle));
 
             if (!pastRight && gamepad1.right_trigger > 0.3) {
                 pastRight = true;
@@ -65,44 +60,53 @@ public class ShooterKinematicYoink extends LinearOpMode {
             if (!pastLeft && gamepad1.left_trigger > 0.3) {
                 pastLeft = true;
                 robot.aim.transfer.shootBall();
-                shooting = true;
+                recovering = true;
+                recoveryStart = System.currentTimeMillis();
             }
             else if (gamepad1.right_trigger <= 0.3) {
                 pastLeft = false;
             }
 
-            double pow = shooter.maxVelocity / 20.0 * count;
-            shooter.setTargetVel(pow);
+            double pow = count / samples;
+            TelemetryUtil.packet.put("shooterPower", pow);
+            shooter.shooter.setTargetPower(pow);
             double vel = robot.sensors.getShooterVelocity() / shooter.ticksPerRadian * shooter.radius;
             TelemetryUtil.packet.put("shooterVel", vel);
 
-
-            double avg = sum / vels.size();
-            if (shooting) {
-                if (avg - vel > 5) {
-                    shotted = true;
-                    coolPow.add(pow);
-                    coolVel.add(vel);
-                    Log.e("pow: " + pow, "vel: " + vel);
+            /*if (gamepad1.a && !lastA) {
+                double batteryVoltage  = Double.POSITIVE_INFINITY;
+                for (VoltageSensor v : hardwareMap.voltageSensor) {
+                    double voltage = v.getVoltage();
+                    if (voltage > 0) {
+                        batteryVoltage = Math.min(batteryVoltage, voltage);
+                    }
                 }
-              if (gamepad1.a) {
-                  shooting = false;
-              }
-            }
-            TelemetryUtil.packet.put("shooting", shooting);
-            if (!shooting) {
-                vels.add(vel);
-                sum += vel;
 
-            }
+                CSVBuf += String.format("%f,%f,%f,%f\n", pow,  minimum, batteryVoltage, hoodAngle);
+                recovering = true;
+                recoveryStart = System.currentTimeMillis();
+            }*/
 
-            TelemetryUtil.packet.put("average", avg);
-            if (count == 20) {
-                for (int i = 0; i < coolPow.size(); i++) {
-                    Log.e(coolAvg.get(i) + "", "pow: " + coolPow.get(i) + "vel: " + coolVel.get(i));
+            if (recovering) {
+                gamepad1.rumble(1, 1, 500);
+
+                if (System.currentTimeMillis() - recoveryStart > 1500) {
+                    double batteryVoltage  = Double.POSITIVE_INFINITY;
+                    for (VoltageSensor v : hardwareMap.voltageSensor) {
+                        double voltage = v.getVoltage();
+                        if (voltage > 0) {
+                            batteryVoltage = Math.min(batteryVoltage, voltage);
+                        }
+                    }
+
+                    Log.e("CSVID", String.format("%f,%f,%f,%f", pow,  minimum, batteryVoltage, hoodAngle));
+                    recovering = false;
+                    minimum = vel;
                 }
-                count++;
             }
+            minimum = Math.min(vel, minimum);
+
+
             robot.update();
         }
     }
