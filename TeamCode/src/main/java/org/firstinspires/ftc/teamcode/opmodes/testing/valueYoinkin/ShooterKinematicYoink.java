@@ -28,7 +28,7 @@ public class ShooterKinematicYoink extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Log.e("CSVID", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Robot robot = new Robot(hardwareMap);
-        ((PriorityServo) robot.hardwareQueue.getDevice("ejectServo")).setTargetAngle(Math.toRadians(320), 0.75);
+        ((PriorityServo) robot.hardwareQueue.getDevice("ejectServo")).setTargetAngle(Math.toRadians(300), 0.75);
         robot.intake.turnOn();
         robot.aim.transfer.turnOn();
         robot.aim.state = Aim.State.MANUAL_AIM;
@@ -49,7 +49,7 @@ public class ShooterKinematicYoink extends LinearOpMode {
         while (!isStopRequested() && count <= samples) {
             robot.aim.hood.setAngle(Math.toRadians(hoodAngle));
 
-            if (!pastRight && gamepad1.right_trigger > 0.3) {
+            if (!pastRight && gamepad1.right_trigger > 0.3 && !recovering) {
                 pastRight = true;
                 count ++;
             }
@@ -57,7 +57,7 @@ public class ShooterKinematicYoink extends LinearOpMode {
                 pastRight = false;
             }
 
-            if (!pastLeft && gamepad1.left_trigger > 0.3) {
+            if (!pastLeft && gamepad1.left_trigger > 0.3 && !recovering) {
                 pastLeft = true;
                 robot.aim.transfer.shootBall();
                 recovering = true;
