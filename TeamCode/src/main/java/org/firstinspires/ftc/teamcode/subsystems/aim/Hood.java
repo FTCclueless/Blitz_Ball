@@ -35,6 +35,7 @@ public class Hood {
     }
 
     public void setAngle(double angle) {
+        angle -= Math.toRadians(50);
         if (angle < minAngle || angle > maxAngle) {
             Log.e("shooterAngle out of range", "e");
         }

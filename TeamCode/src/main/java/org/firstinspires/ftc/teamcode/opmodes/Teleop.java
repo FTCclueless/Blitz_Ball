@@ -25,7 +25,7 @@ public class Teleop extends LinearOpMode {
         robot.aim.setState(Aim.State.AUTO_AIM);
         robot.aim.transfer.turnOn();
 
-        robot.aim.addTarget(400,400, Ball.YELLOW);
+        robot.aim.addTarget(48,48, Ball.YELLOW);
         robot.aim.setMainTarget(0);// change later when auto aim is working fully
 
         waitForStart();

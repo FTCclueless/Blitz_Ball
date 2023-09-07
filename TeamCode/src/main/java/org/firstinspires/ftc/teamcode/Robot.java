@@ -57,7 +57,7 @@ public class Robot {
         drivetrain.update();
         drivetrain.drive(gamepad1);
         intake.intakeTeleOp(gamepad1);
-        aim.update();
+        aim.manualAutoAim(gamepad2);
 
         updateTelemetry();
         hardwareQueue.update();

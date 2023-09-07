@@ -249,4 +249,30 @@ public class Aim {
         transfer.update();
     }
 
+    public void manualAutoAim(Gamepad gamepad2) {
+        mainTarget.update();
+        shooter.setTargetVel(mainTarget.targetShooterVel + shooterComp);
+        TelemetryUtil.packet.put("aimVel", mainTarget.targetShooterVel);
+        turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);
+
+        if (gamepad2.right_trigger > 0.3 && !pastRight) {
+            pastRight = true;
+            transfer.shootBall();
+        }
+        else {
+            pastRight = false;
+            if (gamepad2.left_trigger > 0.3 && !pastLeft) {
+                transfer.ejectBall();
+                pastLeft = true;
+            }
+            else {
+                pastLeft = false;
+            }
+        }
+
+        turret.update();
+        shooter.update();
+        transfer.update();
+    }
+
 }
