@@ -72,7 +72,7 @@ public class Target {
         targetShooterAngle = Math.atan2(targetVelZ, targetVelH);
         targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
 
-        /*if (targetShooterAngle < minShooter || targetShooterAngle > maxShooter) {
+        if (targetShooterAngle < minShooter || targetShooterAngle > maxShooter) {
             Log.e("A", "@@@@@@@@@@@@@@@@@@@@@@@@@#@#@@#@");
             targetShooterAngle = Math.min(Math.max(targetShooterAngle, minShooter), maxShooter);
             targetVelH = 7*binDistance / (Math.sqrt(10) * Math.sqrt(binDistance * Math.tan(targetShooterAngle) + shooterHeight));
@@ -80,7 +80,7 @@ public class Target {
 
             targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
 
-        }*/
+        }
         TelemetryUtil.packet.put("binDist", binDistance);
         TelemetryUtil.packet.put("aimShooterAng", targetShooterAngle);
 
