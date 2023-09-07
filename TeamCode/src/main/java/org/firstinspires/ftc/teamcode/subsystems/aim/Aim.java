@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.aim;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -122,7 +124,7 @@ public class Aim {
     }
 
     public Pose2d shootPose() {
-        double shooterVel = sensors.getShooterVelocity();
+        double shooterVel = shooter.getTargetVel();
         double hoodAngle = hood.getAngle();
         double turretAngle = turret.currentAngle;
 
@@ -202,6 +204,9 @@ public class Aim {
                 turret.update();
                 shooter.update();
                 transfer.update();
+                for (Target t : targets) {
+                    t.update();
+                }
                 break;
 
             case MANUAL_AIM:

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Ball;
+import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Aim;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.aim.Turret;
@@ -20,11 +21,19 @@ public class AimTest extends LinearOpMode {
         robot.aim.state = Aim.State.AUTO_AIM;
         Turret turret = robot.turret;
         Shooter shooter = robot.shooter;
-        robot.aim.setTarget(0,48,48, Ball.YELLOW);
-        robot.aim.setMainTarget(1);
+        robot.aim.transfer.state = Transfer.State.READ_BEAMBREAK;
+        robot.aim.transfer.turnOn();
+        robot.intake.turnOn();
+        robot.aim.addTarget(48,48, Ball.YELLOW);
+        robot.aim.setMainTarget(0);
+        boolean oldA = false;
 
         waitForStart();
         while (!isStopRequested()) {
+            if (gamepad1.a && !oldA) {
+                robot.aim.transfer.shootBall();
+            }
+            oldA = gamepad1.a;
             robot.update();
             TelemetryUtil.packet.put("targetAngle", turret.targetAngle);
             TelemetryUtil.packet.put("errorAngle", turret.errorAngle);

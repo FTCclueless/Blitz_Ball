@@ -37,6 +37,7 @@ public class ShooterTest extends LinearOpMode {
 
             TelemetryUtil.packet.put("Shooter Velocity", shooter.getSpeed());
             TelemetryUtil.packet.put("Target Velocity", shooter.getTargetVel());
+            robot.aim.updateTelemetry();
             robot.update();
         }
     }

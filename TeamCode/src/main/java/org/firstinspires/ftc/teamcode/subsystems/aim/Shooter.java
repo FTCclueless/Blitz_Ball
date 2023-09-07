@@ -33,8 +33,8 @@ public class Shooter {
     public final double gearRatio = 46.0/16.0;
     public final double radius = 3.25;
     public final double ticksPerRadian = 537.689839572 / gearRatio / (2.0*Math.PI);
-    private final double kStatic = 0.07806370549956637; //0.2194966041039161; // TODO
-    private final double powPerVel = 0.0030768805766372164; //0.002355662527748475; // TODO
+    private final double kStatic = 0.09692351995; //0.2194966041039161; // TODO
+    private final double powPerVel = 0.003115428956; //0.002355662527748475; // TODO
     public static double kAccel = 2;
     public double maxVelocity = (1.0 - kStatic) / powPerVel;
     public double shooterMaxPower = 0;
@@ -62,6 +62,7 @@ public class Shooter {
 
     public void setTargetVel(double velocity) {
         targetVelocity = velocity;
+        shooter.setTargetPower(velocity * powPerVel + kStatic);
     }
 
     public double getTargetVel() {
@@ -72,16 +73,16 @@ public class Shooter {
         return speed;
     }
 
-    private double feedForward() {
+    /*private double feedForward() {
         return targetVelocity * powPerVel + (targetVelocity - speed) / maxVelocity * kAccel + ((Math.abs(targetVelocity) > 20) ? Math.signum(targetVelocity): 0) * kStatic;
-    }
+    }*/
 
     public void update() {
         speed = speed * lowpassWeight + (sensors.getShooterVelocity() / ticksPerRadian * radius) * (1 - lowpassWeight);
         switch (state) {
             case AUTO_AIM:
-                TelemetryUtil.packet.put("shootPow", feedForward());
-                shooter.setTargetPower(feedForward());
+                //TelemetryUtil.packet.put("shootPow", feedForward());
+                //shooter.setTargetPower(feedForward());
                 break;
             case OFF:
                 break;
