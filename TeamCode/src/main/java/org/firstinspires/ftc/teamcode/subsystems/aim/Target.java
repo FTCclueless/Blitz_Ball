@@ -19,8 +19,8 @@ public class Target {
     double shooterHeight;
     Ball color = Ball.EMPTY;
 
-    double minShooter = Math.toRadians(16);
-    double maxShooter = Math.toRadians(40);
+    double minShooter = Math.toRadians(50);
+    double maxShooter = Math.toRadians(74);
 
 
     public double targetShooterAngle = 0;
@@ -75,10 +75,10 @@ public class Target {
         if (targetShooterAngle < minShooter || targetShooterAngle > maxShooter) {
             Log.e("A", "@@@@@@@@@@@@@@@@@@@@@@@@@#@#@@#@");
             targetShooterAngle = Math.min(Math.max(targetShooterAngle, minShooter), maxShooter);
-            targetVelH = 7*binDistance / (Math.sqrt(10) * Math.sqrt(binDistance * Math.tan(targetShooterAngle) + shooterHeight));
-            targetVelZ = Math.tan(targetShooterAngle) * targetVelH;
+            targetShooterVel = binDistance/Math.cos(targetShooterAngle) * Math.sqrt(192.913/ (shooterHeight-binHeight + Math.tan(targetShooterAngle)));
+            targetVelH = targetShooterVel * Math.cos(targetShooterAngle);
+            targetVelZ = targetShooterVel * Math.sin(targetShooterAngle);
 
-            targetShooterVel = Math.sqrt(Math.pow(targetVelH,2) + Math.pow(targetVelZ,2));
 
         }
         TelemetryUtil.packet.put("binDist", binDistance);

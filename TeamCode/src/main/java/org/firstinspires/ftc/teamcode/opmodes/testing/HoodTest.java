@@ -20,7 +20,7 @@ public class HoodTest extends LinearOpMode {
         Aim aim = robot.aim;
         aim.state = Aim.State.MANUAL_AIM;
         while (!isStopRequested()) {
-            hood.setAngle(target);
+            hood.setAngle(Math.toRadians(target));
             TelemetryUtil.packet.put("right", hood.getAngle());
             TelemetryUtil.packet.put("target", target);
             robot.update();

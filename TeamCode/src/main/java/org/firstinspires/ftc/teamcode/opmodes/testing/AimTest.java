@@ -24,6 +24,7 @@ public class AimTest extends LinearOpMode {
         robot.aim.transfer.state = Transfer.State.READ_BEAMBREAK;
         robot.aim.transfer.turnOn();
         robot.intake.turnOn();
+
         robot.aim.addTarget(48,48, Ball.YELLOW);
         robot.aim.setMainTarget(0);
         boolean oldA = false;
@@ -38,6 +39,7 @@ public class AimTest extends LinearOpMode {
             TelemetryUtil.packet.put("targetAngle", turret.targetAngle);
             TelemetryUtil.packet.put("errorAngle", turret.errorAngle);
             TelemetryUtil.packet.put("currentAngle",turret.currentAngle);
+            TelemetryUtil.packet.put("pistonPos", robot.sensors.getPistonPos());
         }
     }
 }

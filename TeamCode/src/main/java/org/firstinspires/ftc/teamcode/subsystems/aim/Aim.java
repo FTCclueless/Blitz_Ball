@@ -176,6 +176,7 @@ public class Aim {
                 shooter.setTargetVel(mainTarget.targetShooterVel + shooterComp);
                 TelemetryUtil.packet.put("aimVel", mainTarget.targetShooterVel);
                 turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
+                hood.setAngle(mainTarget.targetShooterAngle);
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
 

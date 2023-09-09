@@ -101,6 +101,7 @@ public class Transfer {
         );
         hardwareQueue.addDevice(liftMotor);
 
+
         transferServo = new PriorityCRServo(
             transferWheel,
             "transferServo",
@@ -108,6 +109,7 @@ public class Transfer {
             4
         );
         hardwareQueue.addDevice(transferServo);
+
 
         ejectServo = new PriorityServo(
             hardwareMap.get(Servo.class, "eject"),
@@ -121,6 +123,7 @@ public class Transfer {
             4
         );
         hardwareQueue.addDevice(ejectServo);
+        ejectServo.setTargetAngle(unejectAngle, 0.75);
     }
 
 
