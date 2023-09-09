@@ -25,7 +25,7 @@ public class AimTest extends LinearOpMode {
         robot.aim.transfer.turnOn();
         robot.intake.turnOn();
 
-        robot.aim.addTarget(48,48, Ball.YELLOW);
+        robot.aim.addTarget(48,0, Ball.YELLOW);
         robot.aim.setMainTarget(0);
         boolean oldA = false;
 

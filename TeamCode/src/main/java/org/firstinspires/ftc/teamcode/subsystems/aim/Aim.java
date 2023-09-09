@@ -40,7 +40,7 @@ public class Aim {
     double leftZero = 0; // need to find later
     double rightZero = 0;
 
-    double binHeight = 20; //TODO figure out
+    double binHeight = 16; //TODO figure out
     double binRadius = 7.5; //TODO figure out
     public static double shooterHeight = 15; //TODO figure out
     public static double targetHeight = 2; //TODO figure out
@@ -177,6 +177,7 @@ public class Aim {
                 TelemetryUtil.packet.put("aimVel", mainTarget.targetShooterVel);
                 turret.setTargetAngle(mainTarget.targetTurretAngle - ROBOT_POSITION.heading);//,mainTarget.futureTurretOffset);
                 hood.setAngle(mainTarget.targetShooterAngle);
+                TelemetryUtil.packet.put("hoodAngle", mainTarget.targetShooterAngle);
                 //leftShooterHood.setAngle(mainTarget.targetShooterAngle);
                 //rightShooterHood.setAngle(mainTarget.targetShooterAngle);
 
